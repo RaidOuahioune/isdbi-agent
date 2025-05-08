@@ -2,7 +2,20 @@ from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from typing import List, Dict, Any, Optional
 import os
+import re
+import json
 from dotenv import load_dotenv
+
+# Add these imports at the top if not already present
+import logging
+import sys
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
 
 from retreiver import retriever
 from state import State
@@ -59,32 +72,70 @@ When presented with a financial scenario, analyze it to identify the applicable 
 Focus on the 5 selected standards: FAS 4, 7, 10, 28, and 32.
 """
 
+TRANSACTION_ANALYZER_SYSTEM_PROMPT = """You are an expert in Islamic finance and AAOIFI Financial Accounting Standards (FAS).
+Your task is to analyze financial transaction journal entries and identify which AAOIFI standards apply.
+Focus specifically on reverse transactions - where transactions need to be unwound, cancelled, or accounted for in reverse.
+When multiple standards could apply, rank them by probability (highest to lowest) and provide detailed reasoning.
+Pay special attention to FAS 4, FAS 7, FAS 10, FAS 28, and FAS 32.
+Structure your analysis with a transaction summary, applicable standards with probabilities, and detailed reasoning.
+IMPORTANT: Only consider FAS 4, FAS 7, FAS 10, FAS 28, and FAS 32. Do not reference or apply any other standards beyond these five.
+Follow the transaction context strictly and do not propose or suggest anything beyond what is explicitly described in the transaction.
+"""
+
+TRANSACTION_RATIONALE_SYSTEM_PROMPT = """You are an expert in Islamic finance and AAOIFI Financial Accounting Standards (FAS).
+Your task is to explain in detail why a specific AAOIFI standard applies to a given transaction.
+Focus on providing evidence-based reasoning that connects transaction elements to specific requirements in the standard.
+Cite specific clauses or sections of the standard to support your explanation.
+Your analysis should include:
+1. Transaction analysis identifying key elements related to the standard
+2. Standard requirements that apply to this transaction
+3. Matching rationale explaining how transaction elements match standard requirements
+4. Evidence-based reasoning with citations to specific clauses
+5. Confidence level assessment (high, medium, low) with justification
+IMPORTANT: Restrict your analysis strictly to FAS 4, FAS 7, FAS 10, FAS 28, and FAS 32. Do not cite or reference any other standards.
+Only analyze elements that are explicitly mentioned in the transaction context - do not introduce additional assumptions or scenarios.
+"""
+
+KNOWLEDGE_INTEGRATION_SYSTEM_PROMPT = """You are an expert knowledge integrator for Islamic finance standards and transactions.
+Your task is to connect transaction patterns with relevant standards content.
+Identify relationships between transaction types and standards requirements.
+Provide an integrated view showing how standards apply to specific transaction patterns.
+Resolve conflicts when multiple standards seem applicable.
+Prioritize based on transaction specifics, standard scope, and most recent guidance.
+IMPORTANT: Only work with FAS 4, FAS 7, FAS 10, FAS 28, and FAS 32. Do not include or mention any other standards in your analysis.
+Base your analysis exclusively on the information provided in the transaction context and do not extend beyond it.
+Your recommendations should be limited to what can be directly supported by the transaction details provided.
+"""
+
+
 class Agent:
     """Base Agent class that all specialized agents will inherit from."""
-    
+
     def __init__(self, system_prompt: str, tools: Optional[List] = None):
         self.system_prompt = system_prompt
         self.memory = []
-        
+
         # Set up LLM with or without tools
         if tools:
             self.llm = llm.bind_tools(tools)
         else:
             self.llm = llm
-    
+
     def __call__(self, state: State) -> Dict[str, Any]:
         """Process the current state and return a response."""
         # Create a copy of the messages list
         messages = state["messages"].copy()
-        
+
         # Insert the system message if it doesn't exist
-        if not messages or not (hasattr(messages[0], "type") and messages[0].type == "system"):
+        if not messages or not (
+            hasattr(messages[0], "type") and messages[0].type == "system"
+        ):
             messages.insert(0, SystemMessage(content=self.system_prompt))
-        
+
         # Process with model and return response
         response = self.llm.invoke(messages)
         return {"messages": [response]}
-    
+
     def add_to_memory(self, message):
         """Add a message to agent's memory."""
         self.memory.append(message)
@@ -92,16 +143,17 @@ class Agent:
 
 class OrchestratorAgent(Agent):
     """Agent responsible for coordinating other agents."""
-    
+
     def __init__(self):
         super().__init__(system_prompt=ORCHESTRATOR_SYSTEM_PROMPT)
-    
+
     def route_query(self, query: str) -> str:
         """Determine which agent should handle a given query."""
         # Prepare message for routing decision
         messages = [
             SystemMessage(content=self.system_prompt),
-            HumanMessage(content=f"""Please analyze this query and determine which specialized agent should handle it:
+            HumanMessage(
+                content=f"""Please analyze this query and determine which specialized agent should handle it:
             
 Query: {query}
 
@@ -109,9 +161,10 @@ Return just the name of the agent without explanation:
 - UseCase (for financial scenarios that need accounting guidance)
 - Standards (for extracting information from standards)
 - Both (if both agents are needed)
-            """)
+            """
+            ),
         ]
-        
+
         # Get routing decision
         response = self.llm.invoke(messages)
         return response.content.strip()
@@ -119,23 +172,24 @@ Return just the name of the agent without explanation:
 
 class StandardsExtractorAgent(Agent):
     """Agent responsible for extracting information from AAOIFI standards."""
-    
+
     def __init__(self):
         super().__init__(system_prompt=STANDARDS_EXTRACTOR_SYSTEM_PROMPT)
-    
+
     def extract_standard_info(self, standard_id: str, query: str) -> Dict[str, Any]:
         """Extract specific information from standards based on query."""
         # Use retriever to get relevant chunks from standards
         retrieval_query = f"Standard {standard_id}: {query}"
         retrieved_nodes = retriever.retrieve(retrieval_query)
-        
+
         # Extract text content from retrieved nodes
         context = "\n\n".join([node.text for node in retrieved_nodes])
-        
+
         # Prepare message for extraction
         messages = [
             SystemMessage(content=self.system_prompt),
-            HumanMessage(content=f"""Please extract relevant information from AAOIFI standard {standard_id} based on this query:
+            HumanMessage(
+                content=f"""Please extract relevant information from AAOIFI standard {standard_id} based on this query:
             
 Query: {query}
 
@@ -143,40 +197,46 @@ Context from standards:
 {context}
 
 Return a structured response with key elements, requirements, and guidelines.
-            """)
+            """
+            ),
         ]
-        
+
         # Get extraction result
         response = self.llm.invoke(messages)
-        
+
         return {
             "standard_id": standard_id,
             "query": query,
-            "extracted_info": response.content
+            "extracted_info": response.content,
         }
 
 
 class UseCaseProcessorAgent(Agent):
     """Agent responsible for processing financial use cases and providing accounting guidance."""
-    
+
     def __init__(self):
         super().__init__(system_prompt=USE_CASE_PROCESSOR_SYSTEM_PROMPT)
-    
-    def process_use_case(self, scenario: str, standards_info: Optional[Dict] = None) -> Dict[str, Any]:
+
+    def process_use_case(
+        self, scenario: str, standards_info: Optional[Dict] = None
+    ) -> Dict[str, Any]:
         """Process a financial scenario and provide accounting guidance."""
         # If we have standards info, include it as context
         standards_context = ""
         if standards_info:
-            standards_context = f"\nRelevant Standards Information:\n{standards_info['extracted_info']}"
-        
+            standards_context = (
+                f"\nRelevant Standards Information:\n{standards_info['extracted_info']}"
+            )
+
         # Use retriever to get additional relevant information
         retrieved_nodes = retriever.retrieve(scenario)
         additional_context = "\n\n".join([node.text for node in retrieved_nodes])
-        
+
         # Prepare message for use case processing
         messages = [
             SystemMessage(content=self.system_prompt),
-            HumanMessage(content=f"""Please analyze this financial scenario and provide accounting guidance:
+            HumanMessage(
+                content=f"""Please analyze this financial scenario and provide accounting guidance:
             
 Scenario:
 {scenario}
@@ -191,18 +251,247 @@ Provide:
 3. Step-by-step calculation methodology
 4. Journal entries with explanations
 5. References to specific sections of the standards
-            """)
+            """
+            ),
         ]
-        
+
         # Get processing result
         response = self.llm.invoke(messages)
-        
+
+        return {"scenario": scenario, "accounting_guidance": response.content}
+
+
+class TransactionAnalyzerAgent(Agent):
+    """Agent responsible for analyzing journal entries to identify applicable AAOIFI standards."""
+
+    def __init__(self):
+        super().__init__(system_prompt=TRANSACTION_ANALYZER_SYSTEM_PROMPT)
+        self.retriever = retriever  # Make retriever accessible as a class attribute
+
+    def analyze_transaction(
+        self, transaction_details: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Analyze a transaction to identify applicable AAOIFI standards.
+
+        Args:
+            transaction_details: Dictionary containing transaction context, journal entries, and additional info
+
+        Returns:
+            Dict containing analysis results
+        """
+        # Build a structured query from the transaction details
+        query = self._build_structured_query(transaction_details)
+
+        # Use retriever to get relevant standards information
+        retrieved_nodes = self.retriever.retrieve(query)
+        standards_context = "\n\n".join([node.text for node in retrieved_nodes])
+
+        # Log chunk information here too for redundancy
+        logging.info(f"TransactionAnalyzer retrieved {len(retrieved_nodes)} chunks")
+
+        # Prepare message for transaction analysis
+        messages = [
+            SystemMessage(content=self.system_prompt),
+            HumanMessage(
+                content=f"""Please analyze these financial transaction journal entries and identify applicable AAOIFI standards:
+            
+Transaction Details:
+{query}
+
+Standards Context:
+{standards_context}
+
+Provide your analysis with:
+1. Transaction Summary: Brief description of what this transaction represents
+2. Applicable Standards: Ranked by probability with percentages
+3. Detailed Reasoning: For each standard, explain why it applies to this transaction
+            """
+            ),
+        ]
+
+        # Get response from the model
+        response = self.llm.invoke(messages)
+
+        # Extract standards mentioned in the response
+        standards = self._extract_standards(response.content)
+
         return {
-            "scenario": scenario,
-            "accounting_guidance": response.content
+            "transaction_details": transaction_details,
+            "analysis": response.content,
+            "identified_standards": standards,
+            "retrieval_stats": {
+                "chunk_count": len(retrieved_nodes),
+                "chunks_summary": [
+                    node.text[:100] + "..." for node in retrieved_nodes[:5]
+                ],
+            },
         }
+
+    def _build_structured_query(self, transaction_details: Dict[str, Any]) -> str:
+        """Build a structured query string from transaction details."""
+        # Extract context
+        context = ""
+        if "context" in transaction_details:
+            context += f"Context: {transaction_details['context']}\n"
+
+        # Extract journal entries
+        journal_entries = ""
+        if "journal_entries" in transaction_details:
+            journal_entries = "Journal Entries:\n"
+            for entry in transaction_details["journal_entries"]:
+                journal_entries += f"Dr. {entry['debit_account']} ${entry['amount']}\n"
+                journal_entries += (
+                    f" Cr. {entry['credit_account']} ${entry['amount']}\n"
+                )
+
+        # Extract additional information
+        additional_info = ""
+        if "additional_info" in transaction_details:
+            additional_info = "Additional Information:\n"
+            for key, value in transaction_details["additional_info"].items():
+                additional_info += f"{key}: {value}\n"
+
+        return f"{context}\n{journal_entries}\n{additional_info}"
+
+    def _extract_standards(self, text: str) -> List[str]:
+        """Extract standards mentioned in the text."""
+        # Find all mentions of FAS followed by numbers
+        standards = re.findall(r"FAS\s+\d+", text)
+        return list(set(standards))
+
+
+class TransactionStandardRationaleAgent(Agent):
+    """Agent responsible for explaining why a specific standard applies to a transaction."""
+
+    def __init__(self):
+        super().__init__(system_prompt=TRANSACTION_RATIONALE_SYSTEM_PROMPT)
+
+    def explain_standard_application(
+        self, transaction_details: Dict[str, Any], standard_id: str
+    ) -> Dict[str, Any]:
+        """
+        Explain why a specific standard applies to a transaction.
+        """
+        # Format transaction details
+        transaction_query = TransactionAnalyzerAgent()._build_structured_query(
+            transaction_details
+        )
+
+        # Get specific information about the standard
+        standard_query = f"Detailed information about {standard_id} including scope, recognition criteria, and measurement requirements"
+        retrieved_nodes = retriever.retrieve(standard_query)
+
+        # Log retrieved chunks
+        logging.info(
+            f"RationaleAgent: Retrieved {len(retrieved_nodes)} chunks for standard {standard_id}"
+        )
+        for i, node in enumerate(retrieved_nodes[:2]):
+            logging.info(f"Standard chunk {i + 1}: {node.text[:100]}...")
+
+        standard_info = "\n\n".join([node.text for node in retrieved_nodes])
+
+        # Prepare message for rationale explanation
+        messages = [
+            SystemMessage(content=self.system_prompt),
+            HumanMessage(
+                content=f"""Please explain in detail why {standard_id} applies to this transaction:
+            
+Transaction:
+{transaction_query}
+
+Standard Information:
+{standard_info}
+
+Provide a comprehensive explanation addressing:
+1. Transaction Analysis: Identify key elements of the transaction related to {standard_id}
+2. Standard Requirements: Outline the specific requirements of {standard_id} that apply
+3. Matching Rationale: Explain how transaction elements match standard requirements
+4. Evidence-Based Reasoning: Cite specific clauses of {standard_id} supporting this application
+5. Confidence Level: Assess how confident you are that this standard applies (high/medium/low)
+            """
+            ),
+        ]
+
+        # Get response from the model
+        response = self.llm.invoke(messages)
+
+        return {
+            "standard_id": standard_id,
+            "transaction_details": transaction_details,
+            "rationale": response.content,
+        }
+
+
+class KnowledgeIntegrationAgent(Agent):
+    """Agent responsible for integrating transaction analysis with standards knowledge."""
+
+    def __init__(self):
+        super().__init__(system_prompt=KNOWLEDGE_INTEGRATION_SYSTEM_PROMPT)
+
+    def integrate_knowledge(
+        self, transaction_analysis: Dict[str, Any], standard_rationales: Dict[str, str]
+    ) -> Dict[str, Any]:
+        """
+        Integrate transaction analysis with standards knowledge.
+
+        Args:
+            transaction_analysis: Output from TransactionAnalyzerAgent
+            standard_rationales: Dict mapping standard IDs to rationales
+
+        Returns:
+            Dict containing integrated analysis
+        """
+        # Format the transaction analysis
+        transaction_str = json.dumps(
+            transaction_analysis["transaction_details"], indent=2
+        )
+        analysis_str = transaction_analysis["analysis"]
+
+        # Format the standard rationales
+        rationales_str = ""
+        for std_id, rationale in standard_rationales.items():
+            rationales_str += f"\n\n--- {std_id} RATIONALE ---\n{rationale}"
+
+        # Prepare message for knowledge integration
+        messages = [
+            SystemMessage(content=self.system_prompt),
+            HumanMessage(
+                content=f"""Please integrate this transaction analysis with standards knowledge:
+            
+Transaction:
+{transaction_str}
+
+Transaction Analysis:
+{analysis_str}
+
+Standard Rationales:
+{rationales_str}
+
+Provide an integrated analysis that:
+1. Resolves conflicts between standards
+2. Prioritizes the most applicable standard(s)
+3. Provides a comprehensive accounting treatment
+4. Explains how the transaction should be recorded according to AAOIFI standards
+5. Highlights any special considerations for this type of transaction
+            """
+            ),
+        ]
+
+        # Get response from the model
+        response = self.llm.invoke(messages)
+
+        return {
+            "transaction_analysis": transaction_analysis,
+            "standard_rationales": standard_rationales,
+            "integrated_analysis": response.content,
+        }
+
 
 # Initialize agents
 orchestrator = OrchestratorAgent()
 standards_extractor = StandardsExtractorAgent()
 use_case_processor = UseCaseProcessorAgent()
+transaction_analyzer = TransactionAnalyzerAgent()
+transaction_rationale = TransactionStandardRationaleAgent()
+knowledge_integration = KnowledgeIntegrationAgent()
