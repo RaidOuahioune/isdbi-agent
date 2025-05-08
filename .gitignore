@@ -2,4 +2,9 @@
 
 *.PDF
 
+*.pyc
+__pycache__/*
+*.py[cod]
+*.pyo
+*.pyd
 data/*
