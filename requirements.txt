@@ -1,0 +1,14 @@
+langchain
+langchain-google-genai
+langchain-community
+python-dotenv
+langgraph
+langchain-core
+requests
+pandas
+ta
+numpy
+amadeus
+uuid
+psycopg2-binary
+pandas
