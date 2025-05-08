@@ -6,6 +6,7 @@ from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from agent_graph import agent_graph
 from state import create_empty_state
 from agents import orchestrator, standards_extractor, use_case_processor
+from enhancement import run_standards_enhancement, ENHANCEMENT_TEST_CASES, format_results_for_display
 
 # Load environment variables
 load_dotenv()
@@ -47,6 +48,7 @@ def run_interactive_session():
     print("- /standards <id>: Get information about a specific standard (e.g., /standards 28)")
     print("- /agents: List the available agents")
     print("- /clear: Clear the conversation history")
+    print("- /enhance <id>: Run standards enhancement for a specific standard (e.g., /enhance 10)")
     print()
     
     while True:
@@ -61,6 +63,10 @@ def run_interactive_session():
             print("1. Orchestrator Agent - Coordinates agent interactions and routes queries")
             print("2. Standards Extractor Agent - Extracts information from AAOIFI standards")
             print("3. Use Case Processor Agent - Analyzes financial scenarios and provides accounting guidance")
+            print("4. Standards Enhancement Agents:")
+            print("   - Reviewer Agent - Reviews standards and identifies areas for enhancement")
+            print("   - Proposer Agent - Proposes specific enhancements to standards")
+            print("   - Validator Agent - Validates proposals against Shariah principles")
             continue
             
         elif query.lower() == "/clear":
@@ -75,6 +81,45 @@ def run_interactive_session():
             
             # Create a more specific query for standards information
             query = f"Please provide detailed information about AAOIFI Financial Accounting Standard (FAS) {std_id}."
+        
+        elif query.lower().startswith("/enhance "):
+            # Extract standard ID
+            std_id = query.split(" ")[1].strip()
+            
+            if std_id not in ["4", "7", "10", "28", "32"]:
+                print(f"\nInvalid standard ID. Please choose from: 4, 7, 10, 28, 32")
+                continue
+                
+            print(f"\nRunning Standards Enhancement for FAS {std_id}...")
+            print("Select a trigger scenario or enter your own:")
+            
+            # Show available test cases for this standard
+            relevant_cases = [case for case in ENHANCEMENT_TEST_CASES if case["standard_id"] == std_id]
+            if relevant_cases:
+                for i, case in enumerate(relevant_cases, 1):
+                    print(f"{i}. {case['name']}")
+                print(f"{len(relevant_cases) + 1}. Custom scenario")
+                
+                choice = input("Select option: ")
+                try:
+                    choice_num = int(choice)
+                    if 1 <= choice_num <= len(relevant_cases):
+                        # Use existing test case
+                        trigger_scenario = relevant_cases[choice_num - 1]["trigger_scenario"]
+                    else:
+                        # Custom scenario
+                        trigger_scenario = input("Enter trigger scenario: ")
+                except ValueError:
+                    # Default to first case or custom input
+                    trigger_scenario = input("Enter trigger scenario: ")
+            else:
+                trigger_scenario = input("Enter trigger scenario: ")
+                
+            # Run enhancement
+            results = run_standards_enhancement(std_id, trigger_scenario)
+            formatted_results = format_results_for_display(results)
+            print("\n" + formatted_results)
+            continue
         
         # Process the query through our agent system
         try:
@@ -117,6 +162,24 @@ def sample_queries() -> List[Dict[str, str]]:
             A company needs to acquire manufacturing equipment worth $500,000. They are 
             considering either an Ijarah arrangement or an Istisna'a contract. What are 
             the accounting implications of each approach according to AAOIFI standards?
+            """
+        },
+        {
+            "name": "Digital Assets Enhancement",
+            "query": """
+            Enhance FAS 10 (Istisna'a) to address challenges with intangible digital assets. 
+            Financial institutions need guidance on how to structure Istisna'a contracts 
+            for software development projects where the "subject matter" evolves during 
+            development and may not be fully specifiable upfront.
+            """
+        },
+        {
+            "name": "Tokenized Investments Enhancement",
+            "query": """
+            Enhance FAS 4 (Mudarabah) to address tokenized investments on blockchain platforms
+            where ownership units can be traded in real-time on secondary markets. Current 
+            standards don't clearly address how to handle profit distributions and accounting
+            for these digital representations of investment units.
             """
         }
     ]
