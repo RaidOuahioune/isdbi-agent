@@ -1,31 +1,5 @@
 test_cases = [
     {
-        "name": "Deferred Payment Sale Early Settlement",
-        "transaction": """Financing Agreement Early Settlement Notice
-
-Gulf Trading Company settles its outstanding financing obligation with Al-Noor Islamic Bank ahead of schedule.
-
-JOURNAL ENTRIES:
-1. Dr. Financing Receivables $2,400,000
-   Cr. Cash $2,350,000
-   Cr. Early Settlement Rebate $50,000
-2. Dr. Unearned Profit $320,000
-   Cr. Profit Income $320,000
-
-TRANSACTION DETAILS:
-* Original Asset: Commercial Equipment (Cost Price: $2,000,000)
-* Original Selling Price: $2,720,000 (including $720,000 deferred profit)
-* Original Payment Schedule: 36 monthly installments of $75,556
-* Payments Made: 24 installments ($1,813,344 total)
-* Remaining Balance at Settlement: $906,656
-* Early Settlement Discount: $50,000 rebate offered as incentive
-* Settlement Timing: Month 25 of 36-month term
-* Accounting Treatment: Derecognition of receivables, Partial profit recognition, Rebate recording
-
-The early settlement was completed according to the bank's policy that allows customers to settle financing facilities early with a rebate as approved by the Shariah board.
-            """,
-    },
-    {
         "name": "Agricultural Commodity Advance Purchase Cancellation",
         "transaction": """Advance Purchase Agreement Cancellation Notice
 
@@ -142,6 +116,57 @@ Background Information:
 * Original Sukuk Amount: $10,000,000
 * Early Termination Penalty: 2% of outstanding balance
 * Accounting Treatment: Derecognition of liability, Recognition of termination fee
+            """,
+    },
+    {
+        "name": "Hybrid Digital Asset Conversion",
+        "transaction": """Digital Exchange Service Agreement - Conversion Report
+
+Al-Mustaqbal Digital Bank processes a conversion of digital assets for client BlueSky Holdings.
+
+JOURNAL ENTRIES:
+1. Dr. Digital Currency Holdings (Ethereum) $3,200,000
+   Cr. Digital Trust Certificates $2,950,000
+   Cr. Exchange Service Revenue $250,000
+2. Dr. Algorithmic Custodial Fee $45,000
+   Cr. Smart Contract Service Income $45,000
+
+TRANSACTION INFORMATION:
+* Original Asset: Digital Trust Certificates representing ownership in renewable energy project
+* Conversion Asset: Ethereum-based utility tokens allowing access to energy trading platform
+* Holding Period: Certificates were held for 14 months of 36-month maturity
+* Valuation Method: Mark-to-market with Shariah-compliant averaging over 30 days
+* Risk Mitigation: Digital assets housed in multi-signature wallet with 3-of-5 approval structure
+* Exchange Ratio: 1 Certificate = 1.08 utility tokens
+* Accounting Treatment: Asset conversion, revenue recognition, custodial service recording
+
+The transaction was executed through a novel hybrid exchange structure combining elements of partnership, agency, and sales concepts in accordance with the bank's innovative products committee guidance.
+            """,
+    },
+    {
+        "name": "Deferred Payment Sale Early Settlement",
+        "transaction": """Financing Agreement Early Settlement Notice
+
+Gulf Trading Company settles its outstanding financing obligation with Al-Noor Islamic Bank ahead of schedule.
+
+JOURNAL ENTRIES:
+1. Dr. Financing Receivables $2,400,000
+   Cr. Cash $2,350,000
+   Cr. Early Settlement Rebate $50,000
+2. Dr. Unearned Profit $320,000
+   Cr. Profit Income $320,000
+
+TRANSACTION DETAILS:
+* Original Asset: Commercial Equipment (Cost Price: $2,000,000)
+* Original Selling Price: $2,720,000 (including $720,000 deferred profit)
+* Original Payment Schedule: 36 monthly installments of $75,556
+* Payments Made: 24 installments ($1,813,344 total)
+* Remaining Balance at Settlement: $906,656
+* Early Settlement Discount: $50,000 rebate offered as incentive
+* Settlement Timing: Month 25 of 36-month term
+* Accounting Treatment: Derecognition of receivables, Partial profit recognition, Rebate recording
+
+The early settlement was completed according to the bank's policy that allows customers to settle financing facilities early with a rebate as approved by the Shariah board.
             """,
     },
 ]
