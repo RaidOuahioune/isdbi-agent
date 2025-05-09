@@ -41,12 +41,33 @@ if __name__ == "__main__":
         action="store_true",
         help="Run Category 2 reverse transaction tests with detailed retrieval logs",
     )
+    parser.add_argument(
+        "--category2-evaluate",
+        action="store_true",
+        help="Run Category 2 tests with evaluation of results",
+    )
+    parser.add_argument(
+        "--evaluate",
+        action="store_true",
+        help="Run standalone evaluation tests on transaction analysis outputs",
+    )
+    parser.add_argument(
+        "--evaluate-verbose",
+        action="store_true",
+        help="Run standalone evaluation tests with detailed output",
+    )
     args = parser.parse_args()
 
     if args.category2_verbose:
         run_category2_tests(verbose=True)
+    elif args.category2_evaluate:
+        run_category2_tests(evaluate=True)
     elif args.category2:
         run_category2_tests()
+    elif args.evaluate_verbose:
+        run_category2_tests(evaluate=True, verbose=True)
+    # elif args.evaluate:
+    #     run_evaluation_tests()
     elif args.samples:
         run_sample_tests()
     else:
