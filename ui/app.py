@@ -11,8 +11,8 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 from enhancement import run_standards_enhancement, ENHANCEMENT_TEST_CASES, find_test_case_by_keyword
-from visualize import extract_original_and_proposed, format_text_diff, generate_html_diff
 from ui.progress_monitor import create_progress_components, run_enhancement_with_monitoring
+from ui.output_parser import OutputParser
 
 # Set page configuration
 st.set_page_config(
@@ -165,22 +165,6 @@ def load_past_enhancements():
     enhancements.sort(key=lambda x: x["metadata"]["timestamp"], reverse=True)
     return enhancements
 
-def format_diff_html(diff_text):
-    """Format diff text with HTML styling for better display."""
-    if not diff_text:
-        return "No diff available"
-    
-    html = []
-    for line in diff_text.split('\n'):
-        if line.startswith('+'):
-            html.append(f'<div class="addition">{line}</div>')
-        elif line.startswith('-'):
-            html.append(f'<div class="deletion">{line}</div>')
-        else:
-            html.append(f'<div>{line}</div>')
-    
-    return ''.join(html)
-
 def run_enhancement_with_progress(standard_id, trigger_scenario):
     """Run the enhancement process with progress updates."""
     
@@ -233,9 +217,9 @@ def display_results(results):
             st.metric("Decision", decision)
         with col3:
             # Count the number of proposed changes
-            original_text, proposed_text = extract_original_and_proposed(results['proposal'])
+            original_text, proposed_text = OutputParser.extract_original_and_proposed(results['proposal'])
             if original_text and proposed_text:
-                diff_lines = format_text_diff(original_text, proposed_text).count('\n')
+                diff_lines = OutputParser.format_text_diff(original_text, proposed_text).count('\n')
                 st.metric("Changes", f"{diff_lines} lines")
             else:
                 st.metric("Changes", "Unknown")
@@ -261,12 +245,12 @@ def display_results(results):
     # Diff View Tab
     with tabs[3]:
         st.header("Visual Diff of Changes")
-        original_text, proposed_text = extract_original_and_proposed(results['proposal'])
+        original_text, proposed_text = OutputParser.extract_original_and_proposed(results['proposal'])
         if original_text and proposed_text:
-            diff_text = format_text_diff(original_text, proposed_text)
+            diff_text = OutputParser.format_text_diff(original_text, proposed_text)
             st.markdown(f"""
             <div class="diff-container">
-                {format_diff_html(diff_text)}
+                {OutputParser.format_diff_html(diff_text)}
             </div>
             """, unsafe_allow_html=True)
             
@@ -280,7 +264,7 @@ def display_results(results):
                 st.markdown("#### Proposed Text")
                 st.text_area("", proposed_text, height=300, key="proposed_text", disabled=True)
         else:
-            st.warning("Could not extract clear original and proposed text sections for visualization.")
+            st.warning("Could not extract clear original and proposed text sections for visualization. Please check the Proposed Changes tab for the full enhancement details.")
     
     # Validation Tab
     with tabs[4]:
@@ -319,12 +303,10 @@ def display_results(results):
     
     with col2:
         if st.button("Export as HTML Report", key="export_html", type="primary"):
-            original_text, proposed_text = extract_original_and_proposed(results['proposal'])
-            if original_text and proposed_text:
-                html_diff = generate_html_diff(original_text, proposed_text)
-                
-                # Create a full HTML report
-                html_content = f"""<!DOCTYPE html>
+            original_text, proposed_text = OutputParser.extract_original_and_proposed(results['proposal'])
+            
+            # Create a simple HTML report
+            html_content = f"""<!DOCTYPE html>
 <html>
 <head>
     <title>Standards Enhancement Report - FAS {results['standard_id']}</title>
@@ -336,6 +318,9 @@ def display_results(results):
         .proposal-section {{ background-color: #f0fdf4; padding: 15px; border-radius: 5px; border-left: 5px solid #22c55e; margin-bottom: 20px; }}
         .validation-section {{ background-color: #fff7ed; padding: 15px; border-radius: 5px; border-left: 5px solid #f59e0b; margin-bottom: 20px; }}
         .scenario-section {{ background-color: #f8fafc; padding: 15px; border-radius: 5px; border: 1px solid #e2e8f0; margin-bottom: 20px; }}
+        pre {{ white-space: pre-wrap; }}
+        .addition {{ color: #166534; background-color: #dcfce7; padding: 2px; }}
+        .deletion {{ color: #991b1b; background-color: #fee2e2; padding: 2px; }}
     </style>
 </head>
 <body>
@@ -355,10 +340,23 @@ def display_results(results):
     <div class="proposal-section">
         {results['proposal']}
     </div>
-    
+    """
+            
+            # Add comparison section if we have original and proposed text
+            if original_text and proposed_text:
+                html_content += f"""
     <h2>Text Comparison</h2>
-    {html_diff}
-    
+    <div>
+        <h3>Original Text</h3>
+        <pre>{original_text}</pre>
+        
+        <h3>Proposed Text</h3>
+        <pre>{proposed_text}</pre>
+    </div>
+    """
+            
+            # Complete the HTML
+            html_content += f"""    
     <h2>Validation Results</h2>
     <div class="validation-section">
         {results['validation']}
@@ -366,90 +364,46 @@ def display_results(results):
     
     <hr>
     <footer>
-        <p><small>Generated by AAOIFI Standards Enhancement System</small></p>
+        <p><small>Generated by AAOIFI Standards Enhancement System - {datetime.datetime.now().strftime("%Y-%m-%d")}</small></p>
     </footer>
 </body>
 </html>"""
-                
-                st.download_button(
-                    label="Download HTML Report",
-                    data=html_content,
-                    file_name=f"enhancement_report_fas{results['standard_id']}.html",
-                    mime="text/html",
-                )
-            else:
-                st.warning("Could not generate HTML report because original and proposed text sections couldn't be extracted.")
+            
+            st.download_button(
+                label="Download HTML Report",
+                data=html_content,
+                file_name=f"enhancement_report_fas{results['standard_id']}.html",
+                mime="text/html",
+            )
 
 def display_past_enhancement(enhancement_data):
-    """Display a past enhancement from saved data."""
-    metadata = enhancement_data["metadata"]
+    """Display a past enhancement from loaded data."""
     results = enhancement_data["results"]
+    metadata = enhancement_data["metadata"]
     
-    st.header(f"Past Enhancement: FAS {metadata['standard_id']}")
-    st.caption(f"Created on: {datetime.datetime.strptime(metadata['timestamp'], '%Y%m%d_%H%M%S').strftime('%B %d, %Y at %H:%M')}")
+    st.header(f"Enhancement for FAS {metadata['standard_id']}")
     
-    # Display decision badge
-    if metadata["decision"] == "APPROVED":
-        st.success("APPROVED ✅")
-    elif metadata["decision"] == "REJECTED":
-        st.error("REJECTED ❌")
-    else:
-        st.warning("NEEDS REVISION ⚠️")
+    # Show metadata
+    st.markdown(f"**Date:** {datetime.datetime.strptime(metadata['timestamp'], '%Y%m%d_%H%M%S').strftime('%Y-%m-%d %H:%M:%S')}")
+    st.markdown(f"**Decision:** {metadata['decision']}")
     
-    # Display trigger scenario
-    st.subheader("Trigger Scenario")
-    st.write(metadata["trigger_scenario"])
-    
-    # Show tabs for details
-    tabs = st.tabs(["Review Analysis", "Proposed Changes", "Validation"])
-    
-    with tabs[0]:
-        st.markdown(f"""
-        <div class="review-container">
-            {results['review']}
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with tabs[1]:
-        st.markdown(f"""
-        <div class="proposal-container">
-            {results['proposal']}
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Show diff if available
-        original_text, proposed_text = extract_original_and_proposed(results['proposal'])
-        if original_text and proposed_text:
-            st.subheader("Visual Diff")
-            diff_text = format_text_diff(original_text, proposed_text)
-            st.markdown(f"""
-            <div class="diff-container">
-                {format_diff_html(diff_text)}
-            </div>
-            """, unsafe_allow_html=True)
-    
-    with tabs[2]:
-        st.markdown(f"""
-        <div class="validation-container">
-            {results['validation']}
-        </div>
-        """, unsafe_allow_html=True)
+    # Display the full results
+    display_results(results)
 
 def main():
     """Main Streamlit app function."""
     st.title("AAOIFI Standards Enhancement System")
-    st.subheader("Improving Islamic Finance Standards with AI")
     
-    # Sidebar for selecting enhancement method
+    # Sidebar for navigation
     st.sidebar.title("Enhancement Options")
     
-    # Add two modes: Create New Enhancement or View Past Enhancements
-    app_mode = st.sidebar.radio(
+    # Choose between new enhancement and past enhancements
+    mode = st.sidebar.radio(
         "Mode",
-        ["Create New Enhancement", "View Past Enhancements"]
+        ["New Enhancement", "View Past Enhancements"]
     )
     
-    if app_mode == "Create New Enhancement":
+    if mode == "New Enhancement":
         enhancement_method = st.sidebar.radio(
             "Enhancement Method",
             ["Select from Test Cases", "Custom Enhancement"]
@@ -483,77 +437,52 @@ def main():
                 height=150,
                 help="Describe a situation that might require enhancing the standard"
             )
-            
-            # Add a search feature for similar past enhancements
-            if trigger_scenario and len(trigger_scenario) > 20:
-                st.sidebar.markdown("### Similar Past Scenarios")
-                if st.sidebar.button("Find Similar"):
-                    # Find similar test case
-                    similar_case = find_test_case_by_keyword(trigger_scenario[:50])
-                    if similar_case:
-                        st.sidebar.success(f"Similar scenario found: {similar_case['name']}")
-                        st.sidebar.info(similar_case['trigger_scenario'][:150] + "...")
-                        
-                        # Option to use this scenario instead
-                        if st.sidebar.button("Use this scenario instead"):
-                            standard_id = similar_case['standard_id']
-                            trigger_scenario = similar_case['trigger_scenario']
         
         # Main content
         if 'results' not in st.session_state:
             st.session_state.results = None
         
         # Button to start enhancement
-        run_enhancement = st.button("Start Enhancement Process")
+        run_enhancement = st.button("Start Enhancement Process", type="primary")
         
         if run_enhancement:
             if not trigger_scenario:
                 st.error("Please provide a trigger scenario before starting the enhancement process.")
             else:
-                with st.spinner("Processing Enhancement..."):
+                with st.spinner("Running enhancement process..."):
                     results = run_enhancement_with_progress(standard_id, trigger_scenario)
                     st.session_state.results = results
+                    
+                    # Success message
+                    st.success("Enhancement process completed successfully!")
         
         # Display results if available
         if st.session_state.results:
             display_results(st.session_state.results)
-    
+            
     else:  # View Past Enhancements
-        # Load past enhancements
-        past_enhancements = load_past_enhancements()
+        st.subheader("Past Enhancement Results")
         
-        if not past_enhancements:
-            st.info("No past enhancements found. Create some enhancements first!")
+        # Load past enhancements
+        enhancements = load_past_enhancements()
+        
+        if not enhancements:
+            st.info("No past enhancements found.")
         else:
-            st.subheader(f"Past Enhancements ({len(past_enhancements)})")
+            # Create a dropdown for selecting a past enhancement
+            enhancement_options = [
+                f"FAS {e['metadata']['standard_id']} - {datetime.datetime.strptime(e['metadata']['timestamp'], '%Y%m%d_%H%M%S').strftime('%Y-%m-%d %H:%M')}"
+                for e in enhancements
+            ]
             
-            # Add filtering options
-            filter_col1, filter_col2 = st.columns(2)
-            with filter_col1:
-                filter_standard = st.selectbox(
-                    "Filter by Standard",
-                    ["All"] + sorted(list(set(e["metadata"]["standard_id"] for e in past_enhancements))),
-                    format_func=lambda x: f"FAS {x}" if x != "All" else "All Standards"
-                )
+            selected_idx = st.selectbox(
+                "Select a past enhancement to view:",
+                range(len(enhancement_options)),
+                format_func=lambda i: enhancement_options[i]
+            )
             
-            with filter_col2:
-                filter_decision = st.selectbox(
-                    "Filter by Decision",
-                    ["All", "APPROVED", "REJECTED", "NEEDS REVISION"]
-                )
-            
-            # Apply filters
-            filtered_enhancements = past_enhancements
-            if filter_standard != "All":
-                filtered_enhancements = [e for e in filtered_enhancements if e["metadata"]["standard_id"] == filter_standard]
-            
-            if filter_decision != "All":
-                filtered_enhancements = [e for e in filtered_enhancements if e["metadata"]["decision"] == filter_decision]
-            
-            # Display filtered enhancements
-            for i, enhancement in enumerate(filtered_enhancements):
-                with st.expander(f"FAS {enhancement['metadata']['standard_id']} - {enhancement['metadata']['timestamp']} - {enhancement['metadata']['decision']}"):
-                    display_past_enhancement(enhancement)
+            # Display the selected enhancement
+            display_past_enhancement(enhancements[selected_idx])
 
 if __name__ == "__main__":
     main() 

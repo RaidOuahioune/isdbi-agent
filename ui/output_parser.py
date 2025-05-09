@@ -1,7 +1,8 @@
 import re
+from typing import Tuple, Dict, Any
 
 class OutputParser:
-    """Parser for agent output files"""
+    """Parser for agent output files and enhancement results"""
     
     @staticmethod
     def parse_markdown_sections(output_text):
@@ -82,8 +83,16 @@ class OutputParser:
         return sections
     
     @staticmethod
-    def extract_original_and_proposed(proposal_text):
-        """Extract original text and proposed text from a proposal description."""
+    def extract_original_and_proposed(proposal_text: str) -> Tuple[str, str]:
+        """
+        Extract original text and proposed text from a proposal description.
+        
+        Args:
+            proposal_text: Text containing both original and proposed sections
+            
+        Returns:
+            Tuple of (original_text, proposed_text)
+        """
         # Try to find sections labeled as original/existing and proposed/enhanced
         original_patterns = [
             r"Original text:(.*?)(?:Proposed text:|$)",
@@ -162,8 +171,17 @@ class OutputParser:
         return original_text, proposed_text
 
     @staticmethod
-    def format_text_diff(original_text, proposed_text):
-        """Generate a simple diff between original and proposed text."""
+    def format_text_diff(original_text: str, proposed_text: str) -> str:
+        """
+        Generate a simple diff between original and proposed text.
+        
+        Args:
+            original_text: The original standard text
+            proposed_text: The proposed enhancement
+            
+        Returns:
+            String representation of the differences
+        """
         if not original_text or not proposed_text:
             return ""
             
@@ -185,8 +203,16 @@ class OutputParser:
         return '\n'.join(diff_lines)
         
     @staticmethod
-    def format_diff_html(diff_text):
-        """Format diff text with HTML styling for better display."""
+    def format_diff_html(diff_text: str) -> str:
+        """
+        Format diff text with HTML styling for better display.
+        
+        Args:
+            diff_text: Text containing the diff
+            
+        Returns:
+            HTML-formatted diff for display
+        """
         if not diff_text:
             return "No diff available"
         
@@ -199,4 +225,41 @@ class OutputParser:
             else:
                 html.append(f'<div>{line}</div>')
         
-        return ''.join(html) 
+        return ''.join(html)
+    
+    @staticmethod
+    def parse_results_from_agents(results: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Parse results directly from the agents output.
+        
+        Args:
+            results: The raw results dictionary from run_standards_enhancement
+            
+        Returns:
+            Dict with properly parsed sections
+        """
+        # First format the results as markdown
+        # This typically comes from enhancement.format_results_for_display
+        output = []
+        
+        # Header information
+        output.append(f"# Standards Enhancement Results for FAS {results['standard_id']}")
+        output.append("\n## Trigger Scenario")
+        output.append(results['trigger_scenario'])
+        
+        # Review findings
+        output.append("\n## Review Findings")
+        output.append(results['review'])
+        
+        # Proposed enhancements
+        output.append("\n## Proposed Enhancements")
+        output.append(results['proposal'])
+        
+        # Validation results
+        output.append("\n## Validation Results")
+        output.append(results['validation'])
+        
+        formatted_output = "\n".join(output)
+        
+        # Now parse the formatted output
+        return OutputParser.parse_markdown_sections(formatted_output) 
