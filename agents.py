@@ -113,6 +113,25 @@ For each validation check, provide specific reasoning with references to Shariah
 Clearly indicate whether the proposal is APPROVED, REJECTED, or NEEDS REVISION with detailed feedback.
 """
 
+# Define new system prompts for compliance verification agents for financial reports and documents
+COMPLIANCE_VERIFIER_SYSTEM_PROMPT = """You are the Compliance Verifier Agent for an Islamic Finance standards system. Your role is to:
+1. Verify compliance of financial reports and documents with AAOIFI standards
+2. Identify discrepancies or non-compliance issues
+3. Provide recommendations for rectification
+4. Ensure adherence to Shariah principles
+5. Generate a compliance report
+Given a financial report or document, analyze it against the relevant AAOIFI standards.
+Your analysis should include:
+- Identification of any discrepancies or non-compliance issues
+- Recommendations for rectification
+- References to specific sections of the standards that are not being followed
+- Assessment of adherence to Shariah principles
+Return a detailed compliance report including:
+- The specific sections of the standards being referenced
+- The nature of the discrepancies or non-compliance
+- The recommendations for rectification
+"""
+
 class Agent:
     """Base Agent class that all specialized agents will inherit from."""
     
@@ -179,7 +198,7 @@ class StandardsExtractorAgent(Agent):
     
     def extract_standard_info(self, standard_id: str, query: str) -> Dict[str, Any]:
         """Extract specific information from standards based on query."""
-        # Use retriever to get relevant chunks from standards
+        # Use retriever to  get relevant chunks from standards
         retrieval_query = f"Standard {standard_id}: {query}"
         retrieved_nodes = retriever.retrieve(retrieval_query)
         
@@ -416,7 +435,8 @@ Validate the proposal and provide:
 1. Shariah Compliance Assessment: Does it comply with core Islamic principles?
 2. Consistency Check: Is it consistent with the rest of FAS {standard_id} and other standards?
 3. Practical Implementation Assessment: Can it be practically implemented?
-4. Final Decision: APPROVED, REJECTED, or NEEDS REVISION with detailed reasoning
+4. References to specific citations from Quran, Hadith, or scholarly opinions
+5. Final Decision: APPROVED, REJECTED, or NEEDS REVISION with detailed reasoning
             """)
         ]
         
@@ -428,6 +448,56 @@ Validate the proposal and provide:
             "trigger_scenario": trigger_scenario,
             "enhancement_proposal": enhancement_proposal,
             "validation_result": response.content
+        }
+
+
+class ComplianceVerifierAgent(Agent):
+    """Agent responsible for verifying compliance of financial reports and documents."""
+    
+    def __init__(self):
+        super().__init__(system_prompt=COMPLIANCE_VERIFIER_SYSTEM_PROMPT)
+    
+    def verify_compliance(self, document: str, standards_info: Optional[Dict] = None) -> Dict[str, Any]:
+        """
+        Verify compliance of a financial report or document with AAOIFI standards.
+        
+        Args:
+            document: The financial report or document to be verified
+            standards_info: Optional information about relevant standards
+            
+        Returns:
+            Dict with compliance verification results
+        """
+        # If we have standards info, include it as context
+        standards_context = ""
+        if standards_info:
+            standards_context = f"\nPossibly Relevant Standards Information:\n{standards_info['extracted_info']}"
+        print("Standards:", standards_context)
+        print()
+        # Use retriever to get additional relevant information
+        retrieved_nodes = retriever.retrieve(document)
+        additional_context = "\n\n".join([node.text for node in retrieved_nodes])
+        
+        # Prepare message for compliance verification
+        messages = [
+            SystemMessage(content=self.system_prompt),
+            HumanMessage(content=f"""Can you check compliance of this report with AAOIFI standards? Highlight flagged entries, violations, and suggestions in a clean table.
+            
+    Document:
+    {document}
+
+    {standards_context}
+    Additional Context:
+    {additional_context}
+""")
+        ]
+        
+        # Get compliance verification result
+        response = self.llm.invoke(messages)
+        
+        return {
+            "document": document,
+            "compliance_report": response.content
         }
 
 # Initialize agents

@@ -186,7 +186,7 @@ def generate_journal_entries(
 3. **Recognition of Profit**
    - Dr. Cash/Receivables: [Bank's Share of Profit]
    - Cr. Musharakah Income: [Bank's Share of Profit]
-
+Due from financial institutions
 4. **Recognition of Loss** (if applicable)
    - Dr. Provision for Musharakah Losses: [Bank's Share of Loss]
    - Cr. Musharakah Investment: [Bank's Share of Loss]

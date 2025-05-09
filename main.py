@@ -7,6 +7,7 @@ from agent_graph import agent_graph
 from state import create_empty_state
 from agents import orchestrator, standards_extractor, use_case_processor
 from enhancement import run_standards_enhancement, ENHANCEMENT_TEST_CASES, format_results_for_display
+from utils.document_processor import DocumentProcessor
 
 # Load environment variables
 load_dotenv()
@@ -49,6 +50,7 @@ def run_interactive_session():
     print("- /agents: List the available agents")
     print("- /clear: Clear the conversation history")
     print("- /enhance <id>: Run standards enhancement for a specific standard (e.g., /enhance 10)")
+    print("- /verify <path>: Verify compliance of a document (e.g., /verify /path/to/document.pdf)")
     print()
     
     while True:
@@ -119,6 +121,32 @@ def run_interactive_session():
             results = run_standards_enhancement(std_id, trigger_scenario)
             formatted_results = format_results_for_display(results)
             print("\n" + formatted_results)
+            continue
+        
+        elif query.lower().startswith("/verify "):
+            # Extract file path
+            file_path = query.split(" ", 1)[1].strip()
+            
+            if not os.path.exists(file_path):
+                print(f"\nError: File not found: {file_path}")
+                continue
+                
+            print(f"\nProcessing document for compliance verification...")
+            
+            try:
+                # Process document
+                doc_processor = DocumentProcessor()
+                doc_content = doc_processor.process_document(file_path)
+                
+                # Create verification query
+                verification_query = f"Verify compliance of the following document with AAOIFI standards:\n\n{doc_content['content']}"
+                
+                # Process through agent system
+                response = process_query(verification_query)
+                print(f"\nCompliance Verification Results:\n{response.content}")
+                
+            except Exception as e:
+                print(f"\nError processing document: {e}")
             continue
         
         # Process the query through our agent system

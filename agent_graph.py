@@ -2,7 +2,7 @@ from typing import Dict, Any, Tuple, List
 from langgraph.graph import StateGraph, END
 
 from state import State, create_empty_state
-from agents import orchestrator, standards_extractor, use_case_processor, reviewer_agent, proposer_agent, validator_agent
+from agents import orchestrator, standards_extractor, use_case_processor, reviewer_agent, proposer_agent, validator_agent, ComplianceVerifierAgent
 
 
 def route_query(state: State) -> str:
@@ -30,6 +30,8 @@ def route_query(state: State) -> str:
             return "standards_extractor"
         elif "Enhancement" in route or "enhancement" in route:
             return "enhancement_workflow"
+        elif "Compliance" in route:
+            return "compliance_verification"
         elif "Both" in route:
             # For "Both" we'll start with standards extraction first
             return "standards_extractor_for_use_case"
@@ -144,6 +146,35 @@ def run_validator_agent(state: State) -> Dict[str, Any]:
     # Create a new state with validation results included
     new_state = state.copy()
     new_state["validation_result"] = validation_result
+    
+    return new_state
+
+
+def run_compliance_verification(state: State) -> Dict[str, Any]:
+    """
+    Run the Compliance Verifier Agent to check document compliance.
+    """
+    messages = state.get("messages", [])
+    if not messages:
+        return state
+    
+    document = messages[-1].content
+    standards_info = state.get("standards_info", None)
+    
+    # Initialize compliance verifier
+    compliance_verifier = ComplianceVerifierAgent()
+    
+    # Run compliance verification
+    verification_result = compliance_verifier.verify_compliance(document, standards_info)
+    
+    # Create a new message with the result
+    from langchain_core.messages import AIMessage
+    new_message = AIMessage(content=verification_result["compliance_report"])
+    
+    # Create a new state with verification results
+    new_state = state.copy()
+    new_state["messages"] = messages + [new_message]
+    new_state["verification_result"] = verification_result
     
     return new_state
 
@@ -278,6 +309,9 @@ def build_agent_graph() -> StateGraph:
     graph_builder.add_node("standards_extractor", standards_extractor)
     graph_builder.add_node("use_case_processor", use_case_processor)
     
+    # Add compliance verification node
+    graph_builder.add_node("compliance_verification", run_compliance_verification)
+    
     # Add special processing nodes
     graph_builder.add_node("extract_standard_ids", extract_standard_ids)
     graph_builder.add_node("standards_extractor_for_use_case", 
@@ -304,6 +338,7 @@ def build_agent_graph() -> StateGraph:
             "standards_extractor": "extract_standard_ids", 
             "standards_extractor_for_use_case": "extract_standard_ids",
             "enhancement_workflow": "extract_enhancement_info",
+            "compliance_verification": "extract_standard_ids",
             END: END
         }
     )
@@ -333,6 +368,10 @@ def build_agent_graph() -> StateGraph:
     graph_builder.add_edge("proposer_agent", "validator_agent")
     graph_builder.add_edge("validator_agent", "format_enhancement_results")
     graph_builder.add_edge("format_enhancement_results", END)
+    
+    # Add compliance verification flow
+    graph_builder.add_edge("extract_standard_ids", "compliance_verification")
+    graph_builder.add_edge("compliance_verification", END)
     
     # Compile the graph
     return graph_builder.compile()
