@@ -278,14 +278,17 @@ def display_results(results):
     # Create tabs for different sections
     tabs = st.tabs(["Overview", "Review Analysis", "Proposed Changes", "Diff View", "Validation"])
     
+    # Check if we have the cross-standard analysis tab
+    has_cross_standard = "cross_standard_analysis" in results and results["cross_standard_analysis"]
+    
     # Overview Tab
     with tabs[0]:
         st.header(f"Standards Enhancement Results for FAS {results['standard_id']}")
         
         st.subheader("Trigger Scenario")
-        st.write(results["trigger_scenario"])
+        st.write(results.get("trigger_scenario", "No trigger scenario provided"))
         
-        if "enhanced_diff" in results and results["enhanced_diff"]["stats"]:
+        if "enhanced_diff" in results and results["enhanced_diff"].get("stats"):
             stats = results["enhanced_diff"]["stats"]
             change_summary = results["enhanced_diff"].get("change_summary", "")
             
@@ -305,12 +308,14 @@ def display_results(results):
             with cols[4]:
                 pct = round(stats.get("percent_changed", 0), 1)
                 st.metric("% Changed", f"{pct}%")
+        else:
+            st.warning("Diff statistics not available")
         
         st.subheader("Key Findings")
         
         # Extract and display key findings from review
-        if "review" in results:
-            review_text = results["review"]
+        review_text = results.get("review", "")
+        if review_text:
             # Extract bullet points or numbered lists
             bullets = re.findall(r'(?:^|\n)[\*\-\d\.]+\s+(.*?)(?=\n[\*\-\d\.]+\s+|\Z)', review_text, re.DOTALL)
             
@@ -323,32 +328,71 @@ def display_results(results):
                 # If no bullet points, show first paragraph
                 first_para = review_text.split('\n\n')[0] if '\n\n' in review_text else review_text
                 st.write(first_para)
+        else:
+            st.info("No review findings available")
+            
+        # Add cross-standard summary if available
+        if has_cross_standard:
+            st.subheader("Cross-Standard Impact Summary")
+            analysis_text = results["cross_standard_analysis"]
+            summary = analysis_text.split("\n\n")[0] if "\n\n" in analysis_text else analysis_text[:200] + "..."
+            st.write(summary)
     
     # Review Analysis Tab
     with tabs[1]:
         st.header("Review Findings")
-        st.markdown(f'<div class="review-container">{results["review"]}</div>', unsafe_allow_html=True)
+        review_content = results.get("review", "No review findings available")
+        st.markdown(f'<div class="review-container">{review_content}</div>', unsafe_allow_html=True)
     
     # Proposed Changes Tab
     with tabs[2]:
         st.header("Proposed Enhancements")
-        st.markdown(f'<div class="proposal-container">{results["proposal"]}</div>', unsafe_allow_html=True)
+        proposal_content = results.get("proposal", "No proposed enhancements available")
+        st.markdown(f'<div class="proposal-container">{proposal_content}</div>', unsafe_allow_html=True)
         
-        if "original_text" in results and "proposed_text" in results:
+        # Show original vs proposed text if available
+        original_text = results.get("original_text", "")
+        proposed_text = results.get("proposed_text", "")
+        
+        if original_text or proposed_text:
             st.subheader("Original vs. Proposed Text")
             col1, col2 = st.columns(2)
             with col1:
                 st.markdown("**Original Text:**")
-                st.markdown(f'<div class="diff-container">{results["original_text"]}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="diff-container">{original_text or "No original text extracted"}</div>', unsafe_allow_html=True)
             with col2:
                 st.markdown("**Proposed Text:**")
-                st.markdown(f'<div class="diff-container">{results["proposed_text"]}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="diff-container">{proposed_text or "No proposed text extracted"}</div>', unsafe_allow_html=True)
+        elif proposal_content:
+            st.info("Original and proposed text could not be extracted from the proposal. See the full proposal above.")
     
     # Diff View Tab
     with tabs[3]:
         st.header("Text Differences")
         
-        if "enhanced_diff" in results:
+        # Check if we have enhanced diff
+        has_enhanced_diff = "enhanced_diff" in results and isinstance(results["enhanced_diff"], dict)
+        
+        # If no diff information at all, show a message
+        if not has_enhanced_diff and "simple_diff_html" not in results:
+            st.warning("No diff information available. This could be because the original and proposed text extraction failed.")
+            
+            # Show original and proposed text anyway if available
+            original_text = results.get("original_text", "")
+            proposed_text = results.get("proposed_text", "")
+            
+            if original_text or proposed_text:
+                st.subheader("Original vs. Proposed Text (No Diff Available)")
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown("**Original Text:**")
+                    st.text_area("", original_text or "No original text extracted", height=300, key="original_text_nodiff")
+                with col2:
+                    st.markdown("**Proposed Text:**")
+                    st.text_area("", proposed_text or "No proposed text extracted", height=300, key="proposed_text_nodiff")
+            return
+        
+        if has_enhanced_diff:
             # Create tabs for different diff views
             diff_tabs = st.tabs(["Word-by-Word", "Inline View", "Sentence Level", "Standard Diff"])
             
@@ -357,7 +401,7 @@ def display_results(results):
                 st.markdown("### Word-by-Word Comparison")
                 st.markdown("This view shows each word-level change with additions in green and deletions in red.")
                 
-                # Display diff stats
+                # Display diff stats if available
                 if "stats" in results["enhanced_diff"]:
                     stats = results["enhanced_diff"]["stats"]
                     st.markdown(
@@ -383,13 +427,8 @@ def display_results(results):
                     )
                 
                 # Display word diff
-                if "word_diff_html" in results["enhanced_diff"]:
-                    st.markdown(
-                        f'<div class="diff-container">{results["enhanced_diff"]["word_diff_html"]}</div>',
-                        unsafe_allow_html=True
-                    )
-                else:
-                    st.warning("Word-by-word diff not available")
+                word_diff_html = results["enhanced_diff"].get("word_diff_html", "<div>Word-by-word diff not available</div>")
+                st.markdown(f'<div class="diff-container">{word_diff_html}</div>', unsafe_allow_html=True)
             
             # Inline View Tab
             with diff_tabs[1]:
@@ -397,13 +436,8 @@ def display_results(results):
                 st.markdown("This view shows changes inline with character-level precision.")
                 
                 # Display inline diff
-                if "inline_diff_html" in results["enhanced_diff"]:
-                    st.markdown(
-                        f'<div class="diff-container">{results["enhanced_diff"]["inline_diff_html"]}</div>',
-                        unsafe_allow_html=True
-                    )
-                else:
-                    st.warning("Inline diff not available")
+                inline_diff_html = results["enhanced_diff"].get("inline_diff_html", "<div>Inline diff not available</div>")
+                st.markdown(f'<div class="diff-container">{inline_diff_html}</div>', unsafe_allow_html=True)
             
             # Sentence Level Tab
             with diff_tabs[2]:
@@ -411,35 +445,22 @@ def display_results(results):
                 st.markdown("This view compares entire sentences to show changes at a higher level.")
                 
                 # Display sentence diff
-                if "sentence_diff_html" in results["enhanced_diff"]:
-                    st.markdown(
-                        f'<div class="diff-container">{results["enhanced_diff"]["sentence_diff_html"]}</div>',
-                        unsafe_allow_html=True
-                    )
-                else:
-                    st.warning("Sentence-level diff not available")
+                sentence_diff_html = results["enhanced_diff"].get("sentence_diff_html", "<div>Sentence-level diff not available</div>")
+                st.markdown(f'<div class="diff-container">{sentence_diff_html}</div>', unsafe_allow_html=True)
             
             # Standard Diff Tab
             with diff_tabs[3]:
                 st.markdown("### Standard Diff")
                 st.markdown("This is a traditional line-by-line diff format.")
                 
-                if "simple_diff_html" in results:
-                    st.markdown(
-                        f'<div class="diff-container">{results["simple_diff_html"]}</div>',
-                        unsafe_allow_html=True
-                    )
-                else:
-                    st.warning("Standard diff not available")
+                simple_diff_html = results.get("simple_diff_html", "<div>Standard diff not available</div>")
+                st.markdown(f'<div class="diff-container">{simple_diff_html}</div>', unsafe_allow_html=True)
         
         else:
             # Fallback to simple diff if enhanced diff is not available
             if "simple_diff_html" in results:
                 st.markdown("### Text Differences")
-                st.markdown(
-                    f'<div class="diff-container">{results["simple_diff_html"]}</div>',
-                    unsafe_allow_html=True
-                )
+                st.markdown(f'<div class="diff-container">{results["simple_diff_html"]}</div>', unsafe_allow_html=True)
             else:
                 st.warning("No diff visualization available")
     
@@ -449,8 +470,10 @@ def display_results(results):
         
         # Try to extract validation decision
         decision = "Undetermined"
-        if "validation" in results:
-            validation_text = results["validation"]
+        decision_color = "gray"
+        
+        validation_text = results.get("validation", "")
+        if validation_text:
             if "APPROVED" in validation_text:
                 decision = "APPROVED"
                 decision_color = "green"
@@ -471,7 +494,7 @@ def display_results(results):
         )
         
         # Display full validation text
-        st.markdown(f'<div class="validation-container">{results["validation"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="validation-container">{validation_text or "No validation results available"}</div>', unsafe_allow_html=True)
 
 def display_past_enhancement(enhancement_data):
     """Display a past enhancement from loaded data."""

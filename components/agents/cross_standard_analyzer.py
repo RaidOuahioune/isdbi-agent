@@ -4,6 +4,11 @@ from components.agents.base_agent import Agent
 from components.agents.prompts import CROSS_STANDARD_ANALYZER_SYSTEM_PROMPT
 from retreiver import retriever
 import re
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class CrossStandardAnalyzerAgent(Agent):
     """
@@ -27,13 +32,33 @@ class CrossStandardAnalyzerAgent(Agent):
         # Extract key information from enhancement results
         standard_id = enhancement_results.get("standard_id", "")
         proposal = enhancement_results.get("proposal", "")
+        
+        # Return a graceful failure if proposal is missing
+        if not proposal:
+            logger.error("No proposal text provided for cross-standard analysis")
+            return self._generate_fallback_analysis(standard_id)
+        
+        logger.info(f"Analyzing cross-standard impact for FAS {standard_id}")
+        logger.debug(f"Proposal text length: {len(proposal)} characters")
+        
         original_text, proposed_text = self._extract_original_and_proposed(proposal)
+        
+        logger.info(f"Extracted original text ({len(original_text)} chars) and proposed text ({len(proposed_text)} chars)")
+        
+        # Fallback content if extraction failed
+        if not original_text and not proposed_text:
+            logger.warning("Failed to extract original or proposed text from proposal")
+            logger.debug(f"First 200 chars of proposal: {proposal[:200]}...")
+            
+            # Use proposal as context if text extraction failed
+            original_text = "Extraction failed. Please see the full proposal."
+            proposed_text = "Extraction failed. Please see the full proposal."
         
         # Get related standards content
         related_standards = self._get_related_standards(standard_id)
         
         # Prepare the context for the agent prompt
-        context = self._prepare_context(standard_id, original_text, proposed_text, related_standards)
+        context = self._prepare_context(standard_id, original_text, proposed_text, related_standards, proposal)
         
         # Prepare message for analysis
         messages = [
@@ -42,27 +67,212 @@ class CrossStandardAnalyzerAgent(Agent):
         ]
         
         # Get analysis result
-        response = self.llm.invoke(messages)
+        try:
+            response = self.llm.invoke(messages)
+            analysis_text = response.content
+        except Exception as e:
+            logger.error(f"Error invoking LLM for cross-standard analysis: {e}")
+            analysis_text = f"Error generating cross-standard analysis: {str(e)}"
+            return self._generate_fallback_analysis(standard_id, error_message=str(e))
         
         # Extract the compatibility matrix from the response
-        compatibility_matrix = self._extract_compatibility_matrix(response.content)
+        compatibility_matrix = self._extract_compatibility_matrix(analysis_text)
         
         return {
             "standard_id": standard_id,
             "original_text": original_text,
             "proposed_text": proposed_text,
-            "cross_standard_analysis": response.content,
+            "cross_standard_analysis": analysis_text,
             "compatibility_matrix": compatibility_matrix
         }
+        
+    def _generate_fallback_analysis(self, standard_id: str, error_message: str = None) -> Dict[str, Any]:
+        """
+        Generate a fallback analysis when the normal process fails.
+        
+        Args:
+            standard_id: The standard ID
+            error_message: Optional error message
+            
+        Returns:
+            Dict with fallback analysis
+        """
+        error_note = f" Error: {error_message}" if error_message else ""
+        
+        fallback_analysis = f"""
+## Cross-Standard Impact Analysis (Automated Fallback)
+
+The system was unable to perform a detailed cross-standard impact analysis.{error_note}
+
+To properly analyze cross-standard impacts, please ensure:
+1. The proposal contains clearly marked original and proposed text sections
+2. The enhancement details are sufficient for analysis
+3. The system has access to related standards content
+
+Please review the proposal structure and try again. For a comprehensive analysis, 
+ensure that the original and proposed text sections are clearly labeled and formatted.
+"""
+        
+        # Create a fallback compatibility matrix
+        related_standard_ids = ["4", "7", "10", "28", "32"]
+        related_standard_ids = [sid for sid in related_standard_ids if sid != standard_id]
+        
+        compatibility_matrix = [
+            {"standard_id": sid, "impact_level": "Unknown", "impact_type": "Unknown"}
+            for sid in related_standard_ids
+        ]
+        
+        return {
+            "standard_id": standard_id,
+            "original_text": "Text extraction failed",
+            "proposed_text": "Text extraction failed",
+            "cross_standard_analysis": fallback_analysis,
+            "compatibility_matrix": compatibility_matrix
+        }
+        
+    def _prepare_context(self, standard_id: str, original_text: str, proposed_text: str, 
+                         related_standards: Dict[str, str], full_proposal: str = None) -> str:
+        """
+        Prepare the context for the agent prompt.
+        
+        Args:
+            standard_id: The ID of the standard being enhanced
+            original_text: The original text from the standard
+            proposed_text: The proposed enhanced text
+            related_standards: Dict of related standards content
+            full_proposal: Optional full proposal text to include if extraction failed
+            
+        Returns:
+            Formatted context string for the prompt
+        """
+        # Fallback: if extraction failed, include a note about it
+        extraction_note = ""
+        if not original_text or not proposed_text or "extraction failed" in original_text.lower():
+            logger.warning("Using fallback context preparation due to text extraction failure")
+            extraction_note = "\nNote: The exact original and proposed text could not be precisely extracted. Please analyze based on the full proposal and available information about FAS standards and their relationships."
+        
+        context = f"""Please analyze how the proposed enhancement to FAS {standard_id} might impact other AAOIFI standards.{extraction_note}
+
+## Current Standard Being Enhanced
+FAS {standard_id}
+
+## Original Text
+{original_text}
+
+## Proposed Enhanced Text
+{proposed_text}"""
+
+        # If extraction failed and we have the full proposal, include it
+        if extraction_note and full_proposal:
+            context += f"""
+
+## Full Proposal (Since exact extraction failed)
+{full_proposal}"""
+
+        context += """
+
+## Related Standards Content"""
+        
+        # Add content from related standards
+        for sid, content in related_standards.items():
+            context += f"\n\n### FAS {sid}\n{content}"
+        
+        context += """
+
+Please provide a detailed cross-standard impact analysis including:
+1. A summary of how the proposed changes might affect other standards
+2. Identification of potential contradictions or inconsistencies
+3. Identification of potential synergies or positive impacts
+4. A compatibility matrix showing the impact level (High/Medium/Low/None) for each standard
+5. Specific recommendations for maintaining consistency across standards
+
+Format the compatibility matrix as a table with columns for Standard ID, Impact Level, and Impact Type (Contradiction/Synergy/Both/None).
+"""
+        return context
     
     def _extract_original_and_proposed(self, proposal_text: str) -> tuple:
         """Extract original and proposed text from a proposal description."""
-        # Simplified version - actual implementation would be more robust
-        original_match = re.search(r"Original text:(.*?)(?:Proposed text:|$)", proposal_text, re.DOTALL)
-        proposed_match = re.search(r"Proposed text:(.*?)(?:Rationale:|$)", proposal_text, re.DOTALL)
+        # More robust pattern matching for both single and multiple enhancement proposals
+        # Look for various patterns that might appear in the proposal text
+        original_patterns = [
+            r"Original text:(.*?)(?:Proposed text:|$)",  # Simple case
+            r"Original Text:(.*?)(?:Proposed Text:|Proposed Modified Text:|$)",  # Capital case
+            r"\*\*Original Text\*\*\s*(?:\(.*?\))?\s*:(.*?)(?:\*\*Proposed|$)",  # Markdown format with stars
+            r"Original Text \(.*?\):(.*?)(?:Proposed|$)",  # With parentheses
+        ]
         
-        original_text = original_match.group(1).strip() if original_match else ""
-        proposed_text = proposed_match.group(1).strip() if proposed_match else ""
+        proposed_patterns = [
+            r"Proposed text:(.*?)(?:Rationale:|$)",  # Simple case
+            r"Proposed Text:(.*?)(?:Rationale:|$)",  # Capital case
+            r"Proposed Modified Text:(.*?)(?:Rationale:|$)",  # With "Modified"
+            r"\*\*Proposed (?:Modified )?Text\*\*\s*(?:\(.*?\))?\s*:(.*?)(?:\*\*Rationale|$)",  # Markdown format
+            r"Proposed (?:Modified )?Text \(.*?\):(.*?)(?:Rationale|$)",  # With parentheses
+        ]
+        
+        # First try to find a single original/proposed pair
+        original_text = ""
+        proposed_text = ""
+        
+        for pattern in original_patterns:
+            match = re.search(pattern, proposal_text, re.DOTALL | re.IGNORECASE)
+            if match:
+                original_text = match.group(1).strip()
+                break
+        
+        for pattern in proposed_patterns:
+            match = re.search(pattern, proposal_text, re.DOTALL | re.IGNORECASE)
+            if match:
+                proposed_text = match.group(1).strip()
+                break
+        
+        # If we found both, return them
+        if original_text and proposed_text:
+            return original_text, proposed_text
+        
+        # If not found, try to extract from "Enhancement Proposal" sections
+        proposals = re.findall(r'Enhancement Proposal \d+:.*?(?=Enhancement Proposal \d+:|$)', 
+                             proposal_text, re.DOTALL | re.IGNORECASE)
+        
+        if proposals:
+            # For the first proposal, try to find original and proposed text
+            for proposal in proposals:
+                orig = ""
+                prop = ""
+                
+                # Try all patterns on this specific proposal
+                for pattern in original_patterns:
+                    match = re.search(pattern, proposal, re.DOTALL | re.IGNORECASE)
+                    if match:
+                        orig = match.group(1).strip()
+                        break
+                        
+                for pattern in proposed_patterns:
+                    match = re.search(pattern, proposal, re.DOTALL | re.IGNORECASE)
+                    if match:
+                        prop = match.group(1).strip()
+                        break
+                        
+                if orig and prop:
+                    original_text = orig
+                    proposed_text = prop
+                    break
+        
+        # If still not found, look for sections marked with >
+        if not original_text or not proposed_text:
+            # Try to find quoted blocks with > markings (often used in Markdown)
+            quote_blocks = re.findall(r'>\s*(.*?)(?=>\s*|$)', proposal_text, re.DOTALL)
+            if len(quote_blocks) >= 2:
+                # Assume first quote block is original, second is proposed
+                original_text = quote_blocks[0].strip()
+                proposed_text = quote_blocks[1].strip()
+        
+        # Last resort: If still nothing found, look for any text with bullet points or numbered lists
+        if not original_text or not proposed_text:
+            # Try to find sections with bullet points or numbering
+            sections = re.findall(r'(?:\d+\.\s+|\*\s+|-).*?(?=\d+\.\s+|\*\s+|-|$)', proposal_text, re.DOTALL)
+            if len(sections) >= 2:
+                original_text = sections[0].strip()
+                proposed_text = sections[1].strip()
         
         return original_text, proposed_text
     
@@ -96,49 +306,6 @@ class CrossStandardAnalyzerAgent(Agent):
             related_standards[standard_id] = content
         
         return related_standards
-    
-    def _prepare_context(self, standard_id: str, original_text: str, proposed_text: str, related_standards: Dict[str, str]) -> str:
-        """
-        Prepare the context for the agent prompt.
-        
-        Args:
-            standard_id: The ID of the standard being enhanced
-            original_text: The original text from the standard
-            proposed_text: The proposed enhanced text
-            related_standards: Dict of related standards content
-            
-        Returns:
-            Formatted context string for the prompt
-        """
-        context = f"""Please analyze how the proposed enhancement to FAS {standard_id} might impact other AAOIFI standards.
-
-## Current Standard Being Enhanced
-FAS {standard_id}
-
-## Original Text
-{original_text}
-
-## Proposed Enhanced Text
-{proposed_text}
-
-## Related Standards Content"""
-        
-        # Add content from related standards
-        for sid, content in related_standards.items():
-            context += f"\n\n### FAS {sid}\n{content}"
-        
-        context += """
-
-Please provide a detailed cross-standard impact analysis including:
-1. A summary of how the proposed changes might affect other standards
-2. Identification of potential contradictions or inconsistencies
-3. Identification of potential synergies or positive impacts
-4. A compatibility matrix showing the impact level (High/Medium/Low/None) for each standard
-5. Specific recommendations for maintaining consistency across standards
-
-Format the compatibility matrix as a table with columns for Standard ID, Impact Level, and Impact Type (Contradiction/Synergy/Both/None).
-"""
-        return context
     
     def _extract_compatibility_matrix(self, analysis_text: str) -> List[Dict[str, str]]:
         """

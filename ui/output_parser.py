@@ -94,33 +94,44 @@ class OutputParser:
         Returns:
             Tuple of (original_text, proposed_text)
         """
+        # Return early if the proposal text is empty or None
+        if not proposal_text:
+            return "", ""
+            
         # Try to find sections labeled as original/existing and proposed/enhanced
         original_patterns = [
+            # Standard patterns
             r"Original text:(.*?)(?:Proposed text:|$)",
             r"Existing text:(.*?)(?:Proposed text:|$)",
             r"Current text:(.*?)(?:Proposed text:|$)",
             r"Original clause:(.*?)(?:Proposed clause:|$)",
             r"Original section:(.*?)(?:Proposed section:|$)",
-            r"Original Text:(.*?)(?:Proposed Text:|$)",
-            r"Original Modified Text \(3/1/1\):(.*?)(?:Proposed|$)",
-            r"> 3/1/1 (.*?)(?:Proposed|$)",
-            r">\s*3/1/1(.*?)(?:>|$)",
-            r">\s*3/2/1(.*?)(?:>|$)",
-            r">\s*2/2/1(.*?)(?:>|$)"
+            r"Original Text:(.*?)(?:Proposed Text:|Proposed Modified Text:|$)",
+            # Section-specific patterns
+            r"Original Text \(.*?\):(.*?)(?:Proposed|$)",
+            r"\*\*Original Text\*\*\s*(?:\(.*?\))?\s*:(.*?)(?:\*\*Proposed|$)",
+            r"> 3/1/1 (.*?)(?:>|Proposed|$)",
+            r">\s*3/1/1(.*?)(?:>|Proposed|$)",
+            r">\s*3/2/1(.*?)(?:>|Proposed|$)",
+            r">\s*2/2/1(.*?)(?:>|Proposed|$)",
         ]
         
         proposed_patterns = [
+            # Standard patterns
             r"Proposed text:(.*?)(?:Rationale:|$)",
             r"Enhanced text:(.*?)(?:Rationale:|$)",
             r"Modified text:(.*?)(?:Rationale:|$)",
             r"Proposed clause:(.*?)(?:Rationale:|$)",
             r"Proposed section:(.*?)(?:Rationale:|$)",
             r"Proposed Text:(.*?)(?:Rationale:|$)",
-            r"Proposed Modified Text \(3/1/1\):(.*?)(?:Rationale:|$)",
+            r"Proposed Modified Text:(.*?)(?:Rationale:|$)",
+            # Section-specific patterns
+            r"Proposed Modified Text \(.*?\):(.*?)(?:Rationale:|$)",
+            r"\*\*Proposed (?:Modified )?Text\*\*\s*(?:\(.*?\))?\s*:(.*?)(?:\*\*Rationale|$)",
             r"> 3/1/1 An Istisna'a contract is permissible for the creation(.*?)(?:Rationale:|$)",
             r">\s*Modify 3/1/1:(.*?)(?:Modify|$)",
             r">\s*Modify 3/2/1:(.*?)(?:Modify|$)",
-            r">\s*Modify 2/2/1:(.*?)(?:Modify|$)"
+            r">\s*Modify 2/2/1:(.*?)(?:Modify|$)",
         ]
         
         # Try to extract original text
@@ -142,11 +153,11 @@ class OutputParser:
         # Additional processing if we have multiline proposals with numbering
         if not original_text or not proposed_text:
             # Look for proposals with "Enhancement Proposal 1:" style headers
-            proposals = re.findall(r'Enhancement Proposal \d+:(.*?)(?=Enhancement Proposal \d+:|$)', 
-                                 proposal_text, re.DOTALL)
+            proposals = re.findall(r'(?:Enhancement|Proposal) (?:Proposal )?\d+:(.*?)(?=(?:Enhancement|Proposal) (?:Proposal )?\d+:|$)', 
+                                 proposal_text, re.DOTALL | re.IGNORECASE)
             
             if proposals:
-                # For the first proposal, try to find original and proposed text
+                # Try finding original and proposed text in each proposal
                 for proposal in proposals:
                     orig = ""
                     prop = ""
@@ -168,6 +179,70 @@ class OutputParser:
                         original_text = orig
                         proposed_text = prop
                         break
+        
+        # If still not found, look for markdown quote blocks (often used in proposals)
+        if not original_text or not proposed_text:
+            # Find text between markdown quote indicators (>)
+            quote_blocks = re.findall(r'>\s*(.*?)(?=\n[^>]|\Z)', proposal_text, re.DOTALL)
+            
+            if len(quote_blocks) >= 2:
+                # Assume first quote block is original, second is proposed
+                original_text = quote_blocks[0].strip()
+                proposed_text = quote_blocks[1].strip()
+            
+            # Alternatively, check for code blocks (```)
+            if not original_text or not proposed_text:
+                code_blocks = re.findall(r'```(?:\w+)?\n(.*?)```', proposal_text, re.DOTALL)
+                if len(code_blocks) >= 2:
+                    original_text = code_blocks[0].strip()
+                    proposed_text = code_blocks[1].strip()
+        
+        # Last resort: try to extract from "Original" and "Proposed" keywords
+        if not original_text or not proposed_text:
+            # Look for paragraphs or sections that begin with keywords
+            paragraphs = re.split(r'\n\s*\n', proposal_text)
+            
+            for paragraph in paragraphs:
+                if re.match(r'(?:Original|Current|Existing)', paragraph, re.IGNORECASE) and not original_text:
+                    # Extract text after first colon or first line
+                    colon_match = re.search(r':(.*)', paragraph, re.DOTALL)
+                    if colon_match:
+                        original_text = colon_match.group(1).strip()
+                    else:
+                        lines = paragraph.split('\n')
+                        if len(lines) > 1:
+                            original_text = '\n'.join(lines[1:]).strip()
+                            
+                if re.match(r'(?:Proposed|Enhanced|Modified)', paragraph, re.IGNORECASE) and not proposed_text:
+                    # Extract text after first colon or first line
+                    colon_match = re.search(r':(.*)', paragraph, re.DOTALL)
+                    if colon_match:
+                        proposed_text = colon_match.group(1).strip()
+                    else:
+                        lines = paragraph.split('\n')
+                        if len(lines) > 1:
+                            proposed_text = '\n'.join(lines[1:]).strip()
+        
+        # Super fallback: If no extraction worked, log the issue and provide empty strings
+        if not original_text and not proposed_text and proposal_text:
+            print("WARNING: Could not extract original and proposed text from proposal")
+            print(f"First 200 chars of proposal: {proposal_text[:200]}...")
+            
+            # As absolute last resort, try to split the proposal in half
+            if len(proposal_text) > 200:  # Only for reasonably long texts
+                middle = len(proposal_text) // 2
+                # Try to find a paragraph break near the middle
+                paragraph_breaks = [m.start() for m in re.finditer(r'\n\s*\n', proposal_text)]
+                if paragraph_breaks:
+                    # Find the break closest to the middle
+                    middle = min(paragraph_breaks, key=lambda x: abs(x - middle))
+                
+                original_text = proposal_text[:middle].strip()
+                proposed_text = proposal_text[middle:].strip()
+                
+                # Add a note so users know this is a fallback 
+                original_text = "EXTRACTION FALLBACK (may not be accurate):\n\n" + original_text
+                proposed_text = "EXTRACTION FALLBACK (may not be accurate):\n\n" + proposed_text
         
         return original_text, proposed_text
 
@@ -243,7 +318,80 @@ class OutputParser:
         Returns:
             Dictionary with different diff formats and analysis
         """
-        return generate_complete_diff(original_text, proposed_text)
+        # Handle None values
+        if original_text is None:
+            original_text = ""
+        if proposed_text is None:
+            proposed_text = ""
+            
+        # Log warning if texts are empty
+        if not original_text or not proposed_text:
+            print("WARNING: Empty text provided for diff generation")
+            print(f"Original text length: {len(original_text)}")
+            print(f"Proposed text length: {len(proposed_text)}")
+            
+            # Return a minimal result if either text is empty
+            if not original_text and not proposed_text:
+                return {
+                    "word_diff_html": "<div class='diff-warning'>No text available for comparison</div>",
+                    "inline_diff_html": "<div class='diff-warning'>No text available for comparison</div>",
+                    "sentence_diff_html": "<div class='diff-warning'>No text available for comparison</div>",
+                    "stats": {
+                        "words_added": 0,
+                        "words_deleted": 0,
+                        "words_unchanged": 0,
+                        "total_words_original": 0,
+                        "total_words_proposed": 0,
+                        "percent_changed": 0
+                    },
+                    "change_summary": "No text available for comparison"
+                }
+            
+        # Try to import word_diff, fall back to simple diff if not available
+        try:
+            from word_diff import generate_complete_diff
+            return generate_complete_diff(original_text, proposed_text)
+        except ImportError:
+            print("WARNING: word_diff module not available, falling back to simple diff")
+            # Create a simplified diff result with basic HTML
+            simple_diff = OutputParser.format_text_diff(original_text, proposed_text)
+            simple_diff_html = OutputParser.format_diff_html(simple_diff)
+            
+            # Count words as basic stats
+            original_words = len(re.findall(r'\w+', original_text))
+            proposed_words = len(re.findall(r'\w+', proposed_text))
+            
+            return {
+                "word_diff_html": simple_diff_html,
+                "inline_diff_html": simple_diff_html,
+                "sentence_diff_html": simple_diff_html,
+                "stats": {
+                    "words_added": max(0, proposed_words - original_words),
+                    "words_deleted": max(0, original_words - proposed_words),
+                    "words_unchanged": min(original_words, proposed_words),
+                    "total_words_original": original_words,
+                    "total_words_proposed": proposed_words,
+                    "percent_changed": 100 if original_words == 0 else abs(proposed_words - original_words) / original_words * 100
+                },
+                "change_summary": "Basic comparison (word_diff module not available)"
+            }
+        except Exception as e:
+            print(f"ERROR generating diff: {e}")
+            # Return a minimal result with the error message
+            return {
+                "word_diff_html": f"<div class='diff-error'>Error generating diff: {e}</div>",
+                "inline_diff_html": f"<div class='diff-error'>Error generating diff: {e}</div>",
+                "sentence_diff_html": f"<div class='diff-error'>Error generating diff: {e}</div>",
+                "stats": {
+                    "words_added": 0,
+                    "words_deleted": 0,
+                    "words_unchanged": 0,
+                    "total_words_original": len(re.findall(r'\w+', original_text)),
+                    "total_words_proposed": len(re.findall(r'\w+', proposed_text)),
+                    "percent_changed": 0
+                },
+                "change_summary": f"Error: {e}"
+            }
     
     @staticmethod
     def parse_results_from_agents(results: Dict[str, Any]) -> Dict[str, Any]:
@@ -256,33 +404,94 @@ class OutputParser:
         Returns:
             Dictionary with structured sections
         """
-        # Extract key pieces
-        standard_id = results.get("standard_id", "Unknown")
-        trigger_scenario = results.get("trigger_scenario", "")
-        review = results.get("review", "")
-        proposal = results.get("proposal", "")
-        validation = results.get("validation", "")
-        
-        # Extract original and proposed text
-        original_text, proposed_text = OutputParser.extract_original_and_proposed(proposal)
-        
-        # Generate both simple and enhanced diffs
-        simple_diff = OutputParser.format_text_diff(original_text, proposed_text)
-        simple_diff_html = OutputParser.format_diff_html(simple_diff)
-        
-        # Generate enhanced diff using the word_diff module
-        enhanced_diff = OutputParser.generate_enhanced_diff(original_text, proposed_text)
-        
-        # Return structured results
-        return {
-            "standard_id": standard_id,
-            "trigger_scenario": trigger_scenario,
-            "review": review,
-            "proposal": proposal,
-            "validation": validation,
-            "original_text": original_text,
-            "proposed_text": proposed_text,
-            "simple_diff": simple_diff,
-            "simple_diff_html": simple_diff_html,
-            "enhanced_diff": enhanced_diff
-        } 
+        try:
+            # Extract key pieces, providing defaults for missing values
+            standard_id = results.get("standard_id", "Unknown")
+            trigger_scenario = results.get("trigger_scenario", "")
+            review = results.get("review", "")
+            proposal = results.get("proposal", "")
+            validation = results.get("validation", "")
+            
+            # Check for missing critical values and add warnings
+            missing_sections = []
+            if not trigger_scenario:
+                missing_sections.append("trigger_scenario")
+            if not review:
+                missing_sections.append("review")
+            if not proposal:
+                missing_sections.append("proposal")
+            if not validation:
+                missing_sections.append("validation")
+                
+            if missing_sections:
+                warning = f"WARNING: Missing content for: {', '.join(missing_sections)}"
+                print(warning)
+            
+            # Extract original and proposed text, using cache if available
+            if "original_text" in results and "proposed_text" in results:
+                original_text = results.get("original_text", "")
+                proposed_text = results.get("proposed_text", "")
+            else:
+                original_text, proposed_text = OutputParser.extract_original_and_proposed(proposal)
+            
+            # Generate both simple and enhanced diffs
+            # If the diffs are already in the results, use them
+            if "simple_diff" in results and "simple_diff_html" in results:
+                simple_diff = results["simple_diff"]
+                simple_diff_html = results["simple_diff_html"]
+            else:
+                simple_diff = OutputParser.format_text_diff(original_text, proposed_text)
+                simple_diff_html = OutputParser.format_diff_html(simple_diff)
+            
+            # Generate enhanced diff if not already present
+            if "enhanced_diff" not in results:
+                enhanced_diff = OutputParser.generate_enhanced_diff(original_text, proposed_text)
+            else:
+                enhanced_diff = results["enhanced_diff"]
+            
+            # Combine everything into a structured result
+            structured_results = {
+                "standard_id": standard_id,
+                "trigger_scenario": trigger_scenario,
+                "review": review,
+                "proposal": proposal,
+                "validation": validation,
+                "original_text": original_text,
+                "proposed_text": proposed_text,
+                "simple_diff": simple_diff,
+                "simple_diff_html": simple_diff_html,
+                "enhanced_diff": enhanced_diff
+            }
+            
+            # Add any other fields from the original results
+            for key, value in results.items():
+                if key not in structured_results:
+                    structured_results[key] = value
+                    
+            return structured_results
+        except Exception as e:
+            # If parsing fails, return a minimal but valid structure with the error
+            print(f"ERROR parsing results: {e}")
+            return {
+                "standard_id": results.get("standard_id", "Unknown"),
+                "trigger_scenario": results.get("trigger_scenario", ""),
+                "review": results.get("review", f"Error parsing results: {e}"),
+                "proposal": results.get("proposal", ""),
+                "validation": results.get("validation", ""),
+                "original_text": results.get("original_text", ""),
+                "proposed_text": results.get("proposed_text", ""),
+                "simple_diff": "",
+                "simple_diff_html": f"<div class='diff-error'>Error generating diff: {e}</div>",
+                "enhanced_diff": {
+                    "word_diff_html": f"<div class='diff-error'>Error generating diff: {e}</div>",
+                    "stats": {
+                        "words_added": 0,
+                        "words_deleted": 0,
+                        "words_unchanged": 0,
+                        "total_words_original": 0,
+                        "total_words_proposed": 0,
+                        "percent_changed": 0
+                    },
+                    "change_summary": f"Error: {e}"
+                }
+            } 
