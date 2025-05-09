@@ -13,6 +13,7 @@ from components.agents.validator_agent import validator_agent
 from components.agents.transaction_analyzer import transaction_analyzer
 from components.agents.transaction_rationale import transaction_rationale
 from components.agents.knowledge_integration import knowledge_integration
+from components.agents.cross_standard_analyzer import cross_standard_analyzer
 
 # Re-export the base agent class
 from components.agents.base_agent import Agent
@@ -30,6 +31,7 @@ __all__ = [
     "reviewer_agent",
     "proposer_agent",
     "validator_agent",
+    "cross_standard_analyzer",  # Our new agent
     "transaction_analyzer",
     "transaction_rationale",
     "knowledge_integration",
