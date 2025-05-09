@@ -1,0 +1,70 @@
+----- TEST CASE 2: Parallel Istisna'a - Cost Recognition (Bank as Buyer in Parallel, Seller in Main - Seller's Books) -----
+
+On 10 April 2022, Salam Islamic Bank (Al-Sani' in main contract, Al-Mustasni' in parallel)
+entered an Istisna'a contract to deliver specialized equipment to Tech Solutions Inc. for USD 500,000.
+Salam Islamic Bank then entered a parallel Istisna'a contract with Precision Manufacturing Co. (Al-Sani' in parallel)
+to manufacture the equipment for USD 400,000.
+During the year ended 31 December 2022, Precision Manufacturing Co. billed Salam Islamic Bank USD 200,000
+for work completed. Salam Islamic Bank, using the percentage of completion method based on the subcontractor's progress,
+billed Tech Solutions Inc. USD 250,000.
+Provide the entries for Salam Islamic Bank related to the billings.
+            
+
+----- PROCESSING RESULTS -----
+Retrieved 20 context chunks
+
+Sample chunks:
+
+Chunk 1 (excerpt):
+Financial Accounting Standard No. (10): Istisna’a and Parallel Istisna’aFinancial Accounting Standard No. (10): Istisna’a and Parallel Istisna’a
+379379
+Treatments by the Islamic Bank As a Seller (Al-S...
+
+Chunk 2 (excerpt):
+Financial Accounting Standard No. (10): Istisna’a and Parallel Istisna’aFinancial Accounting Standard No. (10): Istisna’a and Parallel Istisna’a
+382382
+Example (2): Parallel Istisna’a Exists: (profita...
+
+Chunk 3 (excerpt):
+Financial Accounting Standard No. (10): Istisna’a and Parallel Istisna’aFinancial Accounting Standard No. (10): Istisna’a and Parallel Istisna’a
+388388
+Appendix (C)Appendix (C)
+Juristic Rules for Isti...
+
+Accounting Guidance:
+**1. Islamic Financial Product Type:** Parallel Istisna'a
+
+**2. Applicable AAOIFI Standard(s):** Financial Accounting Standard (FAS) No. 10: Istisna’a and Parallel Istisna’a
+
+**3. Step-by-Step Calculation Methodology:**
+
+| Calculation Item                | Methodology                                                                 | Amount (USD) | Reference     |
+| :------------------------------ | :-------------------------------------------------------------------------- | :----------- | :------------ |
+| Total Estimated Cost            | Parallel Istisna'a Contract Price                                           | 400,000      | FAS 10 Para 5 |
+| Costs Incurred to Date          | Billed by Subcontractor (Precision Manufacturing Co.)                       | 200,000      | Scenario      |
+| Percentage of Completion        | (Costs Incurred to Date / Total Estimated Cost) * 100                       | 50%          | FAS 10 Para 8 |
+| Total Expected Revenue          | Main Istisna'a Contract Price (Tech Solutions Inc.)                         | 500,000      | Scenario      |
+| Total Expected Profit           | Total Expected Revenue - Total Estimated Cost                               | 100,000      | -             |
+| Recognized Revenue for Year 1   | Total Expected Revenue * Percentage of Completion                           | 250,000      | FAS 10 Para 8 |
+| Recognized Cost of Revenue Y1   | Costs Incurred to Date (Actual costs billed by subcontractor)               | 200,000      | FAS 10 Para 9 |
+| Recognized Profit for Year 1    | Recognized Revenue for Year 1 - Recognized Cost of Revenue for Year 1       | 50,000       | -             |
+
+**4. Journal Entries and Explanations:**
+
+| Date         | Account                                   | Debit (USD) | Credit (USD) | Explanation                                     | Reference     |
+| :----------- | :---------------------------------------- | :---------- | :----------- | :---------------------------------------------- | :------------ |
+| 10 Apr 2022 -31 Dec 2022 | Istisna'a Costs                           | 200,000     |              | To record costs billed by subcontractor.        | FAS 10 Para 5 |
+|              | Istisna'a Accounts Payable (Precision Co.) |             | 200,000      | To recognize liability to subcontractor.        | FAS 10 Para 5 |
+| 10 Apr 2022 -31 Dec 2022 | Istisna'a Accounts Receivable (Tech Inc.) | 250,000     |              | To record amount billed to customer.            | FAS 10 Para 6 |
+|              | Istisna'a Billings                          |             | 250,000      | To record cumulative billings to customer.      | FAS 10 Para 6 |
+| 31 Dec 2022  | Cost of Istisna'a Revenue                 | 200,000     |              | To recognize cost of work completed.            | FAS 10 Para 9 |
+|              | Istisna'a Costs                           | 50,000      |              | To add recognized profit to Istisna'a Costs asset.| FAS 10 Para 17 |
+|              | Istisna'a Revenue                         |             | 250,000      | To recognize revenue based on percentage of completion. | FAS 10 Para 8, 9 |
+
+**5. References to Specific Sections:**
+
+*   **FAS 10 Para 5:** Recording costs billed by the subcontractor to the `Istisna'a Costs` account.
+*   **FAS 10 Para 6:** Recording billings to the ultimate purchaser to `Istisna'a Accounts Receivable` and `Istisna'a Billings`.
+*   **FAS 10 Para 8:** Recognition of revenue using the percentage-of-completion method based on work progress.
+*   **FAS 10 Para 9:** Recognition of the cost of Istisna'a revenue.
+*   **FAS 10 Para 17:** The balance of the `Istisna'a Costs` account includes cumulative costs plus recognized profit.
