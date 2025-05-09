@@ -1,7 +1,0 @@
-The context folder contains the files related ot the hackathon and what is needed , sinpect all of them and given this initial code base , create to be the agent that tries to solve the first challange of the hackathon that is the  Use Case Processor agent , the needed agents for all challanges like the  Orchestrator Agent
-
-Acts as the central coordinator for all agent interactions Routes user queries to appropriate specialized agents Manages the conversation flow and agent collaboration Consolidates outputs from multiple agents into coherent responses
-
-Standards Extractor Agent
-
-Responsible for parsing and extracting key elements from AAOIFI standards Creates structured representations of standards for the knowledge base Identifies relationships between different standards Tags standards with relevant metadata for efficient retrieval should be implemted in the code , and keep a place to add other agents to scale for the other challnges as well ( so when u code consider tht they will be added later , but do not implement them now ,) FOCUS on the use case agent, ingerate the rertirever with the grpah and so on , and give me the nice mutli agentitc archhitecture as decribed 
