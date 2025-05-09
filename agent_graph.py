@@ -2,9 +2,7 @@ from typing import Dict, Any, Tuple, List
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import AIMessage
 from state import State, create_empty_state
-<<<<<<< HEAD
 from agents import orchestrator, standards_extractor, use_case_processor, reviewer_agent, proposer_agent, validator_agent
-=======
 from agents import (
     orchestrator,
     standards_extractor,
@@ -26,7 +24,6 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)],
 )
 import regex as re
->>>>>>> origin/main
 
 
 def route_query(state: State) -> str:
@@ -417,15 +414,8 @@ def integrate_transaction_knowledge(state):
 def build_agent_graph() -> StateGraph:
     """
     Build the multi-agent graph for the Islamic finance standards system.
-<<<<<<< HEAD
     
-    This graph implements workflows between:
-    - Orchestrator Agent - for query routing
-    - Standards Extractor Agent - for extracting information from standards
-    - Use Case Processor Agent - for processing financial scenarios
-    - Standards Enhancement Agents - for enhancing standards
-    
-=======
+ 
 
     This graph implements the workflow between:
     - Orchestrator Agent - for query routing
@@ -435,7 +425,6 @@ def build_agent_graph() -> StateGraph:
     - Transaction Rationale Agent - for explaining standard applicability
     - Knowledge Integration Agent - for integrating transaction analysis with standards
 
->>>>>>> origin/main
     The graph is designed to be extensible for future agent additions.
     """
     # Create the graph with the State type
@@ -456,7 +445,6 @@ def build_agent_graph() -> StateGraph:
 
     # Add special processing nodes
     graph_builder.add_node("extract_standard_ids", extract_standard_ids)
-<<<<<<< HEAD
     graph_builder.add_node("standards_extractor_for_use_case", 
                            lambda state: {**state, "current_flow": "for_use_case"})
     graph_builder.add_node("prepare_standards_for_use_case", prepare_standards_for_use_case)
@@ -469,7 +457,6 @@ def build_agent_graph() -> StateGraph:
     graph_builder.add_node("validator_agent", run_validator_agent)
     graph_builder.add_node("format_enhancement_results", format_enhancement_results)
     
-=======
     graph_builder.add_node(
         "standards_extractor_for_use_case",
         lambda state: {**state, "current_flow": "for_use_case"},
@@ -481,7 +468,6 @@ def build_agent_graph() -> StateGraph:
         "process_use_case_with_standards", process_use_case_with_standards
     )
 
->>>>>>> origin/main
     # Set entry point to the orchestrator
     graph_builder.set_entry_point("orchestrator")
 
@@ -493,15 +479,12 @@ def build_agent_graph() -> StateGraph:
             "use_case_processor": "extract_standard_ids",
             "standards_extractor": "extract_standard_ids",
             "standards_extractor_for_use_case": "extract_standard_ids",
-<<<<<<< HEAD
             "enhancement_workflow": "extract_enhancement_info",
-            END: END
-        }
-=======
-            "transaction_analyzer": "transaction_analyzer",
             END: END,
-        },
->>>>>>> origin/main
+            "transaction_analyzer": "transaction_analyzer",
+         
+        }
+        
     )
 
     # Standard extraction flow
@@ -523,7 +506,6 @@ def build_agent_graph() -> StateGraph:
     # Direct use case processing (without standards extraction)
     graph_builder.add_edge("extract_standard_ids", "use_case_processor")
     graph_builder.add_edge("use_case_processor", END)
-<<<<<<< HEAD
     
     # Standards enhancement workflow
     graph_builder.add_edge("extract_enhancement_info", "reviewer_agent")
@@ -532,7 +514,6 @@ def build_agent_graph() -> StateGraph:
     graph_builder.add_edge("validator_agent", "format_enhancement_results")
     graph_builder.add_edge("format_enhancement_results", END)
     
-=======
 
     # Transaction analyzer flow
     graph_builder.add_edge("transaction_analyzer", "transaction_rationale")
@@ -540,7 +521,6 @@ def build_agent_graph() -> StateGraph:
     graph_builder.add_edge("knowledge_integration", "final_response")
     graph_builder.add_edge("final_response", END)
 
->>>>>>> origin/main
     # Compile the graph
     return graph_builder.compile()
 
