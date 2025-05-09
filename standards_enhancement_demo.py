@@ -7,8 +7,27 @@ with the multi-agent architecture of Reviewer, Proposer, and Validator.
 
 import argparse
 import sys
+import time
+from typing import Optional
 
 from enhancement import run_standards_enhancement, ENHANCEMENT_TEST_CASES, format_results_for_display
+
+
+def progress_callback(phase: str, detail: Optional[str] = None):
+    """Simple callback function to show progress in the terminal."""
+    if phase == "review_start":
+        print("\n[PROGRESS] Starting review phase...")
+    elif phase == "review_complete":
+        print("[PROGRESS] Review phase completed")
+        print("[PROGRESS] Starting proposal phase...")
+    elif phase == "proposal_complete":
+        print("[PROGRESS] Proposal phase completed")
+        print("[PROGRESS] Starting validation phase...")
+    elif phase == "validation_complete":
+        print("[PROGRESS] Validation phase completed")
+    
+    if detail:
+        print(f"[DETAIL] {detail}")
 
 
 def run_demo_with_test_case(test_case_index):
@@ -24,8 +43,12 @@ def run_demo_with_test_case(test_case_index):
     print(f"Running Standards Enhancement for: {case['name']} (FAS {case['standard_id']})")
     print("="*80)
     
-    # Run the enhancement process
-    results = run_standards_enhancement(case['standard_id'], case['trigger_scenario'])
+    # Run the enhancement process with progress callback
+    results = run_standards_enhancement(
+        case['standard_id'], 
+        case['trigger_scenario'],
+        progress_callback
+    )
     
     # Display the results
     formatted_results = format_results_for_display(results)
@@ -95,7 +118,8 @@ def run_custom_demo():
     print(f"Running Standards Enhancement for custom scenario (FAS {standard_id})")
     print("="*80)
     
-    results = run_standards_enhancement(standard_id, trigger_scenario)
+    # Run with progress callback
+    results = run_standards_enhancement(standard_id, trigger_scenario, progress_callback)
     
     # Display the results
     formatted_results = format_results_for_display(results)

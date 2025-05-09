@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional, Callable
 from langchain_core.messages import AIMessage
 
 from agents import reviewer_agent, proposer_agent, validator_agent
@@ -28,17 +28,37 @@ ENHANCEMENT_TEST_CASES = [
         "trigger_scenario": """Islamic financial institutions are increasingly issuing 'Green Sukuk' to fund 
                               environmentally sustainable projects, but FAS 32 lacks specific guidance on how to account 
                               for and report environmental impact metrics alongside financial returns."""
+    },
+    {
+        "name": "Digital Banking Services in Ijarah",
+        "standard_id": "28",
+        "trigger_scenario": """Islamic banks are offering digital banking services through cloud-based infrastructure 
+                              leased through Ijarah arrangements. FAS 28 needs enhancement to address how to classify, 
+                              recognize, and measure these digital service agreements which may include both tangible 
+                              and intangible components."""
+    },
+    {
+        "name": "Cryptocurrency Zakat Calculation",
+        "standard_id": "7",
+        "trigger_scenario": """Islamic financial institutions holding cryptocurrencies as assets need guidance on how 
+                              to calculate and distribute Zakat on these volatile digital assets. The current FAS 7 
+                              doesn't address value fluctuations and verification methods specific to crypto assets."""
     }
 ]
 
 
-def run_standards_enhancement(standard_id: str, trigger_scenario: str) -> Dict[str, Any]:
+def run_standards_enhancement(
+    standard_id: str, 
+    trigger_scenario: str,
+    progress_callback: Optional[Callable[[str, str], None]] = None
+) -> Dict[str, Any]:
     """
     Run the standards enhancement process with the three specialized agents.
     
     Args:
         standard_id: The ID of the standard to enhance (e.g., "10" for FAS 10)
         trigger_scenario: The scenario that triggers the need for enhancement
+        progress_callback: Optional callback function to report progress
         
     Returns:
         Dict with the enhancement results including:
@@ -50,17 +70,33 @@ def run_standards_enhancement(standard_id: str, trigger_scenario: str) -> Dict[s
     print(f"Starting enhancement process for FAS {standard_id}...")
     print(f"Trigger scenario: {trigger_scenario}")
     
+    # Report progress: starting review
+    if progress_callback:
+        progress_callback("review_start", "Starting review phase")
+    
     # Step 1: Reviewer Agent - Extract and analyze standard
     print("\nStep 1: Reviewing standard and identifying enhancement areas...")
     review_result = reviewer_agent.extract_standard_elements(standard_id, trigger_scenario)
+    
+    # Report progress: review complete, starting proposal
+    if progress_callback:
+        progress_callback("review_complete", "Review phase completed")
     
     # Step 2: Proposer Agent - Generate enhancement proposals
     print("\nStep 2: Generating enhancement proposals...")
     proposal_result = proposer_agent.generate_enhancement_proposal(review_result)
     
+    # Report progress: proposal complete, starting validation
+    if progress_callback:
+        progress_callback("proposal_complete", "Proposal phase completed")
+    
     # Step 3: Validator Agent - Validate proposals
     print("\nStep 3: Validating enhancement proposals...")
     validation_result = validator_agent.validate_proposal(proposal_result)
+    
+    # Report progress: validation complete
+    if progress_callback:
+        progress_callback("validation_complete", "Validation phase completed")
     
     # Compile final results
     return {
@@ -107,6 +143,44 @@ def format_results_for_display(results: Dict[str, Any]) -> str:
     output.append(results['validation'])
     
     return "\n".join(output)
+
+
+def find_test_case_by_keyword(keyword: str) -> Dict[str, Any]:
+    """
+    Find a test case by matching a keyword in the name or scenario.
+    
+    Args:
+        keyword: The keyword to search for
+        
+    Returns:
+        The matching test case or the first test case if no match
+    """
+    keyword = keyword.lower()
+    
+    for case in ENHANCEMENT_TEST_CASES:
+        if (keyword in case["name"].lower() or 
+            keyword in case["trigger_scenario"].lower()):
+            return case
+    
+    # If no match found, return the first test case
+    return ENHANCEMENT_TEST_CASES[0]
+
+
+def get_test_case_by_standard_id(standard_id: str) -> Dict[str, Any]:
+    """
+    Find a test case that matches the given standard ID.
+    
+    Args:
+        standard_id: The standard ID to search for (e.g., "10")
+        
+    Returns:
+        The matching test case or None if no match
+    """
+    for case in ENHANCEMENT_TEST_CASES:
+        if case["standard_id"] == standard_id:
+            return case
+    
+    return None
 
 
 def run_enhancement_demo():
