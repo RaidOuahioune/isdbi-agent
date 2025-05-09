@@ -1,5 +1,6 @@
 import re
 from typing import Tuple, Dict, Any
+from word_diff import generate_complete_diff
 
 class OutputParser:
     """Parser for agent output files and enhancement results"""
@@ -199,67 +200,89 @@ class OutputParser:
         # Add the proposed text with plus signs
         for line in proposed_text.split('\n'):
             diff_lines.append(f"+ {line}")
-        
-        return '\n'.join(diff_lines)
-        
+            
+        return "\n".join(diff_lines)
+    
     @staticmethod
     def format_diff_html(diff_text: str) -> str:
         """
-        Format diff text with HTML styling for better display.
+        Convert a simple diff format to HTML for display.
         
         Args:
-            diff_text: Text containing the diff
+            diff_text: Text in diff format with +/- signs
             
         Returns:
-            HTML-formatted diff for display
+            HTML formatted diff
         """
         if not diff_text:
-            return "No diff available"
+            return ""
+            
+        html_lines = []
         
-        html = []
         for line in diff_text.split('\n'):
-            if line.startswith('+'):
-                html.append(f'<div class="addition">{line}</div>')
-            elif line.startswith('-'):
-                html.append(f'<div class="deletion">{line}</div>')
+            if line.startswith('---') or line.startswith('+++') or line.startswith('@@'):
+                html_lines.append(f"<div class='diff-header'>{line}</div>")
+            elif line.startswith('- '):
+                html_lines.append(f"<div class='deletion'>{line[2:]}</div>")
+            elif line.startswith('+ '):
+                html_lines.append(f"<div class='addition'>{line[2:]}</div>")
             else:
-                html.append(f'<div>{line}</div>')
+                html_lines.append(f"<div>{line}</div>")
+                
+        return "\n".join(html_lines)
+    
+    @staticmethod
+    def generate_enhanced_diff(original_text: str, proposed_text: str) -> Dict[str, Any]:
+        """
+        Generate enhanced diff between original and proposed text using the word_diff module.
         
-        return ''.join(html)
+        Args:
+            original_text: The original standard text
+            proposed_text: The proposed enhancement
+            
+        Returns:
+            Dictionary with different diff formats and analysis
+        """
+        return generate_complete_diff(original_text, proposed_text)
     
     @staticmethod
     def parse_results_from_agents(results: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Parse results directly from the agents output.
+        Parse the results from the agents into a structure suitable for display.
         
         Args:
-            results: The raw results dictionary from run_standards_enhancement
+            results: The raw results from the enhancement process
             
         Returns:
-            Dict with properly parsed sections
+            Dictionary with structured sections
         """
-        # First format the results as markdown
-        # This typically comes from enhancement.format_results_for_display
-        output = []
+        # Extract key pieces
+        standard_id = results.get("standard_id", "Unknown")
+        trigger_scenario = results.get("trigger_scenario", "")
+        review = results.get("review", "")
+        proposal = results.get("proposal", "")
+        validation = results.get("validation", "")
         
-        # Header information
-        output.append(f"# Standards Enhancement Results for FAS {results['standard_id']}")
-        output.append("\n## Trigger Scenario")
-        output.append(results['trigger_scenario'])
+        # Extract original and proposed text
+        original_text, proposed_text = OutputParser.extract_original_and_proposed(proposal)
         
-        # Review findings
-        output.append("\n## Review Findings")
-        output.append(results['review'])
+        # Generate both simple and enhanced diffs
+        simple_diff = OutputParser.format_text_diff(original_text, proposed_text)
+        simple_diff_html = OutputParser.format_diff_html(simple_diff)
         
-        # Proposed enhancements
-        output.append("\n## Proposed Enhancements")
-        output.append(results['proposal'])
+        # Generate enhanced diff using the word_diff module
+        enhanced_diff = OutputParser.generate_enhanced_diff(original_text, proposed_text)
         
-        # Validation results
-        output.append("\n## Validation Results")
-        output.append(results['validation'])
-        
-        formatted_output = "\n".join(output)
-        
-        # Now parse the formatted output
-        return OutputParser.parse_markdown_sections(formatted_output) 
+        # Return structured results
+        return {
+            "standard_id": standard_id,
+            "trigger_scenario": trigger_scenario,
+            "review": review,
+            "proposal": proposal,
+            "validation": validation,
+            "original_text": original_text,
+            "proposed_text": proposed_text,
+            "simple_diff": simple_diff,
+            "simple_diff_html": simple_diff_html,
+            "enhanced_diff": enhanced_diff
+        } 

@@ -1,7 +1,7 @@
 from typing import Dict, Any, List, Optional, Callable
 from langchain_core.messages import AIMessage
 
-from agents import reviewer_agent, proposer_agent, validator_agent
+from agents import reviewer_agent, proposer_agent, validator_agent, cross_standard_analyzer
 
 
 # Define test cases for standards enhancement
@@ -50,7 +50,8 @@ ENHANCEMENT_TEST_CASES = [
 def run_standards_enhancement(
     standard_id: str, 
     trigger_scenario: str,
-    progress_callback: Optional[Callable[[str, str], None]] = None
+    progress_callback: Optional[Callable[[str, str], None]] = None,
+    include_cross_standard_analysis: bool = True  # New parameter to control cross-standard analysis
 ) -> Dict[str, Any]:
     """
     Run the standards enhancement process with the three specialized agents.
@@ -59,6 +60,7 @@ def run_standards_enhancement(
         standard_id: The ID of the standard to enhance (e.g., "10" for FAS 10)
         trigger_scenario: The scenario that triggers the need for enhancement
         progress_callback: Optional callback function to report progress
+        include_cross_standard_analysis: Whether to include cross-standard impact analysis
         
     Returns:
         Dict with the enhancement results including:
@@ -66,6 +68,7 @@ def run_standards_enhancement(
         - Identified issues
         - Proposed enhancements
         - Validation results
+        - Cross-standard impact analysis (if enabled)
     """
     print(f"Starting enhancement process for FAS {standard_id}...")
     print(f"Trigger scenario: {trigger_scenario}")
@@ -98,8 +101,8 @@ def run_standards_enhancement(
     if progress_callback:
         progress_callback("validation_complete", "Validation phase completed")
     
-    # Compile final results
-    return {
+    # Compile initial results
+    results = {
         "standard_id": standard_id,
         "trigger_scenario": trigger_scenario,
         "review": review_result["review_analysis"],
@@ -111,6 +114,24 @@ def run_standards_enhancement(
             "validation_result": validation_result
         }
     }
+    
+    # Step 4 (Optional): Cross-Standard Impact Analyzer
+    if include_cross_standard_analysis:
+        if progress_callback:
+            progress_callback("cross_analysis_start", "Starting cross-standard impact analysis")
+            
+        print("\nStep 4: Analyzing cross-standard impacts...")
+        cross_analysis_result = cross_standard_analyzer.analyze_cross_standard_impact(results)
+        
+        if progress_callback:
+            progress_callback("cross_analysis_complete", "Cross-standard analysis completed")
+            
+        # Add cross-standard analysis to the results
+        results["cross_standard_analysis"] = cross_analysis_result["cross_standard_analysis"]
+        results["compatibility_matrix"] = cross_analysis_result["compatibility_matrix"]
+        results["full_results"]["cross_analysis_result"] = cross_analysis_result
+    
+    return results
 
 
 def format_results_for_display(results: Dict[str, Any]) -> str:
@@ -141,6 +162,11 @@ def format_results_for_display(results: Dict[str, Any]) -> str:
     # Validation results
     output.append("\n## Validation Results")
     output.append(results['validation'])
+    
+    # Add cross-standard analysis if available
+    if "cross_standard_analysis" in results:
+        output.append("\n## Cross-Standard Impact Analysis")
+        output.append(results['cross_standard_analysis'])
     
     return "\n".join(output)
 
@@ -214,8 +240,12 @@ def run_enhancement_demo():
             standard_id = "10"
             trigger = ENHANCEMENT_TEST_CASES[0]['trigger_scenario']
     
+    # Ask if cross-standard analysis should be included
+    include_cross = input("Include cross-standard impact analysis? (y/n, default: y): ").lower()
+    include_cross_analysis = False if include_cross == 'n' else True
+    
     # Run enhancement
-    result = run_standards_enhancement(standard_id, trigger)
+    result = run_standards_enhancement(standard_id, trigger, include_cross_standard_analysis=include_cross_analysis)
     
     # Display formatted results
     formatted_results = format_results_for_display(result)

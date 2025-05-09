@@ -6,6 +6,7 @@ import re
 import json
 import datetime
 from pathlib import Path
+import pandas as pd
 
 # Add the parent directory to the path so we can import from the main project
 sys.path.append(str(Path(__file__).parent.parent))
@@ -74,16 +75,44 @@ st.markdown("""
     .addition {
         background-color: #dcfce7;
         color: #166534;
-        display: block;
+        display: inline;
         border-radius: 3px;
-        margin: 2px 0;
+        padding: 0 2px;
     }
     .deletion {
         background-color: #fee2e2;
         color: #991b1b;
-        display: block;
+        display: inline;
         border-radius: 3px;
-        margin: 2px 0;
+        padding: 0 2px;
+    }
+    .diff-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        background-color: #f1f5f9;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+    }
+    .diff-stat-item {
+        text-align: center;
+        padding: 0 0.5rem;
+    }
+    .diff-stat-value {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+    .diff-stat-label {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+    .diff-header {
+        font-weight: bold;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+    }
+    .diff-tabs {
+        margin-bottom: 1rem;
     }
     .loading-text {
         color: #4b5563;
@@ -105,6 +134,56 @@ st.markdown("""
         border-radius: 0.5rem;
         margin-bottom: 1rem;
         border-left: 5px solid #6366f1;
+    }
+    .cross-standard-container {
+        background-color: #eef2ff;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border-left: 5px solid #818cf8;
+        margin-bottom: 1rem;
+    }
+    .compatibility-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-family: Arial, sans-serif;
+    }
+    .compatibility-table th {
+        background-color: #f1f5f9;
+        padding: 12px 15px;
+        text-align: left;
+        border: 1px solid #e2e8f0;
+    }
+    .compatibility-table td {
+        padding: 12px 15px;
+        border: 1px solid #e2e8f0;
+    }
+    .impact-high {
+        font-weight: bold;
+        color: #dc2626;
+    }
+    .impact-medium {
+        font-weight: bold;
+        color: #d97706;
+    }
+    .impact-low {
+        font-weight: bold;
+        color: #059669;
+    }
+    .impact-none {
+        color: #6b7280;
+    }
+    .contradiction {
+        background-color: #fee2e2;
+    }
+    .synergy {
+        background-color: #d1fae5;
+    }
+    .both {
+        background-color: #fff7ed;
+    }
+    .none {
+        background-color: #f3f4f6;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -198,183 +277,195 @@ def display_results(results):
         st.header(f"Standards Enhancement Results for FAS {results['standard_id']}")
         
         st.subheader("Trigger Scenario")
-        st.write(results['trigger_scenario'])
+        st.write(results["trigger_scenario"])
         
-        st.subheader("Summary")
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Standard", f"FAS {results['standard_id']}")
-        with col2:
-            # Extract validator decision
-            validation_text = results['validation']
-            decision = "PENDING"
-            if "APPROVED" in validation_text:
-                decision = "APPROVED ✅"
-            elif "REJECTED" in validation_text:
-                decision = "REJECTED ❌"
-            elif "NEEDS REVISION" in validation_text:
-                decision = "NEEDS REVISION ⚠️"
-            st.metric("Decision", decision)
-        with col3:
-            # Count the number of proposed changes
-            original_text, proposed_text = OutputParser.extract_original_and_proposed(results['proposal'])
-            if original_text and proposed_text:
-                diff_lines = OutputParser.format_text_diff(original_text, proposed_text).count('\n')
-                st.metric("Changes", f"{diff_lines} lines")
+        if "enhanced_diff" in results and results["enhanced_diff"]["stats"]:
+            stats = results["enhanced_diff"]["stats"]
+            change_summary = results["enhanced_diff"].get("change_summary", "")
+            
+            if change_summary:
+                st.info(f"**Change Summary**: {change_summary}")
+                
+            # Create columns for stats
+            cols = st.columns(5)
+            with cols[0]:
+                st.metric("Words Added", stats.get("words_added", 0))
+            with cols[1]:
+                st.metric("Words Deleted", stats.get("words_deleted", 0))
+            with cols[2]:
+                st.metric("Words Unchanged", stats.get("words_unchanged", 0))
+            with cols[3]:
+                st.metric("Original Words", stats.get("total_words_original", 0))
+            with cols[4]:
+                pct = round(stats.get("percent_changed", 0), 1)
+                st.metric("% Changed", f"{pct}%")
+        
+        st.subheader("Key Findings")
+        
+        # Extract and display key findings from review
+        if "review" in results:
+            review_text = results["review"]
+            # Extract bullet points or numbered lists
+            bullets = re.findall(r'(?:^|\n)[\*\-\d\.]+\s+(.*?)(?=\n[\*\-\d\.]+\s+|\Z)', review_text, re.DOTALL)
+            
+            if bullets:
+                for bullet in bullets[:3]:  # Show top 3 findings
+                    st.markdown(f"- {bullet.strip()}")
+                if len(bullets) > 3:
+                    st.markdown(f"- *Plus {len(bullets) - 3} more findings...*")
             else:
-                st.metric("Changes", "Unknown")
+                # If no bullet points, show first paragraph
+                first_para = review_text.split('\n\n')[0] if '\n\n' in review_text else review_text
+                st.write(first_para)
     
     # Review Analysis Tab
     with tabs[1]:
-        st.header("Review Analysis")
-        st.markdown(f"""
-        <div class="review-container">
-            {results['review']}
-        </div>
-        """, unsafe_allow_html=True)
+        st.header("Review Findings")
+        st.markdown(f'<div class="review-container">{results["review"]}</div>', unsafe_allow_html=True)
     
     # Proposed Changes Tab
     with tabs[2]:
         st.header("Proposed Enhancements")
-        st.markdown(f"""
-        <div class="proposal-container">
-            {results['proposal']}
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f'<div class="proposal-container">{results["proposal"]}</div>', unsafe_allow_html=True)
+        
+        if "original_text" in results and "proposed_text" in results:
+            st.subheader("Original vs. Proposed Text")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("**Original Text:**")
+                st.markdown(f'<div class="diff-container">{results["original_text"]}</div>', unsafe_allow_html=True)
+            with col2:
+                st.markdown("**Proposed Text:**")
+                st.markdown(f'<div class="diff-container">{results["proposed_text"]}</div>', unsafe_allow_html=True)
     
     # Diff View Tab
     with tabs[3]:
-        st.header("Visual Diff of Changes")
-        original_text, proposed_text = OutputParser.extract_original_and_proposed(results['proposal'])
-        if original_text and proposed_text:
-            diff_text = OutputParser.format_text_diff(original_text, proposed_text)
-            st.markdown(f"""
-            <div class="diff-container">
-                {OutputParser.format_diff_html(diff_text)}
-            </div>
-            """, unsafe_allow_html=True)
+        st.header("Text Differences")
+        
+        if "enhanced_diff" in results:
+            # Create tabs for different diff views
+            diff_tabs = st.tabs(["Word-by-Word", "Inline View", "Sentence Level", "Standard Diff"])
             
-            # Side-by-side comparison
-            st.subheader("Side-by-Side Comparison")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("#### Original Text")
-                st.text_area("", original_text, height=300, key="original_text", disabled=True)
-            with col2:
-                st.markdown("#### Proposed Text")
-                st.text_area("", proposed_text, height=300, key="proposed_text", disabled=True)
+            # Word-by-Word Diff Tab
+            with diff_tabs[0]:
+                st.markdown("### Word-by-Word Comparison")
+                st.markdown("This view shows each word-level change with additions in green and deletions in red.")
+                
+                # Display diff stats
+                if "stats" in results["enhanced_diff"]:
+                    stats = results["enhanced_diff"]["stats"]
+                    st.markdown(
+                        f'<div class="diff-stats">'
+                        f'<div class="diff-stat-item">'
+                        f'<div class="diff-stat-value">{stats.get("words_added", 0)}</div>'
+                        f'<div class="diff-stat-label">Words Added</div>'
+                        f'</div>'
+                        f'<div class="diff-stat-item">'
+                        f'<div class="diff-stat-value">{stats.get("words_deleted", 0)}</div>'
+                        f'<div class="diff-stat-label">Words Deleted</div>'
+                        f'</div>'
+                        f'<div class="diff-stat-item">'
+                        f'<div class="diff-stat-value">{stats.get("words_unchanged", 0)}</div>'
+                        f'<div class="diff-stat-label">Words Unchanged</div>'
+                        f'</div>'
+                        f'<div class="diff-stat-item">'
+                        f'<div class="diff-stat-value">{round(stats.get("percent_changed", 0), 1)}%</div>'
+                        f'<div class="diff-stat-label">Changed</div>'
+                        f'</div>'
+                        f'</div>',
+                        unsafe_allow_html=True
+                    )
+                
+                # Display word diff
+                if "word_diff_html" in results["enhanced_diff"]:
+                    st.markdown(
+                        f'<div class="diff-container">{results["enhanced_diff"]["word_diff_html"]}</div>',
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.warning("Word-by-word diff not available")
+            
+            # Inline View Tab
+            with diff_tabs[1]:
+                st.markdown("### Inline Diff")
+                st.markdown("This view shows changes inline with character-level precision.")
+                
+                # Display inline diff
+                if "inline_diff_html" in results["enhanced_diff"]:
+                    st.markdown(
+                        f'<div class="diff-container">{results["enhanced_diff"]["inline_diff_html"]}</div>',
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.warning("Inline diff not available")
+            
+            # Sentence Level Tab
+            with diff_tabs[2]:
+                st.markdown("### Sentence-Level Comparison")
+                st.markdown("This view compares entire sentences to show changes at a higher level.")
+                
+                # Display sentence diff
+                if "sentence_diff_html" in results["enhanced_diff"]:
+                    st.markdown(
+                        f'<div class="diff-container">{results["enhanced_diff"]["sentence_diff_html"]}</div>',
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.warning("Sentence-level diff not available")
+            
+            # Standard Diff Tab
+            with diff_tabs[3]:
+                st.markdown("### Standard Diff")
+                st.markdown("This is a traditional line-by-line diff format.")
+                
+                if "simple_diff_html" in results:
+                    st.markdown(
+                        f'<div class="diff-container">{results["simple_diff_html"]}</div>',
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.warning("Standard diff not available")
+        
         else:
-            st.warning("Could not extract clear original and proposed text sections for visualization. Please check the Proposed Changes tab for the full enhancement details.")
+            # Fallback to simple diff if enhanced diff is not available
+            if "simple_diff_html" in results:
+                st.markdown("### Text Differences")
+                st.markdown(
+                    f'<div class="diff-container">{results["simple_diff_html"]}</div>',
+                    unsafe_allow_html=True
+                )
+            else:
+                st.warning("No diff visualization available")
     
     # Validation Tab
     with tabs[4]:
         st.header("Validation Results")
-        st.markdown(f"""
-        <div class="validation-container">
-            {results['validation']}
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # Add export functionality
-    st.subheader("Export Results")
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Export as Markdown", key="export_md", type="primary"):
-            markdown_content = f"""# Standards Enhancement Results for FAS {results['standard_id']}
-
-## Trigger Scenario
-{results['trigger_scenario']}
-
-## Review Findings
-{results['review']}
-
-## Proposed Enhancements
-{results['proposal']}
-
-## Validation Results
-{results['validation']}
-"""
-            st.download_button(
-                label="Download Markdown File",
-                data=markdown_content,
-                file_name=f"enhancement_fas{results['standard_id']}.md",
-                mime="text/markdown",
-            )
-    
-    with col2:
-        if st.button("Export as HTML Report", key="export_html", type="primary"):
-            original_text, proposed_text = OutputParser.extract_original_and_proposed(results['proposal'])
-            
-            # Create a simple HTML report
-            html_content = f"""<!DOCTYPE html>
-<html>
-<head>
-    <title>Standards Enhancement Report - FAS {results['standard_id']}</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }}
-        h1 {{ color: #1e3a8a; }}
-        h2 {{ color: #2563eb; margin-top: 20px; }}
-        .review-section {{ background-color: #f0f9ff; padding: 15px; border-radius: 5px; border-left: 5px solid #3b82f6; margin-bottom: 20px; }}
-        .proposal-section {{ background-color: #f0fdf4; padding: 15px; border-radius: 5px; border-left: 5px solid #22c55e; margin-bottom: 20px; }}
-        .validation-section {{ background-color: #fff7ed; padding: 15px; border-radius: 5px; border-left: 5px solid #f59e0b; margin-bottom: 20px; }}
-        .scenario-section {{ background-color: #f8fafc; padding: 15px; border-radius: 5px; border: 1px solid #e2e8f0; margin-bottom: 20px; }}
-        pre {{ white-space: pre-wrap; }}
-        .addition {{ color: #166534; background-color: #dcfce7; padding: 2px; }}
-        .deletion {{ color: #991b1b; background-color: #fee2e2; padding: 2px; }}
-    </style>
-</head>
-<body>
-    <h1>Standards Enhancement Report - FAS {results['standard_id']}</h1>
-    
-    <h2>Trigger Scenario</h2>
-    <div class="scenario-section">
-        <p>{results['trigger_scenario']}</p>
-    </div>
-    
-    <h2>Review Findings</h2>
-    <div class="review-section">
-        {results['review']}
-    </div>
-    
-    <h2>Proposed Enhancements</h2>
-    <div class="proposal-section">
-        {results['proposal']}
-    </div>
-    """
-            
-            # Add comparison section if we have original and proposed text
-            if original_text and proposed_text:
-                html_content += f"""
-    <h2>Text Comparison</h2>
-    <div>
-        <h3>Original Text</h3>
-        <pre>{original_text}</pre>
         
-        <h3>Proposed Text</h3>
-        <pre>{proposed_text}</pre>
-    </div>
-    """
-            
-            # Complete the HTML
-            html_content += f"""    
-    <h2>Validation Results</h2>
-    <div class="validation-section">
-        {results['validation']}
-    </div>
-    
-    <hr>
-    <footer>
-        <p><small>Generated by AAOIFI Standards Enhancement System - {datetime.datetime.now().strftime("%Y-%m-%d")}</small></p>
-    </footer>
-</body>
-</html>"""
-            
-            st.download_button(
-                label="Download HTML Report",
-                data=html_content,
-                file_name=f"enhancement_report_fas{results['standard_id']}.html",
-                mime="text/html",
-            )
+        # Try to extract validation decision
+        decision = "Undetermined"
+        if "validation" in results:
+            validation_text = results["validation"]
+            if "APPROVED" in validation_text:
+                decision = "APPROVED"
+                decision_color = "green"
+            elif "REJECTED" in validation_text:
+                decision = "REJECTED"
+                decision_color = "red"
+            elif "NEEDS REVISION" in validation_text:
+                decision = "NEEDS REVISION"
+                decision_color = "orange"
+        
+        # Display decision prominently
+        st.markdown(
+            f'<div style="background-color: {decision_color}; color: white; padding: 1rem; '
+            f'border-radius: 0.5rem; font-weight: bold; text-align: center; margin-bottom: 1rem;">'
+            f'Decision: {decision}'
+            f'</div>',
+            unsafe_allow_html=True
+        )
+        
+        # Display full validation text
+        st.markdown(f'<div class="validation-container">{results["validation"]}</div>', unsafe_allow_html=True)
 
 def display_past_enhancement(enhancement_data):
     """Display a past enhancement from loaded data."""
@@ -396,6 +487,13 @@ def main():
     
     # Sidebar for navigation
     st.sidebar.title("Enhancement Options")
+    
+    # Add cross-standard impact analysis parameter to the sidebar
+    include_cross_standard = st.sidebar.checkbox(
+        "Include Cross-Standard Impact Analysis", 
+        value=True, 
+        help="Analyze how the enhancement might impact other related standards"
+    )
     
     # Choose between new enhancement and past enhancements
     mode = st.sidebar.radio(
@@ -450,15 +548,423 @@ def main():
                 st.error("Please provide a trigger scenario before starting the enhancement process.")
             else:
                 with st.spinner("Running enhancement process..."):
-                    results = run_enhancement_with_progress(standard_id, trigger_scenario)
+                    # Create progress container
+                    progress_container = st.empty()
+                    status_text = st.empty()
+                    
+                    # Define progress callback
+                    def progress_callback(phase, detail=None):
+                        if phase == "review_start":
+                            progress_container.progress(0.1)
+                            status_text.text("Reviewing standard and identifying enhancement areas...")
+                        elif phase == "review_complete":
+                            progress_container.progress(0.3)
+                            status_text.text("Generating enhancement proposals...")
+                        elif phase == "proposal_complete":
+                            progress_container.progress(0.5)
+                            status_text.text("Validating proposals against Shariah principles...")
+                        elif phase == "validation_complete":
+                            progress_container.progress(0.7)
+                            status_text.text("Validation complete")
+                            if include_cross_standard:
+                                status_text.text("Analyzing cross-standard impacts...")
+                        elif phase == "cross_analysis_start":
+                            progress_container.progress(0.8)
+                            status_text.text("Analyzing impacts on other standards...")
+                        elif phase == "cross_analysis_complete":
+                            progress_container.progress(1.0)
+                            status_text.text("Enhancement process completed!")
+                    
+                    # Run the enhancement process
+                    results = run_standards_enhancement(
+                        standard_id, 
+                        trigger_scenario, 
+                        progress_callback=progress_callback,
+                        include_cross_standard_analysis=include_cross_standard
+                    )
+                    
+                    # Complete the progress bar
+                    progress_container.progress(1.0)
+                    status_text.text("Enhancement process completed!")
+                    time.sleep(0.5)
+                    
+                    # Clear progress indicators
+                    progress_container.empty()
+                    status_text.empty()
+                    
+                    # Update the session state
                     st.session_state.results = results
                     
                     # Success message
-                    st.success("Enhancement process completed successfully!")
+                    st.success("Standards enhancement completed successfully!")
         
         # Display results if available
         if st.session_state.results:
-            display_results(st.session_state.results)
+            results = st.session_state.results
+            
+            # Create tabs for displaying results
+            tabs = ["Overview", "Review Analysis", "Proposed Changes", "Diff View", "Validation"]
+            
+            # Add cross-standard impact tab if the analysis is available
+            if "cross_standard_analysis" in results:
+                tabs.append("Cross-Standard Impact")
+            
+            tab_overview, tab_review, tab_proposal, tab_validation, *extra_tabs = st.tabs(tabs)
+            
+            # Overview Tab
+            with tab_overview:
+                st.header(f"Standards Enhancement Results for FAS {results['standard_id']}")
+                
+                st.subheader("Trigger Scenario")
+                st.write(results["trigger_scenario"])
+                
+                if "enhanced_diff" in results and results["enhanced_diff"]["stats"]:
+                    stats = results["enhanced_diff"]["stats"]
+                    change_summary = results["enhanced_diff"].get("change_summary", "")
+                    
+                    if change_summary:
+                        st.info(f"**Change Summary**: {change_summary}")
+                        
+                    # Create columns for stats
+                    cols = st.columns(5)
+                    with cols[0]:
+                        st.metric("Words Added", stats.get("words_added", 0))
+                    with cols[1]:
+                        st.metric("Words Deleted", stats.get("words_deleted", 0))
+                    with cols[2]:
+                        st.metric("Words Unchanged", stats.get("words_unchanged", 0))
+                    with cols[3]:
+                        st.metric("Original Words", stats.get("total_words_original", 0))
+                    with cols[4]:
+                        pct = round(stats.get("percent_changed", 0), 1)
+                        st.metric("% Changed", f"{pct}%")
+                
+                st.subheader("Key Findings")
+                
+                # Extract and display key findings from review
+                if "review" in results:
+                    review_text = results["review"]
+                    # Extract bullet points or numbered lists
+                    bullets = re.findall(r'(?:^|\n)[\*\-\d\.]+\s+(.*?)(?=\n[\*\-\d\.]+\s+|\Z)', review_text, re.DOTALL)
+                    
+                    if bullets:
+                        for bullet in bullets[:3]:  # Show top 3 findings
+                            st.markdown(f"- {bullet.strip()}")
+                        if len(bullets) > 3:
+                            st.markdown(f"- *Plus {len(bullets) - 3} more findings...*")
+                    else:
+                        # If no bullet points, show first paragraph
+                        first_para = review_text.split('\n\n')[0] if '\n\n' in review_text else review_text
+                        st.write(first_para)
+                
+                # Add cross-standard impact summary to overview if available
+                if "cross_standard_analysis" in results and "compatibility_matrix" in results:
+                    st.subheader("Cross-Standard Impact Summary")
+                    
+                    # Try to extract a summary from the analysis
+                    analysis_text = results["cross_standard_analysis"]
+                    summary_text = analysis_text.split("\n\n")[0] if "\n\n" in analysis_text else analysis_text
+                    
+                    st.write(summary_text[:300] + "..." if len(summary_text) > 300 else summary_text)
+                    
+                    # Display a visual representation of the compatibility matrix
+                    st.subheader("Compatibility Matrix")
+                    
+                    matrix = results["compatibility_matrix"]
+                    if matrix:
+                        # Create a color-coded matrix display
+                        cols = st.columns(len(matrix))
+                        for i, standard in enumerate(matrix):
+                            with cols[i]:
+                                # Set color based on impact type
+                                color = "#f8d7da"  # Red for contradictions
+                                text_color = "#721c24"
+                                if standard["impact_type"].lower() == "synergy":
+                                    color = "#d4edda"  # Green for synergies
+                                    text_color = "#155724"
+                                elif standard["impact_type"].lower() == "both":
+                                    color = "#fff3cd"  # Yellow for both
+                                    text_color = "#856404"
+                                elif standard["impact_type"].lower() == "none":
+                                    color = "#e2e3e5"  # Gray for none
+                                    text_color = "#383d41"
+                                    
+                                # Display the standard card
+                                st.markdown(
+                                    f"""
+                                    <div style="background-color: {color}; color: {text_color}; padding: 10px; 
+                                          border-radius: 5px; text-align: center; height: 120px;">
+                                        <h3>FAS {standard['standard_id']}</h3>
+                                        <p><b>Impact: {standard['impact_level']}</b></p>
+                                        <p>{standard['impact_type']}</p>
+                                    </div>
+                                    """, 
+                                    unsafe_allow_html=True
+                                )
+            
+            # Review Analysis Tab
+            with tab_review:
+                st.header("Review Findings")
+                st.markdown(f'<div class="review-container">{results["review"]}</div>', unsafe_allow_html=True)
+            
+            # Proposed Changes Tab
+            with tab_proposal:
+                st.header("Proposed Enhancements")
+                st.markdown(f'<div class="proposal-container">{results["proposal"]}</div>', unsafe_allow_html=True)
+                
+                if "original_text" in results and "proposed_text" in results:
+                    st.subheader("Original vs. Proposed Text")
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.markdown("**Original Text:**")
+                        st.markdown(f'<div class="diff-container">{results["original_text"]}</div>', unsafe_allow_html=True)
+                    with col2:
+                        st.markdown("**Proposed Text:**")
+                        st.markdown(f'<div class="diff-container">{results["proposed_text"]}</div>', unsafe_allow_html=True)
+            
+            # Diff View Tab
+            with tab_validation:
+                st.header("Validation Results")
+                
+                # Try to extract validation decision
+                decision = "Undetermined"
+                decision_color = "gray"
+                if "validation" in results:
+                    validation_text = results["validation"]
+                    if "APPROVED" in validation_text:
+                        decision = "APPROVED"
+                        decision_color = "green"
+                    elif "REJECTED" in validation_text:
+                        decision = "REJECTED"
+                        decision_color = "red"
+                    elif "NEEDS REVISION" in validation_text:
+                        decision = "NEEDS REVISION"
+                        decision_color = "orange"
+                
+                # Display decision prominently
+                st.markdown(
+                    f'<div style="background-color: {decision_color}; color: white; padding: 1rem; '
+                    f'border-radius: 0.5rem; font-weight: bold; text-align: center; margin-bottom: 1rem;">'
+                    f'Decision: {decision}'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
+                
+                # Display full validation text
+                st.markdown(f'<div class="validation-container">{results["validation"]}</div>', unsafe_allow_html=True)
+                
+            # Add the cross-standard impact tab
+            if "cross_standard_analysis" in results and extra_tabs:
+                tab_cross_standard = extra_tabs[0]
+                with tab_cross_standard:
+                    st.header("Cross-Standard Impact Analysis")
+                    
+                    # Display the full analysis
+                    st.markdown(f'<div class="cross-standard-container">{results["cross_standard_analysis"]}</div>', unsafe_allow_html=True)
+                    
+                    # Show the compatibility matrix as a table
+                    if "compatibility_matrix" in results:
+                        st.subheader("Compatibility Matrix")
+                        
+                        matrix_df = pd.DataFrame(results["compatibility_matrix"])
+                        
+                        # Format the dataframe for display
+                        matrix_df = matrix_df.rename(columns={
+                            "standard_id": "Standard", 
+                            "impact_level": "Impact Level", 
+                            "impact_type": "Impact Type"
+                        })
+                        
+                        # Add FAS prefix to standard IDs
+                        matrix_df["Standard"] = "FAS " + matrix_df["Standard"]
+                        
+                        # Build HTML table with conditional formatting
+                        html_table = '<table class="compatibility-table"><tr><th>Standard</th><th>Impact Level</th><th>Impact Type</th></tr>'
+                        
+                        for _, row in matrix_df.iterrows():
+                            standard = row["Standard"]
+                            impact_level = row["Impact Level"]
+                            impact_type = row["Impact Type"]
+                            
+                            # Set CSS classes based on values
+                            impact_level_class = f"impact-{impact_level.lower()}"
+                            impact_type_class = impact_type.lower()
+                            
+                            html_table += f'<tr class="{impact_type_class}">'
+                            html_table += f'<td>{standard}</td>'
+                            html_table += f'<td class="{impact_level_class}">{impact_level}</td>'
+                            html_table += f'<td>{impact_type}</td>'
+                            html_table += '</tr>'
+                        
+                        html_table += '</table>'
+                        st.write(html_table, unsafe_allow_html=True)
+                        
+                        # Visual impact diagram
+                        st.subheader("Impact Visualization")
+                        
+                        # Create a visual representation of the compatibility matrix
+                        cols = st.columns(len(matrix_df))
+                        for i, (_, row) in enumerate(matrix_df.iterrows()):
+                            with cols[i]:
+                                # Set color based on impact type
+                                color = "#f8d7da"  # Red for contradictions
+                                text_color = "#721c24"
+                                if row["Impact Type"].lower() == "synergy":
+                                    color = "#d4edda"  # Green for synergies
+                                    text_color = "#155724"
+                                elif row["Impact Type"].lower() == "both":
+                                    color = "#fff3cd"  # Yellow for both
+                                    text_color = "#856404"
+                                elif row["Impact Type"].lower() == "none":
+                                    color = "#e2e3e5"  # Gray for none
+                                    text_color = "#383d41"
+                                    
+                                # Display the standard card
+                                st.markdown(
+                                    f"""
+                                    <div style="background-color: {color}; color: {text_color}; padding: 10px; 
+                                          border-radius: 5px; text-align: center; height: 120px;">
+                                        <h3>{row["Standard"]}</h3>
+                                        <p><b>Impact: {row["Impact Level"]}</b></p>
+                                        <p>{row["Impact Type"]}</p>
+                                    </div>
+                                    """, 
+                                    unsafe_allow_html=True
+                                )
+            
+            # Export section
+            st.subheader("Export Results")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                if st.button("Export as Markdown", key="export_md"):
+                    # Build markdown content
+                    markdown_content = f"""# Standards Enhancement Results for FAS {results['standard_id']}
+
+## Trigger Scenario
+{results['trigger_scenario']}
+
+## Review Findings
+{results['review']}
+
+## Proposed Enhancements
+{results['proposal']}
+
+## Validation Results
+{results['validation']}"""
+
+                    # Add cross-standard analysis if available
+                    if "cross_standard_analysis" in results:
+                        markdown_content += f"""
+
+## Cross-Standard Impact Analysis
+{results['cross_standard_analysis']}"""
+                    
+                    # Create download button
+                    st.download_button(
+                        label="Download Markdown",
+                        data=markdown_content,
+                        file_name=f"enhancement_fas{results['standard_id']}.md",
+                        mime="text/markdown"
+                    )
+            
+            with col2:
+                if st.button("Export as HTML Report", key="export_html"):
+                    # Create HTML report
+                    html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>Standards Enhancement Report - FAS {results['standard_id']}</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }}
+        h1 {{ color: #1e3a8a; }}
+        h2 {{ color: #2563eb; margin-top: 20px; }}
+        .review-section {{ background-color: #f0f9ff; padding: 15px; border-radius: 5px; border-left: 5px solid #3b82f6; margin-bottom: 20px; }}
+        .proposal-section {{ background-color: #f0fdf4; padding: 15px; border-radius: 5px; border-left: 5px solid #22c55e; margin-bottom: 20px; }}
+        .validation-section {{ background-color: #fff7ed; padding: 15px; border-radius: 5px; border-left: 5px solid #f59e0b; margin-bottom: 20px; }}
+        .cross-standard-section {{ background-color: #eef2ff; padding: 15px; border-radius: 5px; border-left: 5px solid #818cf8; margin-bottom: 20px; }}
+        .scenario-section {{ background-color: #f8fafc; padding: 15px; border-radius: 5px; border: 1px solid #e2e8f0; margin-bottom: 20px; }}
+        pre {{ white-space: pre-wrap; }}
+        table {{ border-collapse: collapse; width: 100%; margin: 20px 0; }}
+        th, td {{ border: 1px solid #e2e8f0; padding: 8px; text-align: left; }}
+        th {{ background-color: #f1f5f9; }}
+    </style>
+</head>
+<body>
+    <h1>Standards Enhancement Report - FAS {results['standard_id']}</h1>
+    
+    <h2>Trigger Scenario</h2>
+    <div class="scenario-section">
+        <p>{results['trigger_scenario']}</p>
+    </div>
+    
+    <h2>Review Findings</h2>
+    <div class="review-section">
+        {results['review']}
+    </div>
+    
+    <h2>Proposed Enhancements</h2>
+    <div class="proposal-section">
+        {results['proposal']}
+    </div>
+    
+    <h2>Validation Results</h2>
+    <div class="validation-section">
+        {results['validation']}
+    </div>
+"""
+                    
+                    # Add cross-standard analysis if available
+                    if "cross_standard_analysis" in results:
+                        html_content += f"""
+    <h2>Cross-Standard Impact Analysis</h2>
+    <div class="cross-standard-section">
+        {results['cross_standard_analysis']}
+    </div>
+"""
+                        
+                        # Add compatibility matrix if available
+                        if "compatibility_matrix" in results:
+                            html_content += """
+    <h3>Compatibility Matrix</h3>
+    <table>
+        <tr>
+            <th>Standard</th>
+            <th>Impact Level</th>
+            <th>Impact Type</th>
+        </tr>
+"""
+                            
+                            for item in results["compatibility_matrix"]:
+                                html_content += f"""
+        <tr>
+            <td>FAS {item['standard_id']}</td>
+            <td>{item['impact_level']}</td>
+            <td>{item['impact_type']}</td>
+        </tr>
+"""
+                            
+                            html_content += """
+    </table>
+"""
+                    
+                    # Complete the HTML
+                    html_content += f"""    
+    <hr>
+    <footer>
+        <p><small>Generated by AAOIFI Standards Enhancement System - {datetime.datetime.now().strftime("%Y-%m-%d")}</small></p>
+    </footer>
+</body>
+</html>"""
+                    
+                    # Create download button
+                    st.download_button(
+                        label="Download HTML Report",
+                        data=html_content,
+                        file_name=f"enhancement_report_fas{results['standard_id']}.html",
+                        mime="text/html",
+                    )
             
     else:  # View Past Enhancements
         st.subheader("Past Enhancement Results")

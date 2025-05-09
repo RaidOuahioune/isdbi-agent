@@ -25,12 +25,16 @@ def progress_callback(phase: str, detail: Optional[str] = None):
         print("[PROGRESS] Starting validation phase...")
     elif phase == "validation_complete":
         print("[PROGRESS] Validation phase completed")
+    elif phase == "cross_analysis_start":
+        print("[PROGRESS] Starting cross-standard impact analysis...")
+    elif phase == "cross_analysis_complete":
+        print("[PROGRESS] Cross-standard impact analysis completed")
     
     if detail:
         print(f"[DETAIL] {detail}")
 
 
-def run_demo_with_test_case(test_case_index):
+def run_demo_with_test_case(test_case_index, include_cross_standard=True):
     """Run a demo with a specific test case."""
     try:
         case = ENHANCEMENT_TEST_CASES[test_case_index]
@@ -41,13 +45,18 @@ def run_demo_with_test_case(test_case_index):
     
     print("\n" + "="*80)
     print(f"Running Standards Enhancement for: {case['name']} (FAS {case['standard_id']})")
+    if include_cross_standard:
+        print("Including cross-standard impact analysis")
+    else:
+        print("Without cross-standard impact analysis")
     print("="*80)
     
     # Run the enhancement process with progress callback
     results = run_standards_enhancement(
         case['standard_id'], 
         case['trigger_scenario'],
-        progress_callback
+        progress_callback,
+        include_cross_standard_analysis=include_cross_standard
     )
     
     # Display the results
@@ -77,7 +86,12 @@ def run_interactive_demo():
                 break
                 
             test_case_index = int(choice)
-            results = run_demo_with_test_case(test_case_index)
+            
+            # Ask about cross-standard analysis
+            cross_analysis = input("Include cross-standard impact analysis? (y/n, default: y): ").lower()
+            include_cross = False if cross_analysis == 'n' else True
+            
+            results = run_demo_with_test_case(test_case_index, include_cross)
             
             # Ask if user wants to try another case
             another = input("\nTry another case? (y/n): ")
@@ -113,13 +127,26 @@ def run_custom_demo():
         print("Empty scenario. Using default...")
         trigger_scenario = "A financial institution wants to apply this standard to digital assets and needs clearer guidance."
     
+    # Ask about cross-standard analysis
+    cross_analysis = input("Include cross-standard impact analysis? (y/n, default: y): ").lower()
+    include_cross = False if cross_analysis == 'n' else True
+    
     # Run the enhancement process
     print("\n" + "="*80)
     print(f"Running Standards Enhancement for custom scenario (FAS {standard_id})")
+    if include_cross:
+        print("Including cross-standard impact analysis")
+    else:
+        print("Without cross-standard impact analysis")
     print("="*80)
     
     # Run with progress callback
-    results = run_standards_enhancement(standard_id, trigger_scenario, progress_callback)
+    results = run_standards_enhancement(
+        standard_id, 
+        trigger_scenario, 
+        progress_callback,
+        include_cross_standard_analysis=include_cross
+    )
     
     # Display the results
     formatted_results = format_results_for_display(results)
@@ -131,17 +158,21 @@ if __name__ == "__main__":
     parser.add_argument("--test-case", type=int, help="Run a specific test case by index")
     parser.add_argument("--custom", action="store_true", help="Run with custom input")
     parser.add_argument("--all", action="store_true", help="Run all test cases")
+    parser.add_argument("--no-cross-standard", action="store_true", help="Skip cross-standard impact analysis")
     
     args = parser.parse_args()
     
+    # Determine whether to include cross-standard analysis
+    include_cross_standard = not args.no_cross_standard
+    
     if args.test_case is not None:
-        run_demo_with_test_case(args.test_case)
+        run_demo_with_test_case(args.test_case, include_cross_standard)
     elif args.custom:
         run_custom_demo()
     elif args.all:
         print("\nRunning all test cases:")
         for i in range(len(ENHANCEMENT_TEST_CASES)):
-            run_demo_with_test_case(i)
+            run_demo_with_test_case(i, include_cross_standard)
             if i < len(ENHANCEMENT_TEST_CASES) - 1:
                 input("\nPress Enter to continue to the next test case...")
     else:
