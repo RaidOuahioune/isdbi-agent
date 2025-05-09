@@ -59,6 +59,8 @@ Provide your analysis with:
 1. Transaction Summary: Brief description of what this transaction represents
 2. Applicable Standards: Ranked by probability with percentages
 3. Detailed Reasoning: For each standard, explain why it applies to this transaction
+
+Please clearly indicate the correct standard by stating 'THE CORRECT STANDARD IS: [standard]' at the beginning of your analysis.
             """
             ),
         ]
