@@ -23,6 +23,15 @@ class UseCaseProcessorAgent(Agent):
 
         # Use retriever to get additional relevant information
         retrieved_nodes = retriever.retrieve(scenario)
+
+        print(f"Retrieved {len(retrieved_nodes)} context chunks")
+        print("\nSample chunks:")
+        # Display a limited number of chunks to avoid overwhelming output
+        for j, node in enumerate(retrieved_nodes[:3]):
+            print(f"\nChunk {j+1} (excerpt):")
+            # Show a shortened version of the chunk
+            text = node.text
+            print(text[:200] + "..." if len(text) > 200 else text)
         additional_context = "\n\n".join([node.text for node in retrieved_nodes])
 
         # Prepare message for use case processing

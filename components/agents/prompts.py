@@ -38,7 +38,9 @@ When presented with a financial scenario, analyze it to identify the applicable 
 - The applicable AAOIFI standard(s)
 - Step-by-step calculation methodology
 - Journal entries with explanations
+- Do not explain , be very precise and concise , keeping only mathematical calculations and breief explanations
 - References to specific sections of the standards that apply
+- Output some tables if you can to make it more readable
 
 Focus on the 5 selected standards: FAS 4, 7, 10, 28, and 32.
 """
