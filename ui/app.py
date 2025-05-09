@@ -5,15 +5,21 @@ import time
 import re
 import json
 import datetime
-from pathlib import Path
 import pandas as pd
+from pathlib import Path
 
 # Add the parent directory to the path so we can import from the main project
-sys.path.append(str(Path(__file__).parent.parent))
+parent_dir = str(Path(__file__).parent.parent)
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
 
+# Project imports - from main directory
 from enhancement import run_standards_enhancement, ENHANCEMENT_TEST_CASES, find_test_case_by_keyword
-from ui.progress_monitor import create_progress_components, run_enhancement_with_monitoring
-from ui.output_parser import OutputParser
+
+# Local imports - from ui directory
+from output_parser import OutputParser
+from word_diff import generate_complete_diff
+from progress_monitor import create_progress_components, run_enhancement_with_monitoring
 
 # Set page configuration
 st.set_page_config(
