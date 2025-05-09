@@ -1,5 +1,6 @@
+# filepath: c:\Users\ELITE COMPUTER\Desktop\Hackaton\isdbi\isdbi-agent\components\agents\transaction_rationale.py
 from langchain_core.messages import SystemMessage, HumanMessage
-from typing import Dict, Any
+from typing import Dict, Any, Union
 from components.agents.base_agent import Agent
 from components.agents.prompts import TRANSACTION_RATIONALE_SYSTEM_PROMPT
 from retreiver import retriever
@@ -10,18 +11,32 @@ class TransactionStandardRationaleAgent(Agent):
 
     def __init__(self):
         super().__init__(system_prompt=TRANSACTION_RATIONALE_SYSTEM_PROMPT)
-
+        
     def explain_standard_application(
-        self, transaction_details: Dict[str, Any], standard_id: str
+        self, transaction_input: Union[str, Dict[str, Any]], standard_id: str
     ) -> Dict[str, Any]:
         """
         Explain why a specific standard applies to a transaction.
+        
+        Args:
+            transaction_input: Either a string describing the transaction or a Dict
+                          containing transaction details
+            standard_id: The ID of the standard to explain (e.g., "FAS 4")
+            
+        Returns:
+            Dict containing rationale explanation
         """
-        # Format transaction details by leveraging the TransactionAnalyzerAgent method
-        from components.agents.transaction_analyzer import transaction_analyzer
-        transaction_query = transaction_analyzer._build_structured_query(
-            transaction_details
-        )
+        # Handle string input vs. dictionary input
+        if isinstance(transaction_input, str):
+            transaction_details = {"context": transaction_input}
+            transaction_query = transaction_input
+        else:
+            # Format transaction details by leveraging the TransactionAnalyzerAgent method
+            transaction_details = transaction_input
+            from components.agents.transaction_analyzer import transaction_analyzer
+            transaction_query = transaction_analyzer._build_structured_query(
+                transaction_details
+            )
 
         # Get specific information about the standard
         standard_query = f"Detailed information about {standard_id} including scope, recognition criteria, and measurement requirements"

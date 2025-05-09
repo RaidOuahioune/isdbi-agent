@@ -57,26 +57,26 @@ def extract_enhancement_info(state: State) -> Dict[str, Any]:
     messages = state.get("messages", [])
     if not messages:
         return state
-    
+
     query = messages[-1].content if hasattr(messages[-1], "content") else ""
-    
+
     # Extract standard ID
     standard_id = "10"  # Default to FAS 10 (Istisna'a) if none specified
     for std in ["4", "7", "10", "28", "32"]:
         if f"FAS {std}" in query or f"FAS{std}" in query:
             standard_id = std
             break
-    
+
     # The rest of the query serves as the trigger scenario
     trigger_scenario = query
-    
+
     # Create a new state with enhancement info included
     new_state = state.copy()
     new_state["enhancement_info"] = {
         "standard_id": standard_id,
-        "trigger_scenario": trigger_scenario
+        "trigger_scenario": trigger_scenario,
     }
-    
+
     return new_state
 
 
@@ -87,14 +87,16 @@ def run_reviewer_agent(state: State) -> Dict[str, Any]:
     enhancement_info = state.get("enhancement_info", {})
     standard_id = enhancement_info.get("standard_id", "10")
     trigger_scenario = enhancement_info.get("trigger_scenario", "")
-    
+
     # Run the Reviewer Agent
-    review_result = reviewer_agent.extract_standard_elements(standard_id, trigger_scenario)
-    
+    review_result = reviewer_agent.extract_standard_elements(
+        standard_id, trigger_scenario
+    )
+
     # Create a new state with review results included
     new_state = state.copy()
     new_state["review_result"] = review_result
-    
+
     return new_state
 
 
@@ -103,14 +105,14 @@ def run_proposer_agent(state: State) -> Dict[str, Any]:
     Run the Proposer Agent to generate enhancement proposals.
     """
     review_result = state.get("review_result", {})
-    
+
     # Run the Proposer Agent
     proposal_result = proposer_agent.generate_enhancement_proposal(review_result)
-    
+
     # Create a new state with proposal results included
     new_state = state.copy()
     new_state["proposal_result"] = proposal_result
-    
+
     return new_state
 
 
@@ -119,14 +121,14 @@ def run_validator_agent(state: State) -> Dict[str, Any]:
     Run the Validator Agent to validate the proposed changes.
     """
     proposal_result = state.get("proposal_result", {})
-    
+
     # Run the Validator Agent
     validation_result = validator_agent.validate_proposal(proposal_result)
-    
+
     # Create a new state with validation results included
     new_state = state.copy()
     new_state["validation_result"] = validation_result
-    
+
     return new_state
 
 
@@ -138,14 +140,14 @@ def format_enhancement_results(state: State) -> Dict[str, Any]:
     review_result = state.get("review_result", {})
     proposal_result = state.get("proposal_result", {})
     validation_result = state.get("validation_result", {})
-    
+
     # Extract key information
     standard_id = review_result.get("standard_id", "")
     trigger_scenario = review_result.get("trigger_scenario", "")
     review_analysis = review_result.get("review_analysis", "")
     enhancement_proposal = proposal_result.get("enhancement_proposal", "")
     validation_output = validation_result.get("validation_result", "")
-    
+
     # Create a formatted message
     formatted_message = f"""# Standards Enhancement Results for FAS {standard_id}
 
@@ -161,13 +163,13 @@ def format_enhancement_results(state: State) -> Dict[str, Any]:
 ## Validation Results
 {validation_output}
 """
-    
+
     new_message = AIMessage(content=formatted_message)
-    
+
     # Create a new state with the formatted results
     new_state = state.copy()
     new_state["messages"] = messages + [new_message]
-    
+
     return new_state
 
 
@@ -265,22 +267,19 @@ def analyze_transaction(state):
     query = state["messages"][-1].content
     logging.info(f"Processing transaction query: {query[:100]}...")
 
-    # Extract transaction details from the query
-    transaction_details = _extract_transaction_details(query)
-
-    # Before analyzing, add logging to display chunks from the retrieval process
-    retrieval_query = transaction_analyzer._build_structured_query(transaction_details)
+    # Use the transaction description directly as a string
+    transaction_input = query
 
     # Get the retrieved nodes directly to log them
-    retrieved_nodes = transaction_analyzer.retriever.retrieve(retrieval_query)
+    retrieved_nodes = transaction_analyzer.retriever.retrieve(transaction_input)
 
     # Log information about retrieved chunks
     logging.info(f"Retrieved {len(retrieved_nodes)} chunks for transaction analysis")
     for i, node in enumerate(retrieved_nodes[:3]):  # Show first 3 chunks
         logging.info(f"Chunk {i + 1}/{len(retrieved_nodes)}: {node.text[:150]}...")
 
-    # Analyze the transaction
-    analysis_result = transaction_analyzer.analyze_transaction(transaction_details)
+    # Analyze the transaction (transaction_analyzer now handles string input)
+    analysis_result = transaction_analyzer.analyze_transaction(transaction_input)
 
     # Store the result in state
     new_state = state.copy()
@@ -305,14 +304,16 @@ def explain_standards_rationale(state):
     """Explain why identified standards apply to the transaction."""
     # Get the transaction analysis from state
     analysis = state["transaction_analysis"]
-    transaction_details = analysis["transaction_details"]
+    transaction_input = state["messages"][
+        -1
+    ].content  # Use original query as string input
     standards = analysis["identified_standards"]
 
     # Get rationale for each standard (limit to top 2 for efficiency)
     standard_rationales = {}
     for std in standards[:2]:
         rationale_result = transaction_rationale.explain_standard_application(
-            transaction_details, std
+            transaction_input, std
         )
         standard_rationales[std] = rationale_result["rationale"]
 

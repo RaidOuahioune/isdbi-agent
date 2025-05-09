@@ -1,10 +1,11 @@
 from langchain_core.messages import SystemMessage, HumanMessage
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Union
 from components.agents.base_agent import Agent
 from components.agents.prompts import TRANSACTION_ANALYZER_SYSTEM_PROMPT
 from retreiver import retriever
 import re
 import logging
+
 
 class TransactionAnalyzerAgent(Agent):
     """Agent responsible for analyzing journal entries to identify applicable AAOIFI standards."""
@@ -14,19 +15,26 @@ class TransactionAnalyzerAgent(Agent):
         self.retriever = retriever  # Make retriever accessible as a class attribute
 
     def analyze_transaction(
-        self, transaction_details: Dict[str, Any]
+        self, transaction_input: Union[str, Dict[str, Any]]
     ) -> Dict[str, Any]:
         """
         Analyze a transaction to identify applicable AAOIFI standards.
 
         Args:
-            transaction_details: Dictionary containing transaction context, journal entries, and additional info
+            transaction_input: Either a string describing the transaction or a Dict
+                              containing transaction context, journal entries, and additional info
 
         Returns:
             Dict containing analysis results
         """
-        # Build a structured query from the transaction details
-        query = self._build_structured_query(transaction_details)
+        # Handle string input
+        if isinstance(transaction_input, str):
+            transaction_details = {"context": transaction_input}
+            query = transaction_input
+        else:
+            # Handle structured dictionary input (backward compatibility)
+            transaction_details = transaction_input
+            query = self._build_structured_query(transaction_details)
 
         # Use retriever to get relevant standards information
         retrieved_nodes = self.retriever.retrieve(query)
@@ -39,7 +47,7 @@ class TransactionAnalyzerAgent(Agent):
         messages = [
             SystemMessage(content=self.system_prompt),
             HumanMessage(
-                content=f"""Please analyze these financial transaction journal entries and identify applicable AAOIFI standards:
+                content=f"""Please analyze this financial transaction and identify applicable AAOIFI standards:
             
 Transaction Details:
 {query}
@@ -104,6 +112,7 @@ Provide your analysis with:
         # Find all mentions of FAS followed by numbers
         standards = re.findall(r"FAS\s+\d+", text)
         return list(set(standards))
+
 
 # Initialize the agent
 transaction_analyzer = TransactionAnalyzerAgent()

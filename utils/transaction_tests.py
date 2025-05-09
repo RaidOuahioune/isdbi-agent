@@ -1,9 +1,10 @@
+# filepath: c:\Users\ELITE COMPUTER\Desktop\Hackaton\isdbi\isdbi-agent\utils\transaction_tests.py
 """
 Transaction testing module for the Islamic Finance standards system.
 """
 
-import logging
 from agents import transaction_analyzer, transaction_rationale
+
 
 def run_category2_tests(verbose=False):
     """
@@ -13,84 +14,69 @@ def run_category2_tests(verbose=False):
     print("CATEGORY 2: REVERSE TRANSACTIONS ANALYSIS TESTS")
     print("=" * 80)
 
-    # Define test cases specifically for reverse transactions
+    # Define test cases specifically for reverse transactions using string descriptions
+    # Each test case now has a different format to demonstrate flexibility
     test_cases = [
         {
             "name": "GreenTech Buyout",
-            "transaction": {
-                "context": "GreenTech exits in Year 3, and Al Baraka Bank buys out its stake.",
-                "journal_entries": [
-                    {
-                        "debit_account": "GreenTech Equity",
-                        "credit_account": "Cash",
-                        "amount": 1750000,
-                    }
-                ],
-                "additional_info": {
-                    "Buyout Price": "$1,750,000",
-                    "Bank Ownership": "100%",
-                    "Accounting Treatment": "Derecognition of GreenTech's equity, Recognition of acquisition expense",
-                },
-            },
+            "transaction": """
+TRANSACTION SUMMARY: GreenTech exits in Year 3, and Al Baraka Bank buys out its stake.
+
+FINANCIAL ENTRIES:
+Dr. GreenTech Equity $1,750,000
+Cr. Cash $1,750,000
+
+KEY FACTS:
+- Buyout Price: $1,750,000
+- Bank Ownership: 100%
+- Accounting Treatment: Derecognition of GreenTech's equity, Recognition of acquisition expense
+            """,
         },
         {
             "name": "Contract Change Order Reversal",
-            "transaction": {
-                "context": "The client cancels the change order, reverting to the original contract terms.",
-                "journal_entries": [
-                    {
-                        "debit_account": "Accounts Payable",
-                        "credit_account": "Work-in-Progress",
-                        "amount": 1000000,
-                    }
-                ],
-                "additional_info": {
-                    "Revised Contract Value": "Back to $5,000,000",
-                    "Timeline Restored": "2 years",
-                    "Accounting Treatment": "Adjustment of revenue and cost projections, Reversal of additional cost accruals",
-                },
-            },
+            "transaction": """Contract Change Order Cancellation Details
+--------------------------------------------------------------------------------
+The client cancels the change order, reverting to the original contract terms.
+--------------------------------------------------------------------------------
+JOURNAL ENTRIES
+* Debit: Accounts Payable $1,000,000
+* Credit: Work-in-Progress $1,000,000
+
+CONTRACT INFORMATION:
+Revised Contract Value: Back to $5,000,000
+Timeline Restored: 2 years
+
+ACCOUNTING IMPACT: Adjustment of revenue and cost projections, Reversal of additional cost accruals
+            """,
         },
         {
             "name": "Sukuk Early Termination",
-            "transaction": {
-                "context": "The Sukuk is being terminated early in year 3 of a 5-year term.",
-                "journal_entries": [
-                    {
-                        "debit_account": "Sukuk Liability",
-                        "credit_account": "Cash",
-                        "amount": 7650000,
-                    },
-                    {
-                        "debit_account": "Early Termination Fee",
-                        "credit_account": "Income",
-                        "amount": 150000,
-                    },
-                ],
-                "additional_info": {
-                    "Original Sukuk Amount": "$10,000,000",
-                    "Early Termination Penalty": "2% of outstanding balance",
-                    "Accounting Treatment": "Derecognition of liability, Recognition of termination fee",
-                },
-            },
+            "transaction": """Sukuk Certificate #SC-2025-03 Early Termination Notice
+
+The Sukuk is being terminated early in year 3 of a 5-year term.
+
+Accounting Records:
+1. Dr. Sukuk Liability $7,650,000
+   Cr. Cash $7,650,000
+2. Dr. Early Termination Fee $150,000
+   Cr. Income $150,000
+
+Background Information:
+* Original Sukuk Amount: $10,000,000
+* Early Termination Penalty: 2% of outstanding balance
+* Accounting Treatment: Derecognition of liability, Recognition of termination fee
+            """,
         },
     ]
 
     for i, test_case in enumerate(test_cases, 1):
         print(f"\n\n----- TEST CASE {i}: {test_case['name']} -----\n")
 
-        # Format transaction details for display
+        # The transaction is now directly a string description
         transaction = test_case["transaction"]
 
-        print(f"Context: {transaction['context']}")
-        print("\nJournal Entries:")
-        for entry in transaction["journal_entries"]:
-            print(f"Dr. {entry['debit_account']} ${entry['amount']:,.2f}")
-            print(f"Cr. {entry['credit_account']} ${entry['amount']:,.2f}")
-
-        print("\nAdditional Information:")
-        for key, value in transaction["additional_info"].items():
-            print(f"{key}: {value}")
+        # Display the transaction description
+        print(transaction)
 
         print("\n----- ANALYSIS RESULTS -----")
 
@@ -103,11 +89,11 @@ def run_category2_tests(verbose=False):
             # If verbose mode is enabled, show all chunks
             if verbose and "retrieval_stats" in analysis_result:
                 stats = analysis_result["retrieval_stats"]
-                print(f"\n--- RAG Retrieval Stats ---")
+                print("\n--- RAG Retrieval Stats ---")
                 print(f"Retrieved {stats['chunk_count']} chunks")
                 print("\nSample chunks:")
-                for i, chunk_summary in enumerate(stats["chunks_summary"]):
-                    print(f"\nChunk {i + 1}: {chunk_summary}")
+                for j, chunk_summary in enumerate(stats["chunks_summary"]):
+                    print(f"\nChunk {j + 1}: {chunk_summary}")
 
             # If standards were identified, get rationales
             if analysis_result["identified_standards"]:
