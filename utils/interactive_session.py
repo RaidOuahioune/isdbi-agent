@@ -10,6 +10,10 @@ from enhancement import (
     format_results_for_display,
 )
 
+from components.evaluation import ISDBIEvaluator
+
+evaluator = ISDBIEvaluator()
+
 
 def run_interactive_session():
     """
@@ -111,6 +115,23 @@ def run_interactive_session():
             # Run enhancement
             results = run_standards_enhancement(std_id, trigger_scenario)
             formatted_results = format_results_for_display(results)
+
+            eval_result = evaluator.evaluate(
+                prompt=f"""
+                We want to enhance the following standard FAS-{std_id} to adapt to the following scenario:
+                
+                {trigger_scenario}.
+                """,
+                response=formatted_results,
+                retrieve_context=True,
+                output_format="markdown",
+            )
+
+            # Print and store evaluation results
+            print(f"Overall Score: {eval_result.get('overall_score', 'N/A')}/10")
+            print(f"Strongest Area: {eval_result.get('strongest_area', 'N/A')}")
+            print(f"Weakest Area: {eval_result.get('weakest_area', 'N/A')}")
+
             print("\n" + formatted_results)
             continue
 

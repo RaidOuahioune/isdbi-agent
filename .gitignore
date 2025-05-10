@@ -17,3 +17,4 @@ data/*
 vecor_db_storage_only_5/*
 # *.JSON
 # *.json
+reports/*
