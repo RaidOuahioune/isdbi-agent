@@ -1,6 +1,6 @@
 from typing import Dict, Any, List, Optional
 from langchain_core.tools import tool
-
+import re
 from retreiver import retriever
 
 
@@ -258,20 +258,14 @@ def identify_transaction_type(description: str) -> str:
     Returns:
         str: Identified transaction type and applicable AAOIFI standard
     """
-    # Use the retriever to identify the transaction type
-    retrieved_nodes = retriever.retrieve(description)
-    context = "\n\n".join([node.text for node in retrieved_nodes[:5]])
-    
-    # Simple keyword matching for demo purposes
-    # In production, this would be more sophisticated
     transaction_types = {
         "murabaha": {
-            "keywords": ["murabaha", "cost plus", "mark-up", "deferred payment sale"],
+            "keywords": ["murabaha", "cost-plus", "markup", "purchase"],
             "standard": "FAS 28 - Murabaha and Other Deferred Payment Sales"
         },
         "ijarah": {
-            "keywords": ["ijarah", "lease", "leasing", "rental"],
-            "standard": "FAS 32 - Ijarah"
+            "keywords": ["ijarah", "lease", "rental", "leasing", "ijara"],
+            "standard": "FAS 32 - Ijarah and Ijarah Muntahia Bittamleek"
         },
         "musharakah": {
             "keywords": ["musharakah", "joint venture", "partnership", "equity participation"],
@@ -307,11 +301,87 @@ def identify_transaction_type(description: str) -> str:
         return "Transaction type could not be clearly identified. Please provide more details about the transaction."
 
 
+@tool
+def extract_financial_amounts(scenario: str, transaction_type: str = None) -> str:
+    """
+    Extracts all financial amounts from a scenario and categorizes them based on the transaction type.
+    This tool helps identify amounts that need to be calculated for a specific Islamic finance transaction.
+    
+    Args:
+        scenario: The financial scenario text
+        transaction_type: The type of Islamic finance transaction (murabaha, ijarah, musharakah, etc.)
+    
+    Returns:
+        A structured list of identified amounts and their potential roles in calculations
+    """
+    # Extract all numeric values with currency symbols or percentage indicators
+    amount_pattern = r'(?:[$€£]?\s?\d+(?:,\d+)*(?:\.\d+)?%?|\d+(?:,\d+)*(?:\.\d+)?%?(?:\s?(?:million|billion|thousand))?(?:\s?[$€£])?)'
+    extracted_amounts = re.findall(amount_pattern, scenario)
+    
+    # Clean up the extracted amounts
+    cleaned_amounts = []
+    for amount in extracted_amounts:
+        # Remove commas and standardize format
+        clean_amount = amount.replace(',', '')
+        # Convert words to numbers
+        if 'million' in clean_amount.lower():
+            clean_amount = clean_amount.lower().replace('million', '').strip()
+            try:
+                numeric_value = float(clean_amount) * 1000000
+                clean_amount = f"{numeric_value}"
+            except ValueError:
+                pass
+        elif 'billion' in clean_amount.lower():
+            clean_amount = clean_amount.lower().replace('billion', '').strip()
+            try:
+                numeric_value = float(clean_amount) * 1000000000
+                clean_amount = f"{numeric_value}"
+            except ValueError:
+                pass
+        elif 'thousand' in clean_amount.lower():
+            clean_amount = clean_amount.lower().replace('thousand', '').strip()
+            try:
+                numeric_value = float(clean_amount) * 1000
+                clean_amount = f"{numeric_value}"
+            except ValueError:
+                pass
+                
+        cleaned_amounts.append({
+            "original": amount,
+            "standardized": clean_amount
+        })
+    
+    # Get contextual information based on transaction type
+    transaction_context = ""
+    if transaction_type:
+        # Query relevant standards for the transaction type to get calculation formulas
+        query = f"{transaction_type} calculation formulas AAOIFI standards"
+        retrieved_nodes = retriever.retrieve(query)
+        transaction_context = "\n".join([node.text for node in retrieved_nodes])
+    
+    # Format the output
+    result = "## Extracted Financial Amounts\n\n"
+    if len(cleaned_amounts) == 0:
+        result += "No financial amounts detected in the scenario.\n"
+    else:
+        result += "| Original Amount | Standardized Value |\n"
+        result += "|----------------|--------------------|\n"
+        for amount in cleaned_amounts:
+            result += f"| {amount['original']} | {amount['standardized']} |\n"
+    
+    # Add transaction-specific context
+    if transaction_context:
+        result += "\n## Relevant Calculation Context\n\n"
+        result += transaction_context
+        
+    return result
+
 # List of tools available to agents
 tools = [
     search_standards,
     get_standard_info,
     analyze_financial_scenario,
     generate_journal_entries,
-    identify_transaction_type
+    identify_transaction_type,
+    extract_financial_amounts
 ]
