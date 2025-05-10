@@ -103,30 +103,58 @@ class OutputParser:
         if not proposal_text:
             return "", ""
         
-        # Extract proposals that follow the format in challenge3_output.txt
-        # Look for sections like "Proposal X: ..." followed by "Original Text:" and "Proposed Modified Text:"
+        # Extract proposals that follow the standardized format
         original_text = ""
         proposed_text = ""
         
-        # First try to find proposals with numbered format "Proposal N:"
+        # Check for our standardized format first (highest priority)
+        orig_pattern = r"## Original Text\s*\n\*\*Original Text:\*\*\s*(.*?)(?=##|\Z)"
+        prop_pattern = r"## Proposed Modified Text\s*\n\*\*Proposed Modified Text:\*\*\s*(.*?)(?=##|\Z)"
+        
+        orig_match = re.search(orig_pattern, proposal_text, re.DOTALL)
+        prop_match = re.search(prop_pattern, proposal_text, re.DOTALL)
+        
+        if orig_match and prop_match:
+            original_text = orig_match.group(1).strip()
+            proposed_text = prop_match.group(1).strip()
+            return original_text, proposed_text
+        
+        # Backup patterns for the markdown header format
+        orig_pattern2 = r"\*\*Original Text:\*\*\s*(.*?)(?=\*\*Proposed|##|\Z)"
+        prop_pattern2 = r"\*\*Proposed Modified Text:\*\*\s*(.*?)(?=##|\*\*Rationale|\Z)"
+        
+        orig_match = re.search(orig_pattern2, proposal_text, re.DOTALL)
+        prop_match = re.search(prop_pattern2, proposal_text, re.DOTALL)
+        
+        if orig_match and prop_match:
+            original_text = orig_match.group(1).strip()
+            proposed_text = prop_match.group(1).strip()
+            return original_text, proposed_text
+        
+        # Find proposals with numbered format
         proposals = re.findall(r'(?:Proposal|Enhancement) (?:\d+):(.*?)(?=(?:Proposal|Enhancement) (?:\d+):|$)', 
                               proposal_text, re.DOTALL | re.IGNORECASE)
         
         if proposals:
-            # For challenge3_output.txt format
+            # Try to find Original Text and Proposed Modified Text in the proposals
             for proposal in proposals:
-                # Extract original text (look for *Original Text:* pattern)
-                orig_match = re.search(r'\*\*Original Text:\*\*(.*?)(?=\*\*Proposed|$)', proposal, re.DOTALL | re.IGNORECASE)
-                if orig_match:
-                    # Found a match in this proposal section
+                # Try the standardized format first
+                orig_match = re.search(r'## Original Text\s*\n\*\*Original Text:\*\*\s*(.*?)(?=##|\Z)', proposal, re.DOTALL)
+                prop_match = re.search(r'## Proposed Modified Text\s*\n\*\*Proposed Modified Text:\*\*\s*(.*?)(?=##|\Z)', proposal, re.DOTALL)
+                
+                if orig_match and prop_match:
                     original_text = orig_match.group(1).strip()
-                    
-                    # Now look for proposed text
-                    prop_match = re.search(r'\*\*Proposed Modified Text:\*\*(.*?)(?=\*\*Rationale|$)', proposal, re.DOTALL | re.IGNORECASE)
-                    if prop_match:
-                        proposed_text = prop_match.group(1).strip()
-                        # We found both, so break
-                        break
+                    proposed_text = prop_match.group(1).strip()
+                    return original_text, proposed_text
+                
+                # Try the simpler format
+                orig_match = re.search(r'\*\*Original Text:\*\*\s*(.*?)(?=\*\*Proposed|##|\Z)', proposal, re.DOTALL)
+                prop_match = re.search(r'\*\*Proposed Modified Text:\*\*\s*(.*?)(?=##|\*\*Rationale|\Z)', proposal, re.DOTALL)
+                
+                if orig_match and prop_match:
+                    original_text = orig_match.group(1).strip()
+                    proposed_text = prop_match.group(1).strip()
+                    return original_text, proposed_text
         
         # If we haven't found original and proposed text, try other patterns
         if not original_text or not proposed_text:
@@ -484,6 +512,31 @@ class OutputParser:
             if "enhanced_diff" not in results:
                 enhanced_diff = OutputParser.generate_enhanced_diff(original_text, proposed_text)
                 results["enhanced_diff"] = enhanced_diff
+            
+            # Process compatibility matrix if present
+            if "compatibility_matrix" in results:
+                # Make sure the compatibility matrix is in the right format 
+                matrix = results["compatibility_matrix"]
+                # Convert string JSON to actual data if needed
+                if isinstance(matrix, str):
+                    try:
+                        import json
+                        matrix = json.loads(matrix) 
+                        results["compatibility_matrix"] = matrix
+                    except:
+                        print("Warning: Could not parse compatibility matrix JSON")
+                
+                # Ensure it's a list
+                if not isinstance(matrix, list):
+                    print(f"Warning: Compatibility matrix is not a list: {type(matrix)}")
+                    # Create a default one
+                    results["compatibility_matrix"] = [
+                        {"standard_id": "4", "impact_level": "Unknown", "impact_type": "Unknown"},
+                        {"standard_id": "7", "impact_level": "Unknown", "impact_type": "Unknown"},
+                        {"standard_id": "10", "impact_level": "Unknown", "impact_type": "Unknown"},
+                        {"standard_id": "28", "impact_level": "Unknown", "impact_type": "Unknown"},
+                        {"standard_id": "32", "impact_level": "Unknown", "impact_type": "Unknown"}
+                    ]
             
             # Add cross-standard analysis if present
             if cross_standard_analysis:

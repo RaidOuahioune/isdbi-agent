@@ -41,23 +41,16 @@ class CrossStandardAnalyzerAgent(Agent):
         logger.info(f"Analyzing cross-standard impact for FAS {standard_id}")
         logger.debug(f"Proposal text length: {len(proposal)} characters")
         
+        # Extract original and proposed text for reference
         original_text, proposed_text = self._extract_original_and_proposed(proposal)
         
         logger.info(f"Extracted original text ({len(original_text)} chars) and proposed text ({len(proposed_text)} chars)")
-        
-        # Fallback content if extraction failed
-        if not original_text and not proposed_text:
-            logger.warning("Failed to extract original or proposed text from proposal")
-            logger.debug(f"First 200 chars of proposal: {proposal[:200]}...")
-            
-            # Use proposal as context if text extraction failed
-            original_text = "Extraction failed. Please see the full proposal."
-            proposed_text = "Extraction failed. Please see the full proposal."
         
         # Get related standards content
         related_standards = self._get_related_standards(standard_id)
         
         # Prepare the context for the agent prompt
+        # Use the full proposal text for better context
         context = self._prepare_context(standard_id, original_text, proposed_text, related_standards, proposal)
         
         # Prepare message for analysis
@@ -145,29 +138,23 @@ ensure that the original and proposed text sections are clearly labeled and form
         Returns:
             Formatted context string for the prompt
         """
-        # Fallback: if extraction failed, include a note about it
-        extraction_note = ""
-        if not original_text or not proposed_text or "extraction failed" in original_text.lower():
-            logger.warning("Using fallback context preparation due to text extraction failure")
-            extraction_note = "\nNote: The exact original and proposed text could not be precisely extracted. Please analyze based on the full proposal and available information about FAS standards and their relationships."
-        
-        context = f"""Please analyze how the proposed enhancement to FAS {standard_id} might impact other AAOIFI standards.{extraction_note}
+        context = f"""Please analyze how the proposed enhancement to FAS {standard_id} might impact other AAOIFI standards.
 
 ## Current Standard Being Enhanced
 FAS {standard_id}
 
-## Original Text
-{original_text}
+## Full Enhancement Proposal
+{full_proposal}"""
 
-## Proposed Enhanced Text
-{proposed_text}"""
-
-        # If extraction failed and we have the full proposal, include it
-        if extraction_note and full_proposal:
+        # Also include the extracted original and proposed text if available
+        if original_text and proposed_text:
             context += f"""
 
-## Full Proposal (Since exact extraction failed)
-{full_proposal}"""
+## Extracted Original Text
+{original_text}
+
+## Extracted Proposed Enhanced Text
+{proposed_text}"""
 
         context += """
 
@@ -187,11 +174,60 @@ Please provide a detailed cross-standard impact analysis including:
 5. Specific recommendations for maintaining consistency across standards
 
 Format the compatibility matrix as a table with columns for Standard ID, Impact Level, and Impact Type (Contradiction/Synergy/Both/None).
+
+Your response MUST follow this format:
+```
+## Cross-Standard Impact Analysis
+
+[Your detailed analysis here]
+
+## Compatibility Matrix
+
+| Standard ID | Impact Level | Impact Type |
+|-------------|--------------|-------------|
+| FAS 4       | [Level]      | [Type]      |
+| FAS 7       | [Level]      | [Type]      |
+| FAS 10      | [Level]      | [Type]      |
+| FAS 28      | [Level]      | [Type]      |
+| FAS 32      | [Level]      | [Type]      |
+
+## Recommendations
+
+[Your recommendations for maintaining consistency]
+```
 """
         return context
     
     def _extract_original_and_proposed(self, proposal_text: str) -> tuple:
         """Extract original and proposed text from a proposal description."""
+        # Try to use the standardized format we've enforced in the proposer agent
+        original_text = ""
+        proposed_text = ""
+        
+        # Look for the standardized format with markdown headers
+        orig_pattern = r"## Original Text\s*\n\*\*Original Text:\*\*\s*(.*?)(?=##|\Z)"
+        prop_pattern = r"## Proposed Modified Text\s*\n\*\*Proposed Modified Text:\*\*\s*(.*?)(?=##|\Z)"
+        
+        orig_match = re.search(orig_pattern, proposal_text, re.DOTALL)
+        prop_match = re.search(prop_pattern, proposal_text, re.DOTALL)
+        
+        if orig_match and prop_match:
+            original_text = orig_match.group(1).strip()
+            proposed_text = prop_match.group(1).strip()
+            return original_text, proposed_text
+        
+        # Backup patterns for the updated format
+        orig_pattern2 = r"\*\*Original Text:\*\*\s*(.*?)(?=\*\*Proposed|##|\Z)"
+        prop_pattern2 = r"\*\*Proposed Modified Text:\*\*\s*(.*?)(?=##|\*\*Rationale|\Z)"
+        
+        orig_match = re.search(orig_pattern2, proposal_text, re.DOTALL)
+        prop_match = re.search(prop_pattern2, proposal_text, re.DOTALL)
+        
+        if orig_match and prop_match:
+            original_text = orig_match.group(1).strip()
+            proposed_text = prop_match.group(1).strip()
+            return original_text, proposed_text
+        
         # More robust pattern matching for both single and multiple enhancement proposals
         # Look for various patterns that might appear in the proposal text
         original_patterns = [
@@ -210,9 +246,6 @@ Format the compatibility matrix as a table with columns for Standard ID, Impact 
         ]
         
         # First try to find a single original/proposed pair
-        original_text = ""
-        proposed_text = ""
-        
         for pattern in original_patterns:
             match = re.search(pattern, proposal_text, re.DOTALL | re.IGNORECASE)
             if match:
@@ -229,8 +262,8 @@ Format the compatibility matrix as a table with columns for Standard ID, Impact 
         if original_text and proposed_text:
             return original_text, proposed_text
         
-        # If not found, try to extract from "Enhancement Proposal" sections
-        proposals = re.findall(r'Enhancement Proposal \d+:.*?(?=Enhancement Proposal \d+:|$)', 
+        # If not found, try to extract from "Enhancement Proposal" or "Proposal" sections
+        proposals = re.findall(r'(?:Enhancement Proposal|Proposal) \d+:.*?(?=(?:Enhancement Proposal|Proposal) \d+:|$)', 
                              proposal_text, re.DOTALL | re.IGNORECASE)
         
         if proposals:
@@ -328,18 +361,19 @@ Format the compatibility matrix as a table with columns for Standard ID, Impact 
         
         # Try to extract a matrix table from the response
         # This is a simplified extractor - would need more robust parsing in production
-        matrix_pattern = r"(?:Compatibility Matrix|Impact Matrix).*?\n(.*?)(?:\n\n|\n#|\Z)"
+        matrix_pattern = r"(?:Compatibility Matrix|Impact Matrix).*?\n(?:\|.*?\|.*?\|.*?\|\n)+(?:\|.*?\|.*?\|.*?\|\n?)+"
         matrix_match = re.search(matrix_pattern, analysis_text, re.DOTALL | re.IGNORECASE)
         
         if not matrix_match:
+            logger.warning("No compatibility matrix found in analysis text")
             return default_matrix
         
         # Parse the matrix text
-        matrix_text = matrix_match.group(1)
+        matrix_text = matrix_match.group(0)
         matrix = []
         
-        # Look for rows like "FAS 4 | Medium | Synergy"
-        row_pattern = r"FAS\s+(\d+)\s*\|\s*(High|Medium|Low|None)\s*\|\s*(Contradiction|Synergy|Both|None)"
+        # Look for rows like "| FAS 4 | Medium | Synergy |"
+        row_pattern = r"\|\s*FAS\s+(\d+)\s*\|\s*(High|Medium|Low|None)\s*\|\s*(Contradiction|Synergy|Both|None)\s*\|"
         for match in re.finditer(row_pattern, matrix_text, re.IGNORECASE):
             standard_id = match.group(1)
             impact_level = match.group(2)
@@ -353,6 +387,7 @@ Format the compatibility matrix as a table with columns for Standard ID, Impact 
         
         # If we couldn't parse anything, return the default matrix
         if not matrix:
+            logger.warning("Failed to parse compatibility matrix rows")
             return default_matrix
             
         return matrix
