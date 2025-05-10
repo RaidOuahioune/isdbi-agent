@@ -1,162 +1,103 @@
-# AAOIFI Standards Enhancement System
+# ISDBI Agent
 
-An AI-powered system for reviewing, proposing, and validating enhancements to Islamic Finance standards using a multi-agent architecture.
-
-## Overview
-
-The Standards Enhancement feature is a specialized multi-agent system designed to help improve AAOIFI Financial Accounting Standards (FAS) by identifying areas for enhancement, proposing specific changes, and validating those changes against Shariah principles.
-
-The system uses three specialized AI agents working together in a coordinated workflow:
-
-1. **Reviewer Agent**: Analyzes standards and identifies potential gaps, ambiguities, or areas for improvement
-2. **Proposer Agent**: Generates specific text changes to address the identified issues
-3. **Validator Agent**: Validates the proposed changes against Shariah principles and standards consistency
+The ISDBI Agent is an intelligent system designed to enhance, analyze, and provide insights into Islamic finance standards and documents, leveraging vector database technology and RAG (Retrieval Augmented Generation).
 
 ## Features
 
-- Comprehensive analysis of Islamic Finance standards
-- AI-generated enhancement proposals with rationale
-- Validation against Shariah principles
-- Visual diff comparisons of original and proposed text changes
-- Export options for results (Markdown and HTML)
-- Historical database of past enhancements
-- Streamlit web interface with progress monitoring
+- Standards enhancement recommendations
+- Compliance verification for financial documents
+- Product design guidance for Islamic financial instruments
+- Interactive querying of Islamic finance knowledge base
+- Vector database for efficient retrieval of financial standards
 
-## Installation
+## Installation and Setup
 
-### Requirements
+There are two ways to set up and run this project:
 
-- Python 3.9+
-- Access to Google's Gemini API (API key required)
+### Option 1: Using Virtual Environment (venv)
 
-### Setup
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd isdbi-agent
+   ```
 
-1. **Clone the repository**
+2. **Create and activate a virtual environment**:
+   ```bash
+   python -m venv venv
+   
+   # On Windows
+   venv\Scripts\activate
+   
+   # On macOS/Linux
+   source venv/bin/activate
+   ```
 
-```bash
-git clone <repository-url>
-cd isdbi-agent
-```
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-2. **Install dependencies**
+4. **Set up environment variables**:
+   Create a `.env` file in the root directory with the following:
+   ```
+   GEMINI_API_KEY=your-gemini-api-key
+   ISLAMIC_FINANCE_API_URL=url-to-fastapi-server
+   ```
+   Note: The `ISLAMIC_FINANCE_API_URL` should point to the FastAPI server that connects to and performs RAG operations on the vector graph database(NEO4J).
 
-```bash
-pip install -r requirements.txt
-```
+5. **Run the application**:
+   ```bash
+   streamlit run ui/app.py
+   ```
 
-3. **Configure API keys**
+### Option 2: Using Docker
 
-Create a `.env` file in the project root with your Google Gemini API key:
+1. **Pull the Docker image**:
+   ```bash
+   docker pull ellzo/isdbi-agent
+   ```
 
-```
-GEMINI_API_KEY=your_api_key_here
-```
+2. **Run the container**:
+   ```bash
+   docker run -p 8501:8501 -e GEMINI_API_KEY=your-gemini-api-key -e ISLAMIC_FINANCE_API_URL=your-api-url ellzo/isdbi-agent
+   ```
 
-## Usage
+3. **Access the application**:
+   Open your browser and navigate to `http://localhost:8501`
 
-There are three ways to use the Standards Enhancement feature:
+## Neo4j Graph Database Creation
 
-### 1. Web Interface (Streamlit)
+The repository includes a Jupyter notebook (`createNeoDB.ipynb`) that demonstrates how to create the Neo4j graph database of Islamic financial books. The data source for this notebook is available at [this Google Drive link](https://drive.google.com/drive/folders/1THMlqIs1_jC6KE8sIZxLvOMrnajI1PJC?usp=drive_link).
 
-The easiest way to use the system is via the Streamlit web interface:
-
-```bash
-cd ui
-streamlit run app.py
-```
-
-This will open a web browser with the interactive interface where you can:
-- Select from predefined test cases
-- Create custom enhancement scenarios
-- View the results with interactive visualizations
-- Export results as Markdown or HTML
-- Browse past enhancements
-
-### 2. Command Line Demo
-
-For a simpler command-line demonstration:
-
-```bash
-python standards_enhancement_demo.py
-```
-
-Options:
-- `--test-case INDEX`: Run a specific test case by index (0, 1, 2, etc.)
-- `--custom`: Run with custom input parameters
-- `--all`: Run all test cases sequentially
-
-### 3. Programmatic Usage
-
-You can also use the enhancement system programmatically in your own Python code:
-
-```python
-from enhancement import run_standards_enhancement
-
-# Run an enhancement process
-results = run_standards_enhancement(
-    standard_id="10",  # FAS 10 (Istisna'a)
-    trigger_scenario="Your trigger scenario here...",
-    progress_callback=None  # Optional callback for progress updates
-)
-
-# Display or process the results
-print(results['review'])
-print(results['proposal'])
-print(results['validation'])
-```
-
-## Test Cases
-
-The system includes several predefined test cases for standards enhancement:
-
-1. **Digital Assets in Istisna'a (FAS 10)**
-   - Scenario: A financial institution wants to structure an Istisna'a contract for AI software development
-   - Challenge: Applying FAS 10's concepts of "well-defined subject matter" to evolving digital assets
-
-2. **Tokenized Mudarabah Investments (FAS 4)**
-   - Scenario: Fintech platforms offering tokenized Mudarabah funds on blockchain networks
-   - Challenge: Handling digital representations of investment units and real-time trading
-
-3. **Green Sukuk Environmental Impact (FAS 32)**
-   - Scenario: Islamic institutions issuing 'Green Sukuk' for sustainable projects
-   - Challenge: Accounting for and reporting environmental impact metrics alongside financial returns
-
-4. **Digital Banking Services in Ijarah (FAS 28)**
-   - Scenario: Islamic banks offering digital banking services through cloud infrastructure
-   - Challenge: Classifying and measuring digital service agreements with mixed components
-
-5. **Cryptocurrency Zakat Calculation (FAS 7)**
-   - Scenario: Calculating Zakat on volatile cryptocurrency assets
-   - Challenge: Addressing value fluctuations specific to digital assets
+To use the notebook:
+1. Ensure you have Jupyter installed
+2. Open the notebook: `jupyter notebook createNeoDB.ipynb`
+3. Follow the instructions within the notebook to create the graph database
 
 ## Project Structure
 
-- `agents.py`: Specialized agents for reviewing, proposing, and validating
-- `enhancement.py`: Main enhancement workflow
-- `visualize.py`: Text comparison and visualization utilities
-- `shariah_principles.py`: Knowledge base of Shariah principles
-- `agent_graph.py`: Agent coordination and workflow
-- `ui/app.py`: Streamlit web interface
-- `ui/progress_monitor.py`: Real-time progress monitoring
-- `standards_enhancement_demo.py`: Command-line demo
-- `past_enhancements/`: Database of saved enhancements
+- `/agents.py`: Core agent functionality
+- `/enhancement.py`: Standards enhancement logic
+- `/retreiver.py`: Vector database retrieval functions
+- `/server.py`: FastAPI server implementation
+- `/ui/`: Streamlit user interface
+- `/components/`: Modular components
+- `/documentation/`: Project documentation 
+- `/notebooks/`: Jupyter notebooks including embedding and graph creation
+- `/vector_db_storage/`: Storage for vector embeddings
+
+## Use Cases
+
+1. **Standards Enhancement**: Analyze and propose improvements to AAOIFI standards
+2. **Compliance Verification**: Check financial documents for compliance with Islamic finance principles
+3. **Product Design**: Design Shariah-compliant financial products
+4. **Financial Standards Journaling**: Process and generate journal entries based on Islamic finance standards
 
 ## Contributing
 
-We welcome contributions to enhance this system! Some areas for potential improvement:
-
-1. **Cross-standard Analysis**: Evaluate consistency across multiple standards
-2. **Impact Assessment**: Evaluate potential impact of changes on financial reporting
-3. **User Feedback Loop**: Allow user feedback to improve proposals
-4. **Enhanced Visualization**: More advanced visualization of proposed changes
-5. **Integration with Knowledge Bases**: Incorporate more Islamic finance resources
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-[Specify your license here]
-
-## Acknowledgments
-
-- AAOIFI for their comprehensive Islamic Finance standards
-- LangChain and LangGraph for agent coordination
-- Google Gemini for AI capabilities 
+[Include appropriate license information]

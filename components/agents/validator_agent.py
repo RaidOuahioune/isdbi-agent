@@ -7,6 +7,9 @@ from components.agents.base_agent import Agent
 from components.agents.prompts import VALIDATOR_SYSTEM_PROMPT
 from shariah_principles import format_principles_for_validation
 from retreiver import retriever
+import os 
+from dotenv import load_dotenv
+load_dotenv()
 
 class ValidatorAgent(Agent):
     """Agent responsible for validating proposed changes."""
