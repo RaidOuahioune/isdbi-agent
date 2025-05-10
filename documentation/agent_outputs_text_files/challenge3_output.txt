@@ -1,0 +1,303 @@
+# Standards Enhancement Results for FAS 10
+
+## Trigger Scenario
+A financial institution wants to structure an Istisna'a contract for the development
+                              of a large-scale AI software platform. The current wording of FAS 10 on 'well-defined
+                              subject matter' and 'determination of cost' is causing uncertainty for intangible assets        
+                              like software development.
+
+## Review Findings
+Okay, I will review the provided sections of AAOIFI FAS 10 against the trigger scenario involving a large-scale AI software platform development using an Istisna'a contract.
+
+Here are the findings regarding sections that may need enhancement:
+
+**1. Specific Section/Clause:** Appendix (C), Section 2: Definition of Istisna'a and Appendix (F): Definitions - Istisna’a    
+*   **Text:** "Istisna’a is a sale contract... whereby Al-Sani’... undertakes to have manufactured or otherwise acquired Al-Masnoo’ (the subject matter of the contract) according to the specifications and sell it to Al-Mustasni’... It is a condition of the Istisna’a contract that Al-Sani’ should provide either the raw material or the labour."
+*   **Potential Gap or Ambiguity:** The definition's emphasis on "manufactured" and the condition of providing "raw material or the labour" is inherently geared towards physical goods or construction. While software development involves significant labour, the concept of "raw material" is not directly applicable in the same way it is for physical manufacturing (e.g., steel, cement, wood). The term "manufactured" also doesn't perfectly describe the process of creating intangible software.
+*   **Why this might be an issue in the context of the trigger scenario:** Applying this definition directly to intangible AI software development creates ambiguity. Software is developed, coded, trained, and integrated, not typically "manufactured" from "raw materials" in the traditional sense. While labour is a core component of software development cost, the framing might lead to questions about whether Istisna'a is the most appropriate contract type or how the "raw material" condition is met (e.g., is data considered raw material? Are existing code libraries?).
+
+**2. Specific Section/Clause:** Appendix (C), Section 3: Legitimacy of Istisna’a, Note (7)
+*   **Text:** "The subject matter may be a commodity, service or both."
+*   **Potential Gap or Ambiguity:** This note explicitly broadens the scope of the "subject matter" (Al-Masnoo’) to include services or both. However, the main body of the standard and other sections (like the conditions for validity and cost definitions) primarily use language and examples related to tangible goods ("car, aeroplane or house"). This creates an internal inconsistency or at least a lack of clear integration of intangible/service-based subject matters into the detailed requirements.   
+*   **Why this might be an issue in the context of the trigger scenario:** While Note (7) provides Shari'a basis for applying Istisna'a to non-physical items like software (a service or a combination of service and intangible commodity), the rest of the standard's accounting and validity conditions are not adapted to this broader scope. This leaves the financial institution uncertain how to apply the detailed rules (e.g., cost tracking, progress measurement) when the "subject matter" is intangible software, not a physical commodity or construction project.
+
+**3. Specific Section/Clause:** Appendix (C), Section 4: Conditions for the Validity of Istisna’a, specifically 4/1/1 regarding Al-Masnoo’ specifications.
+*   **Text:** "Al-Masnoo’ must be known and specified to the extent of removing any lack of knowledge of its: a) Kind... b) Type... c) Quality... and d) Quantity." Examples given are physical (car, aeroplane, house).
+*   **Potential Gap or Ambiguity:** The requirement to specify "Kind, Type, Quality, and Quantity" to the extent of "removing any lack of knowledge" is extremely challenging for complex, novel AI software development.
+    *   "Quantity": How is the quantity of an AI software platform defined? Lines of code? Number of features? Number of users supported? This metric is not standard for software.
+    *   "Quality": While specifications can define desired functionality and performance metrics (e.g., accuracy, speed), achieving a specific "quality" level for AI can be iterative and dependent on data and training outcomes that are not fully predictable at the outset. "Established tables of specifications" is particularly ill-suited for bespoke software.
+*   **Why this might be an issue in the context of the trigger scenario:** Developing a large-scale AI software platform inherently involves a degree of uncertainty and iterative refinement, particularly in defining and achieving specific "Quality" and determining "Quantity". Strict adherence to defining these elements to "remove any lack of knowledge" upfront is often impractical or impossible in software development, especially for novel AI applications. This requirement, as currently worded and exemplified, poses a significant hurdle for structuring such contracts under Istisna'a.
+
+**4. Specific Section/Clause:** Statement of the Standard, Section 2/1: Istisna’a costs, a) and b), and Section 2/2: Contract costs in parallel Istisna’a, a). Also Appendix (F): Definitions - Istisna’a Work-in-Progress Account, Istisna’a Costs Account.
+*   **Text:** Costs are defined as "Direct costs, in particular costs of producing Al-Masnoo’; and (II) Indirect costs relating to the contract... General and administrative expenses, selling expenses, research and development costs shall not be included in an Istisna’a contract costs." These costs are accumulated in "Istisna’a work-in-progress account" or "Istisna’a costs account" (for parallel Istisna'a).
+*   **Potential Gap or Ambiguity:** The exclusion of "research and development costs" is problematic. For a novel AI software platform, the *entire development process* could be considered R&D, involving significant research into algorithms, model training, and technical feasibility. It's unclear how to categorize the core costs of software development (developer salaries, data acquisition/cleaning, training infrastructure) under "costs of producing" without overlapping with R&D. The accounts mentioned ("work-in-progress," "costs account") seem framed for physical assets being built.
+*   **Why this might be an issue in the context of the trigger scenario:** The primary cost of developing complex AI software is the highly skilled labour and related infrastructure/data costs, which often fall under R&D classifications in conventional accounting. Excluding R&D would mean the majority of the contract cost for the AI platform might not be capitalised or tracked as Istisna'a costs, making the accounting treatment under FAS 10 unworkable for this type of project. The standard needs to clarify how costs for creating intangible assets are to be categorized and treated.
+
+**5. Specific Section/Clause:** Statement of the Standard, Section 2/4: Measurement of Istisna’a work-in-progress..., a) and b). Also Appendix (E): Basis for Conclusions - Valuation of Istisna’a Assets at the End of a Financial Period.
+*   **Text:** "Istisna’a work-in-progress shall be measured and reported... at a value not exceeding its cash equivalent value (i.e., the difference between the contract price and the expected additional cost to complete the contract)." Any expected loss is recognized.
+*   **Potential Gap or Ambiguity:** Measuring "work-in-progress" and determining "cash equivalent value" and "expected additional cost to complete" are significantly more challenging and subjective for complex, intangible software development than for physical construction. The value of incomplete software is highly uncertain and depends on successful completion and market acceptance, unlike a partially built physical structure which has clearer salvage or resale value based on materials and labour invested. Estimating remaining costs for novel software is also notoriously difficult due to unforeseen technical hurdles.    
+*   **Why this might be an issue in the context of the trigger scenario:** The valuation methodology prescribed is difficult to apply reliably to an intangible AI platform under development. The "cash equivalent value" of incomplete software is often nil or negligible until a functional, valuable product is delivered. This measurement basis, while appropriate for tangible assets, may not accurately reflect the economic reality or progress of an intangible development project and could lead to significant and volatile loss recognition if applied strictly.
+
+**6. Specific Section/Clause:** Statement of the Standard, Section 2/5: Change orders and additional claims, b) and c).       
+*   **Text:** Additional claims require a "legal basis... supported by objective and verifiable evidence" and must be due to "circumstances that were unforeseeable at the contract date and are not the result of the deficiencies, fault or negligence of Al-Sani’."
+*   **Potential Gap or Ambiguity:** Software development is highly prone to scope changes and unforeseen technical challenges. Distinguishing between "unforeseeable circumstances" and issues arising from the complexity of the task or potential "deficiencies" of the developer is much harder than in physical construction. The concept of "legal basis supported by objective and verifiable evidence" is also more abstract in software development disputes compared to physical contracts.
+*   **Why this might be an issue in the context of the trigger scenario:** The dynamic nature of AI software development means changes and unforeseen issues are common. The standard's strict criteria for recognizing additional claims might be impractical or lead to frequent disputes in a software context, where the lines between unforeseen technical difficulty, evolving requirements, and developer performance are less clear than in traditional manufacturing or construction.
+
+In summary, while Note (7) in Appendix C provides a potential Shari'a basis for applying Istisna'a to services/intangibles, the detailed accounting requirements and validity conditions in FAS 10 are predominantly framed for tangible assets and manufacturing/construction processes. Applying these requirements directly to the development of an intangible AI software platform presents significant ambiguities and practical challenges, particularly concerning the definition and specification of the subject matter, the categorization of costs (especially R&D), and the measurement of work-in-progress and claims. The standard would benefit from explicit guidance or clarification on its applicability and specific treatment for intangible assets and service-based contracts.
+
+## Proposed Enhancements
+Okay, here are the proposed enhancements to AAOIFI FAS 10 based on the reviewer's findings, aimed at addressing the ambiguities and challenges in applying the standard to intangible assets like AI software platforms.
+
+**Proposal 1: Clarifying Scope and Definition for Intangible Assets**
+
+*   **Original Text:**
+    *   *Appendix (C), Section 2: Definition*
+        "Istisna’a is a sale contract between Al-Mustasni’ (the buyer) and Al-Sani’ (the seller), whereby Al-Sani’- based on an order from Al-Mustasni’- undertakes to have manufactured or otherwise acquired Al-Masnoo’ (the subject matter of the contract) according to the specifications and sell it to Al-Mustasni’ for an agreed upon price and method of settlement whether that be in advance, by instalments or deferred to a specific future time. It is a condition of the Istisna’a contract that Al-Sani’ should provide either the raw material or the labour."
+    *   *Appendix (C), Section 3: Legitimacy of Istisna’a, Note (7)*
+        "The subject matter may be a commodity, service or both."
+    *   *Appendix (F): Definitions - Istisna’a*
+        "It is a sale contract between Al-Mustasni’ (the buyer) and Al-Sani’, (the seller) whereby Al-Sani’ - based on an order from Al-Mustasni’- undertakes to have manufactured or otherwise acquire Al-Masnoo’ (the subject matter of the contract) according to the specifications and sell it to Al-Mustasni’ for an agreed upon price and method of settlement whether that be at the time of contracting, by instalments or deferred to a specific future time. It is a condition of the Istisna’a contract that Al-Sani’ should provide either the raw material or the labour."
+    *   *Statement of the Standard, Section 1: Scope of the Standard*
+        "This standard addresses the accounting rules of Istisna’a and parallel Istisna’a contracts in the financial statements of Islamic banks relating to measuring and recognizing the costs and revenues from Istisna’a and parallel Istisna’a, the gains and losses accruing therefrom, and their presentation and disclosure in the financial statements of the Islamic bank." (para. 1)
+
+*   **Proposed Modified Text:**
+    *   *Statement of the Standard, Section 1: Scope of the Standard*
+        "This standard addresses the accounting rules of Istisna’a and parallel Istisna’a contracts in the financial statements of Islamic banks relating to measuring and recognizing the costs and revenues from Istisna’a and parallel Istisna’a, the gains and losses accruing therefrom, and their presentation and disclosure in the financial statements of the Islamic bank. **This includes contracts where the subject matter (Al-Masnoo’) is a tangible asset, an intangible asset (such as software or digital platforms), a service, or a combination thereof, provided the contract meets the conditions of Istisna'a.**" (para. 1)     
+    *   *Appendix (C), Section 2: Definition*
+        "Istisna’a is a sale contract between Al-Mustasni’ (the buyer) and Al-Sani’ (the seller), whereby Al-Sani’- based on an order from Al-Mustasni’- undertakes to have manufactured, developed, or otherwise acquired Al-Masnoo’ (the subject matter of the contract) according to the specifications and sell it to Al-Mustasni’ for an agreed upon price and method of settlement whether that be in advance, by instalments or deferred to a specific future time. It is a condition of the Istisna’a contract that Al-Sani’ should provide either the necessary inputs or the labour."
+    *   *Appendix (F): Definitions - Istisna’a*
+        "It is a sale contract between Al-Mustasni’ (the buyer) and Al-Sani’, (the seller) whereby Al-Sani’ - based on an order from Al-Mustasni’- undertakes to have manufactured, developed, or otherwise acquired Al-Masnoo’ (the subject matter of the contract) according to the specifications and sell it to Al-Mustasni’ for an agreed upon price and method of settlement whether that be at the time of contracting, by instalments or deferred to a specific future time. It is a condition of the Istisna’a contract that Al-Sani’ should provide either the necessary inputs or the labour."
+
+*   **Rationale:**
+    *   Adding explicit mention of intangible assets and services to the Scope section (para. 1) provides upfront clarity on the standard's applicability beyond traditional manufacturing/construction.
+    *   Modifying the definition in Appendix C and F by adding "developed" to "manufactured or otherwise acquired" and changing "raw material or the labour" to "necessary inputs or the labour" makes the language more inclusive and suitable for intangible asset development. "Necessary inputs" can encompass data, third-party software components, infrastructure access, etc., which are the "raw materials" equivalent in software development.
+    *   This aligns the primary definition and scope statement with the existing Note (7) in Appendix C, resolving the internal inconsistency identified by the reviewer.
+
+*   **How it Addresses the Trigger Scenario:** This directly addresses the core uncertainty for the financial institution by explicitly stating that FAS 10 is applicable to intangible assets like AI software and providing a definition that accommodates the nature of software development (development, inputs, labour).
+
+**Proposal 2: Adapting Validity Conditions (Specifications) for Intangible Assets**
+
+*   **Original Text:**
+    *   *Appendix (C), Section 4: Conditions for the Validity of Istisna’a*
+        "For the validity of Istisna’a, the following rules should be fulfilled:
+        4/1 Al-Masnoo’
+        4/1/1 Al-Masnoo’ must be known and specified to the extent of removing any lack of knowledge of its:
+        a) Kind, e.g., car, airoplane or house, etc.;
+        b) Type, e.g., a Toyota car, a Boeing airoplane, a house for low income individuals, etc.;
+        c) Quality, e.g., as specified according to established tables of specifications; and
+        d) Quantity."
+
+*   **Proposed Modified Text:**
+    *   *Appendix (C), Section 4: Conditions for the Validity of Istisna’a*
+        "For the validity of Istisna’a, the following rules should be fulfilled:
+        4/1 Al-Masnoo’
+        4/1/1 Al-Masnoo’ must be known and specified to the extent of removing any fundamental uncertainty regarding its nature, purpose, and key characteristics. For intangible assets like software, this specification may include:
+        a) Kind, e.g., software platform, mobile application, AI model, etc.;
+        b) Type, e.g., specific type of software (CRM, trading system, AI for fraud detection), programming language, operating environment, etc.;
+        c) Quality, e.g., functional requirements, performance metrics (speed, accuracy, capacity), security standards, user interface specifications, etc. While achieving final quality may involve iterative processes, the contract must define the criteria and acceptance standards; and
+        d) Quantity, e.g., number of licenses, number of features, processing capacity, defined scope of modules or functionalities, etc. For intangible assets where 'quantity' is not a standard metric, the scope and boundaries of the deliverable must be clearly defined."
+        **(Note: The examples provided in a), b), c), and d) above are illustrative and non-exhaustive, reflecting both tangible and intangible subject matters.)**
+
+*   **Rationale:**
+    *   The original text's examples and phrasing ("established tables of specifications") are rigid and unsuitable for dynamic intangible assets like software.
+    *   The proposed text retains the core requirement of removing fundamental uncertainty but adapts the description of Kind, Type, Quality, and Quantity to be relevant to intangible assets.
+    *   It acknowledges that defining "Quality" for software, especially AI, involves criteria and acceptance standards rather than relying on pre-existing "established tables."
+    *   It provides alternative ways to define "Quantity" based on scope, features, or capacity, which are more applicable to software than physical units.
+    *   The note clarifies that the examples are illustrative and the principles should be applied based on the nature of the specific Al-Masnoo'.
+
+*   **How it Addresses the Trigger Scenario:** This provides practical guidance on how the financial institution can define the specifications for the AI software platform in the Istisna'a contract, accommodating the iterative and complex nature of software development while still adhering to the Shari'a requirement of clearly defining the subject matter.
+
+**Proposal 3: Clarifying Cost Recognition for Intangible Asset Development**
+
+*   **Original Text:**
+    *   *Statement of the Standard, Section 2/1: Istisna’a costs*
+        "a) Istisna’a costs consist of: (I) Direct costs, in particular costs of producing Al-Masnoo’; and (II) Indirect costs relating to the contract as allocated on an objective basis. General and administrative expenses, selling expenses, research and development costs shall not be included in an Istisna’a contract costs. (para. 2)"
+    *   *Appendix (F): Definitions - Istisna’a Work-in-Progress Account*
+        "This is an asset account in which the Istisna’a contract costs are accumulated. When the percentage-of-completion method is used, a portion of Istisna’a profit commensurate with the work completed during a financial period is also debited to this account."
+    *   *Appendix (F): Definitions - Istisna’a Costs Account*
+        "This is an asset account used when a parallel Istisna’a exists. It accumulates progress billings made by the subcontractor. A portion of the Istisna’a profit commensurate with the work completed during a financial period is also debited to this account."
+
+*   **Proposed Modified Text:**
+    *   *Statement of the Standard, Section 2/1: Istisna’a costs*
+        "a) Istisna’a costs consist of: (I) Direct costs, in particular costs of producing or developing Al-Masnoo’; and (II) Indirect costs relating to the contract as allocated on an objective basis. General and administrative expenses, selling expenses, **and research and development costs not directly attributable to the specific Al-Masnoo’ under the Istisna’a contract** shall not be included in an Istisna’a contract costs. **Costs directly incurred in the development of an intangible Al-Masnoo’, such as labour costs for coding, design, and testing, and costs of necessary inputs like data or specialized software tools, shall be included as direct Istisna’a costs.** (para. 2)"
+    *   *Appendix (F): Definitions - Istisna’a Work-in-Progress Account*
+        "This is an asset account in which the Istisna’a contract costs (including costs of developing intangible assets) are accumulated. When the percentage-of-completion method is used, a portion of Istisna’a profit commensurate with the work completed during a financial period is also debited to this account."
+    *   *Appendix (F): Definitions - Istisna’a Costs Account*
+        "This is an asset account used when a parallel Istisna’a exists. It accumulates progress billings made by the subcontractor for the production or development of Al-Masnoo’. A portion of the Istisna’a profit commensurate with the work completed during a financial period is also debited to this account."
+
+*   **Rationale:**
+    *   The original exclusion of all "research and development costs" is impractical for software development, where core activities involve R&D-like efforts specific to the contracted asset.
+    *   The proposed change clarifies that only *general* R&D is excluded, while costs *directly attributable* to creating the *specific* Al-Masnoo' (even if developmental in nature) are included. This aligns with the principle of capitalizing costs necessary to bring an asset to its intended use.
+    *   Explicitly listing examples of direct costs for intangible assets (labour, inputs) provides further clarity.
+    *   Updating the definitions of the WIP and Costs accounts with parenthetical notes confirms that these accounts are used for accumulating intangible development costs as well.
+
+*   **How it Addresses the Trigger Scenario:** This directly resolves the issue of how to categorize the significant costs of developing the AI software platform. It allows the financial institution to include the core development costs (developer salaries, data costs, infrastructure for training) as Istisna'a costs, making the accounting treatment under FAS 10 viable for this project.
+
+**Proposal 4: Guidance on Measurement of Work-in-Progress for Intangible Assets**
+
+*   **Original Text:**
+    *   *Statement of the Standard, Section 2/4: Measurement of Istisna’a work-in-progress...*
+        "a) In the event of applying the percentage of completion method for the recognition of Istisna’a revenue and profit, Istisna’a work-in-progress shall be measured and reported in the statement of financial position of the Islamic bank at a value not exceeding its cash equivalent value (i.e., the difference between the contract price and the expected additional cost to complete the contract). (para. 19)"
+    *   *Appendix (E): Basis for Conclusions - Valuation of Istisna’a Assets at the End of a Financial Period*
+        "Two valuation bases were considered... b) Historical cost... provided it does not exceed the cash equivalent value. Alternative (b) was chosen because it allows timely recognition of any expected losses... Hence, Istisna’a assets would not be inflated..."
+
+*   **Proposed Modified Text:**
+    *   *Statement of the Standard, Section 2/4: Measurement of Istisna’a work-in-progress...*
+        "a) In the event of applying the percentage of completion method for the recognition of Istisna’a revenue and profit, Istisna’a work-in-progress shall be measured and reported in the statement of financial position of the Islamic bank at a value not exceeding its recoverable amount. For tangible assets, the recoverable amount is typically its cash equivalent value (i.e., the difference between the contract price and the expected additional cost to complete the contract). **For intangible assets under development, determining the recoverable amount requires careful consideration, as value may only be realized upon successful completion. Measurement of progress for intangible assets may be based on input methods (e.g., costs incurred relative to total estimated costs) or output methods (e.g., achievement of defined milestones or completion of functional modules), depending on which method provides a more reliable indicator of the stage of completion and expected outcome.** (para. 19)"   
+        "b) Any expected loss resulting from the valuation of Istisna’a work-in-progress at the end of a financial period shall be recognized and reported in the Islamic bank’s income statement. **For intangible assets, expected losses should be recognized when the total estimated contract costs (including costs to complete) are expected to exceed the total contract price.** (para. 20)"
+
+*   **Rationale:**
+    *   The concept of "cash equivalent value" as defined (contract price less cost to complete) is primarily suited for tangible assets where a partially completed asset might have some inherent value. For incomplete intangible assets, this value is often zero or highly uncertain until completion.
+    *   The proposed text uses the broader term "recoverable amount" and provides specific guidance for intangible assets, acknowledging the difficulty in determining their value before completion.
+    *   It suggests appropriate methods for measuring the percentage of completion for intangibles (input or output methods), which are standard practice in software accounting.
+    *   Clarifying loss recognition for intangibles links it directly to the total expected cost exceeding the contract price, which is a more practical trigger for recognizing losses on such projects.
+
+*   **How it Addresses the Trigger Scenario:** This offers a more realistic and applicable approach to measuring the progress and valuing the work done on the AI software platform. It acknowledges the inherent challenges of valuing incomplete software and provides alternative methods for calculating percentage of completion, reducing the uncertainty for the financial institution.
+
+**Proposal 5: Guidance on Change Orders and Additional Claims for Intangible Assets**
+
+*   **Original Text:**
+    *   *Appendix (F): Definitions - Additional Claims*
+        "Amounts in excess of the agreed Istisna’a contract price which are claimed by Al-Sani’ for delays, errors in the specifications and designs or other causes of unanticipated costs caused by Al-Mustasni’. Recognition of these claims by Al-Sani’ requires the satisfaction of the following conditions:
+        a) The existence of a legal basis for the additional claim supported by objective and verifiable evidence.
+        b) Claims must be due to circumstances that were unforeseeable at the contract date and are not the result of the deficiencies, fault or negligence of Al-Sani’."
+    *   *Statement of the Standard, Section 2/5: Change orders and additional claims*
+        "b) If requisite conditions for recognizing additional claims are met, a related amount of revenue shall be recognized equal to the additional cost caused by such claims. (para. 24)
+        c) If one or more requisite conditions for recognizing additional claims are not met, the estimated value of these claims shall be disclosed in the notes accompanying the financial statements of the Islamic bank. (para. 25)"
+
+*   **Proposed Modified Text:**
+    *   *Appendix (F): Definitions - Additional Claims*
+        "Amounts in excess of the agreed Istisna’a contract price which are claimed by Al-Sani’ for delays, errors in the specifications and designs or other causes of unanticipated costs caused by Al-Mustasni’. Recognition of these claims by Al-Sani’ requires the satisfaction of the following conditions:
+        a) The existence of a legal basis for the additional claim supported by objective and verifiable evidence. **For intangible asset development, this evidence may include documented change requests, technical feasibility reports detailing unforeseen complexities, or records of delays caused by the customer.**
+        b) Claims must be due to circumstances that were unforeseeable at the contract date and are not the result of the deficiencies, fault or negligence of Al-Sani’. **In the context of complex intangible asset development, unforeseen technical challenges inherent in the nature of the project, provided they are not a result of Al-Sani’s lack of competence or diligence, may be considered unforeseeable circumstances.**"
+
+*   **Rationale:**
+    *   Applying the conditions for additional claims (objective evidence, unforeseeable circumstances) is more nuanced in software development due to its dynamic nature and the difficulty in predicting technical outcomes.
+    *   The proposed additions provide context for applying these conditions to intangible assets, suggesting types of evidence relevant to software projects and clarifying how unforeseen technical challenges might be viewed.
+    *   This acknowledges the reality of complex development projects while maintaining the necessary control criteria for recognizing additional revenue.
+
+*   **How it Addresses the Trigger Scenario:** This provides clearer guidance on how the financial institution can assess and potentially recognize additional costs and claims that arise from the inherent complexities and potential scope changes in developing a large-scale AI software platform, reducing ambiguity and potential disputes in accounting treatment.
+
+## Validation Results
+Okay, I will evaluate the proposed enhancements to AAOIFI FAS 10 based on the provided criteria.
+
+**Evaluation Report: Proposed Enhancement to AAOIFI FAS 10 (Intangible Assets)**
+
+**Overall Assessment:** The proposed enhancements aim to clarify the application of AAOIFI FAS 10 (Istisna’a and Parallel Istisna’a) to intangible assets, specifically focusing on large-scale software/AI development. This is a necessary update given the increasing use of such assets in modern finance and the need for clear Shariah-compliant accounting guidance.
+
+**Validation Checks:**
+
+1.  **Shariah Compliance Assessment:**
+    *   **Core Principles:**
+        *   **Riba (Interest):** The proposals do not introduce any element of Riba. They pertain to the subject matter definition, cost recognition, and measurement of progress/assets within an Istisna'a contract, which is inherently a Shariah-compliant sale contract structure. The fixed price nature of Istisna'a is not altered.
+        *   **Gharar (Excessive Uncertainty):** This is a key principle addressed by the proposals.
+            *   Proposal 1 and 2 directly aim to *reduce* Gharar regarding the subject matter (Al-Masnoo’) when it is an intangible asset. Shariah requires the subject matter of a sale to be known and specified to avoid uncertainty. The original FAS 10 provides examples for tangible assets. The proposed adaptation provides specific, relevant examples and criteria for defining intangible assets (like software kind, type, functional/performance quality metrics, and scope/features as 'quantity'). This aligns with the *principle* of specifying Al-Masnoo’ while making it applicable to the *nature* of intangible assets. It clarifies *how* to meet the existing Gharar requirement in this new context.
+            *   Proposal 4 deals with the measurement of work-in-progress (WIP). While valuation of incomplete intangible assets can be challenging, the proposal focuses on accounting measurement methods (input/output) and the concept of "recoverable amount" to avoid overstating assets or delaying loss recognition. This is an accounting application issue, not a fundamental contractual Gharar issue related to the definition of the subject matter or price. The proposal provides practical ways to estimate progress and value based on standard methodologies for long-term contracts, supporting transparency rather than introducing uncertainty into the contract itself.
+        *   **Maysir (Gambling):** The proposals do not introduce any element of Maysir. The underlying transaction remains the development and sale of a specific asset (software), which is a real economic activity.
+        *   **Asset-Backing:** Istisna'a is based on the development/manufacture of a specific asset (Al-Masnoo’). The proposals explicitly confirm that Al-Masnoo’ can be an *intangible* asset (or service). This is consistent with the existing Note (7) in Appendix (C) which states, "The subject matter may be a commodity, service or both." Shariah recognizes the economic value and validity of contracts involving intangible assets and services (e.g., Ijarah of services, sale of intellectual property rights under certain conditions). Extending Istisna'a to cover the *development* of such assets aligns with this principle.    
+        *   **Risk-Sharing:** Istisna'a is a sale contract where the Sani' bears the risk of production/development until delivery. The proposals do not alter this fundamental risk allocation. Proposal 5 on change orders clarifies how *unforeseeable* risks or those caused by the Mustasni' are handled, which is consistent with contractual principles and doesn't shift the core development risk from the Sani'.
+    *   **FAS 10 Specific Principles:**
+        *   **Specification of Subject Matter:** Proposal 2 directly addresses this by providing guidance specific to intangible assets, maintaining the requirement for clear specification.
+        *   **Fixed Price:** The proposals do not alter the requirement for a fixed price in the Istisna'a contract. Change orders (Proposal 5) are mechanisms for *amending* the fixed price under specific, controlled conditions, which is permissible in long-term contracts.
+        *   **Liability and Risk:** The proposals do not shift the fundamental liability for delivering the specified Al-Masnoo’ from the Sani’.
+
+    *   **Conclusion on Shariah Compliance:** The proposed enhancements are consistent with Shariah principles. They provide necessary clarification and adaptation of existing Istisna'a principles (particularly regarding Gharar and the nature of Al-Masnoo’) to accommodate intangible assets, which is a valid application of the contract in modern contexts.
+
+2.  **Consistency Check:**
+    *   **Internal Consistency (FAS 10):**
+        *   Proposal 1 directly *improves* internal consistency by aligning the main Scope and Definition sections with the existing Note (7) in Appendix (C) that already allows services/intangibles as the subject matter.
+        *   Proposal 2 adapts the *description* of how to specify Al-Masnoo’ (Section 4/1/1) but retains the core requirement of removing fundamental uncertainty. This is a consistent application of the rule to a different asset type.
+        *   Proposal 3 modifies the exclusion of R&D costs (Section 2/1a). While a change, the reasoning (distinguishing general R&D from direct project costs) is a practical and logical interpretation necessary for intangible development and aligns with the overall principle of capitalizing costs required to create the asset under the contract. It does not contradict other core accounting principles within the standard. The updates to WIP/Cost accounts are consequential and consistent.
+        *   Proposal 4 introduces "recoverable amount" and specifies measurement methods for intangibles (Section 2/4). This is an adaptation of the measurement principle. The original "cash equivalent value" (contract price less cost to complete) is a specific calculation of recoverable amount for tangible assets. The proposal clarifies how to apply the *concept* of not overstating assets/recognizing losses early to intangible assets, where direct "cash equivalent value" before completion is often zero. This seems consistent with the underlying objective stated in Appendix (E) Basis for Conclusions (avoiding asset inflation, timely loss recognition).
+        *   Proposal 5 adapts the definition and application of Additional Claims (Appendix F, Section 2/5) to the context of intangible assets. This maintains the core conditions for claims but provides relevant examples, consistent with applying the existing rule.
+    *   **External Consistency (Other AAOIFI Standards):** AAOIFI standards already acknowledge intangible assets (e.g., FAS 4 on Musharaka discusses valuation of intangible assets contributed as capital) and the use of valuation methods beyond historical cost or simple cash equivalent when appropriate (e.g., FAS 7 on Salam discusses fair value for non-cash Salam capital). The proposed adaptations for intangible assets in FAS 10, particularly concerning valuation concepts (recoverable amount) and cost capitalization, are broadly consistent with the recognition of unique characteristics of non-monetary and intangible assets in other standards. The use of percentage-of-completion is already established in FAS 10.
+
+    *   **Conclusion on Consistency:** The proposed enhancements maintain a high degree of consistency with the existing FAS 10 framework and align with the broader approach to intangible assets and valuation concepts found in other AAOIFI standards. They primarily serve to clarify and adapt existing rules rather than introduce conflicting principles.
+
+3.  **Practical Implementation Assessment:**
+    *   The proposals provide much-needed practical guidance.
+    *   **Proposal 1 (Scope/Definition):** Highly practical; removes doubt about applicability.
+    *   **Proposal 2 (Specifications):** Highly practical; provides concrete examples for defining software/AI, making the specification requirement feasible for practitioners. Acknowledging iterative development is realistic.
+    *   **Proposal 3 (Cost Recognition):** Highly practical; clarifies which development costs are capitalizable under the Istisna'a contract, which is crucial for accurate accounting of software development projects. The distinction between general R&D and specific project costs is standard practice in accounting for intangibles.
+    *   **Proposal 4 (WIP Measurement):** Practical; provides methods (input/output) commonly used for measuring progress on software projects. While estimating completion and costs for complex AI can be challenging, this challenge is inherent to the project itself, not the standard. The proposal offers the appropriate accounting framework to apply.
+    *   **Proposal 5 (Change Orders/Claims):** Practical; offers guidance on applying existing rules to the specifics of software development, helping manage potential variations in scope and cost.
+
+    *   **Conclusion on Practical Implementation:** The proposed enhancements are highly practical and necessary for the effective implementation of FAS 10 for intangible assets like large-scale software/AI platforms. They bridge the gap between the existing standard, designed primarily for tangible manufacturing/construction, and the realities of modern intangible asset development.
+
+4.  **Final Decision:**
+
+**APPROVED.**
+
+**Detailed Reasoning:**
+
+The proposed enhancements to AAOIFI FAS 10 are well-reasoned, address a critical gap in the standard concerning intangible assets like software and AI, and provide practical guidance for financial institutions.
+
+1.  **Shariah Compliance:** The proposals are fully compliant with Shariah principles. They uphold the core requirements of Istisna'a, particularly the need for a specified subject matter and fixed price, by providing practical methods for applying these principles to intangible assets. They do not introduce Riba, Gharar (beyond the inherent nature of complex projects, but clarify how to *account* for progress and risk), or Maysir. They align with the Shariah recognition of intangible assets and services as valid subjects of contracts.
+2.  **Consistency:** The proposals demonstrate strong internal and external consistency. They improve internal consistency by aligning various parts of FAS 10 with the existing allowance for services/intangibles. They adapt existing rules (specification, cost capitalization, measurement) in a manner consistent with their underlying principles and with the broader approach to intangible assets seen in other AAOIFI standards.
+3.  **Practical Implementation:** The proposals offer essential practical guidance. They provide clarity on scope, specific examples for defining intangible assets, appropriate cost recognition rules, and relevant methods for measuring progress and valuing work-in-progress in the context of software/AI development. This guidance makes it feasible for financial institutions to structure and account for such projects under a Shariah-compliant Istisna'a contract.
+
+These enhancements are a necessary evolution of AAOIFI FAS 10 to remain relevant in a digital economy where intangible asset development is increasingly common. They enable Islamic financial institutions to use the Istisna'a contract effectively for financing these modern assets while adhering strictly to Shariah principles and providing clear accounting treatment.
+
+## Cross-Standard Impact Analysis
+Okay, here is the cross-standard impact analysis for the proposed enhancements to AAOIFI FAS 10, focusing on the selected standards: FAS 4, FAS 7, FAS 28, and FAS 32.
+
+## 1. Summary of the Proposed Enhancement
+
+The proposed enhancements to FAS 10 primarily aim to explicitly include intangible assets (such as software and digital platforms) and services within the scope of Istisna'a contracts and provide specific accounting guidance tailored to their nature. Key changes include:
+
+*   Explicitly mentioning intangible assets and services in the Scope section.
+*   Modifying definitions of Istisna'a to include "developed" alongside "manufactured" and replacing "raw material" with "necessary inputs" to encompass intangible asset creation.
+*   Adapting the requirements for specifying Al-Masnoo' (subject matter) to provide practical guidance for intangible assets (e.g., defining kind, type, quality, and quantity/scope for software).
+*   Clarifying that direct costs of developing intangible assets (labour, necessary inputs specific to the project) are included in Istisna'a costs, distinguishing them from general R&D.
+*   Providing guidance on measuring work-in-progress for intangible assets, suggesting "recoverable amount" and input/output methods for percentage of completion calculation.
+*   Offering specific context for applying rules on change orders and additional claims to intangible asset development, considering the nature of unforeseen technical challenges.
+
+Overall, the enhancement seeks to modernize FAS 10 to cover contemporary assets and development processes while maintaining compliance with Shari'a principles governing Istisna'a.
+
+## 2. Detailed Cross-Standard Impact Analysis
+
+The proposed enhancements to FAS 10 focus specifically on the *creation, development, and sale* mechanism inherent in the Istisna'a contract. While this is distinct from the mechanisms of Musharakah, Salam, Murabaha, or Ijarah, the explicit recognition and detailed accounting guidance for intangible assets *as valid subjects of an Islamic finance contract* has potential implications for other standards.
+
+**Impact on FAS 4 (Musharakah and Mudarabah):**
+
+*   **Potential Synergy:** FAS 4 already acknowledges that the capital contribution in a Musharakah can be in the form of real or *intangible assets* (Appendix D). The proposed FAS 10 enhancement strongly reinforces the concept that intangible assets are legitimate subjects within Islamic finance contracts. This explicit treatment in FAS 10 could lend further weight and clarity to their acceptance as capital contributions in Musharakah, although FAS 4's primary concern is the valuation of such contributions at fair value at the time of contracting, not their development process.
+*   **No Contradiction:** The accounting treatments in FAS 10 (cost accumulation, percentage of completion for a sale contract) are fundamentally different from those in FAS 4 (accounting for a partnership share, profit/loss distribution). The FAS 10 guidance on specifying, costing, and measuring progress for *developing* an asset is specific to the Istisna'a structure and does not directly conflict with FAS 4's principles for managing and accounting for a partnership.
+
+**Impact on FAS 7 (Salam and Parallel Salam):**
+
+*   **Minimal Impact:** FAS 7 deals with the forward sale of *specified goods* (Al-Muslam Fih) where the price is paid upfront. While the Salam capital can be in cash, kind, or benefit (Appendix D), the subject matter (Al-Muslam Fih) is typically a fungible or quantifiable commodity or asset that can be delivered in the future. The proposed FAS 10 enhancements focus on the *bespoke development* of complex assets, including intangibles and services. This process-oriented, made-to-order nature is fundamentally different from the standard Salam contract.
+*   **No Contradiction:** There is no direct conflict, as the contracts serve different purposes and involve different mechanisms (forward sale of goods vs. bespoke manufacturing/development and sale). The detailed guidance in FAS 10 for specifying, costing, and measuring progress on *development* is not applicable to the standard Salam model.
+
+**Impact on FAS 28 (Murabaha and Other Deferred Payment Sales):**
+
+*   **Potential Synergy:** FAS 28 governs the *sale* of an asset (tangible or intangible) acquired by the institution and sold to a customer on a cost-plus, deferred payment basis. The FAS 10 enhancements explicitly affirming intangible assets as valid subjects of Islamic finance contracts aligns with the implicit possibility of using Murabaha for intangible assets (e.g., software licenses).
+*   **No Contradiction:** The accounting principles in FAS 28 (cost calculation, profit recognition on sale) are distinct from FAS 10 (cost accumulation during development, revenue/profit recognition based on completion). FAS 28 deals with buying and selling an *existing* asset, whereas FAS 10 deals with commissioning the *creation* of an asset. The detailed guidance in FAS 10 is specific to the development process and does not impact how Murabaha is accounted for.
+
+**Impact on FAS 32 (Ijarah and Ijarah Muntahia Bittamleek):**
+
+*   **Minimal Impact:** FAS 32 covers leasing contracts, specifically the granting of the *usufruct* (right to use) of an asset, predominantly *tangible* assets. While the FAS 10 enhancement does mention "service" as a potential Al-Masnoo' (subject matter), this refers to the *development* and sale of a specific service capability or system, not the leasing of an existing asset or service under FAS 32.
+*   **No Contradiction:** The core principles of Ijarah (leasing the usufruct, maintenance responsibilities, rent calculation) are entirely separate from the manufacturing/development and sale structure of Istisna'a. The accounting treatments (recognizing lease income, depreciating leased assets) are distinct from Istisna'a accounting. The FAS 10 enhancements do not affect the scope or accounting under FAS 32.
+
+## 3. Compatibility Matrix
+
+| Standard ID | Impact Level | Impact Type           |
+| :---------- | :----------- | :-------------------- |
+| FAS 4       | Low          | Synergy               |
+| FAS 7       | None         | None                  |
+| FAS 28      | Low          | Synergy               |
+| FAS 32      | None         | None                  |
+
+**Explanation of Impact Types:**
+*   **Synergy:** The enhancement in FAS 10 supports or aligns with concepts or potential applications in the other standard, without causing conflict.
+*   **Contradiction:** The enhancement introduces principles or requirements that directly conflict with those in the other standard. (None identified here).
+*   **Both:** The enhancement presents aspects of both synergy and contradiction. (None identified here).
+*   **None:** The enhancement has no discernible impact on the other standard.
+
+## 4. Specific Recommendations for Maintaining Cross-Standard Consistency
+
+1.  **Consistent Definitions:** While FAS 10 provides specific guidance for intangible assets *developed* under Istisna'a, AAOIFI should ensure that the fundamental definition of what constitutes a Shari'a-compliant *intangible asset* capable of being the subject of contracts (whether for development, sale, or capital contribution) remains consistent across all relevant standards and the Conceptual Framework.
+2.  **Cross-referencing:** Where applicable, other standards (like FAS 4 or FAS 28) could potentially cross-reference FAS 10 as the authoritative standard for the *development* phase if an asset intended for Musharakah capital or Murabaha sale is first commissioned via an Istisna'a contract by the institution acting as Al-Mustasni'. This clarifies which standard applies at each stage of the asset's lifecycle.
+3.  **Maintain Scope Clarity:** Reiterate the distinct nature and scope of each contract type in the introduction or scope sections of the respective standards. Emphasize that FAS 10 applies specifically to contracts for *manufacturing or developing* a subject matter for sale, distinguishing it clearly from buying/selling existing assets (Murabaha), forward sale of goods (Salam), or leasing (Ijarah).
+4.  **Analogous Application (Optional):** While not mandatory, the detailed guidance provided in the enhanced FAS 10 regarding the *specification* of intangible assets (Proposal 2) could be highlighted as potentially useful *analogous* guidance for institutions when defining complex non-monetary assets contributed as capital in Musharakah (FAS 4) or identified for Murabaha sale (FAS 28), even though the specific requirements in those standards might be less detailed.
+
+By explicitly addressing intangible assets in FAS 10 and providing tailored guidance, AAOIFI takes a significant step in modernizing its standards. The analysis shows this specific enhancement is well-contained within the Istisna'a framework and does not introduce contradictions with the selected related standards but rather offers potential synergy by reinforcing the legitimacy of intangible assets within the broader Islamic finance landscape
