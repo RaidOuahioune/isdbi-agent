@@ -1,0 +1,50 @@
+ccounting Guidance:
+### Summary
+
+*   **Islamic Financial Product Type:** Istisna'a
+*   **Applicable AAOIFI Standard(s):** FAS 10 (Istisna'a and Parallel Istisna'a)
+*   **Method Used:** Percentage-of-Completion Method
+
+### Calculation Methodology
+
+*   **Percentage of Completion:** (Costs incurred to date / Total estimated costs) * 100%
+*   **Total Estimated Profit:** Contract Price - Total Estimated Costs
+*   **Revenue Recognized for the Period:** Contract Price * Percentage of Completion
+*   **Cost of Istisna'a Revenue for the Period:** Costs incurred during the period
+*   **Profit Recognized for the Period:** Revenue Recognized - Cost of Istisna'a Revenue
+
+#### Calculation
+
+*   Costs incurred to date: USD 320,000
+*   Total estimated costs: USD 800,000
+*   Contract price: USD 1,000,000
+
+1.  **Percentage of Completion:** (USD 320,000 / USD 800,000) * 100% = 40%
+2.  **Total Estimated Profit:** USD 1,000,000 - USD 800,000 = USD 200,000
+3.  **Revenue Recognized for the Period:** USD 1,000,000 * 40% = USD 400,000
+4.  **Cost of Istisna'a Revenue for the Period:** USD 320,000
+5.  **Profit Recognized for the Period:** USD 400,000 - USD 320,000 = USD 80,000
+    *   *(Alternatively: USD 200,000 * 40% = USD 80,000)*
+
+### Journal Entries
+
+| Date         | Account                                  | Debit       | Credit      | Explanation                  |
+| :----------- | :--------------------------------------- | :---------- | :---------- | :--------------------------- |
+| 31 Dec 2021  | Istisna'a Work-in-Progress               | 320,000     |             | To record construction costs |
+|              | Cash / Accounts Payable                  |             | 320,000     |                              |
+|              | *To record costs incurred during the year* |             |             |                              |
+|              |                                          |             |             |                              |
+| 31 Dec 2021  | Cost of Istisna'a Revenue                | 320,000     |             | To recognize cost of revenue |
+|              | Istisna'a Work-in-Progress               | 80,000      |             | To recognize profit portion  |
+|              | Istisna'a Revenue                        |             | 400,000     | To recognize revenue         |
+|              | *To recognize Istisna'a revenue and profit* |             |             |                              |
+
+*Note: Billings to the customer and cash collections are separate entries not requested in this scenario.*
+
+### References
+
+*   **FAS 10, Para 8:** Recognition of revenue for the period based on percentage of completion.
+*   **FAS 10, Para 9:** Addition of recognized profit portion to the Istisna'a work-in-progress account.
+*   **FAS 10, Page 379 (Example):** Illustrative journal entries for percentage-of-completion method.
+*   **FAS 10, Page 403 (Definitions):** Definition of Percentage-of-Completion Method.
+*   **FAS 10, Page 400 (Discussion):** Preference for Percentage-of-Completion Method when costs can be estimated reliably.

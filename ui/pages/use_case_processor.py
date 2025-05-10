@@ -34,10 +34,17 @@ def extract_structured_guidance(accounting_guidance):
     result = {
         "product_type": "Islamic Financial Product",
         "applicable_standards": [],
+        "method_used": "",
         "calculation_methodology": "",
         "journal_entries": "",
         "references": "",
+        "summary": "",
     }
+    
+    # Extract summary section
+    summary_match = re.search(r"(?:\#\#\#|\*\*) ?Summary(?:\#\#\#|\*\*)?\s*(.*?)(?=(?:\#\#\#|\*\*) (?!Summary)|$)", accounting_guidance, re.DOTALL | re.IGNORECASE)
+    if summary_match:
+        result["summary"] = summary_match.group(1).strip()
     
     # Try to extract product type
     product_match = re.search(r"(?:\*\*)?(?:Islamic Financial Product Type|Product Type|Product|Type)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", accounting_guidance, re.IGNORECASE)
@@ -50,6 +57,11 @@ def extract_structured_guidance(accounting_guidance):
         standards_text = standards_match.group(1).strip()
         result["applicable_standards"] = [s.strip() for s in standards_text.split(',')]
     
+    # Try to extract method used
+    method_match = re.search(r"(?:\*\*)?(?:Method Used)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", accounting_guidance, re.IGNORECASE)
+    if method_match:
+        result["method_used"] = method_match.group(1).strip()
+    
     # If no standards found, look for FAS mentions
     if not result["applicable_standards"]:
         fas_matches = re.findall(r"FAS\s+(\d+)", accounting_guidance)
@@ -59,21 +71,285 @@ def extract_structured_guidance(accounting_guidance):
             result["applicable_standards"] = [f"FAS {fas}" for fas in unique_fas]
     
     # Try to extract calculation methodology
-    calc_section = re.search(r"(?:\*\*)?(?:Calculation Methodology|Step-by-step calculation methodology)(?:\*\*)?:?\s*(.*?)(?=(?:\*\*)?(?:Journal Entries|References|$))", accounting_guidance, re.DOTALL | re.IGNORECASE)
+    calc_section = re.search(r"(?:\#\#\#|\*\*) ?Calculation Methodology(?:\#\#\#|\*\*)?\s*(.*?)(?=(?:\#\#\#|\*\*) (?!Calculation)|$)", accounting_guidance, re.DOTALL | re.IGNORECASE)
     if calc_section:
         result["calculation_methodology"] = calc_section.group(1).strip()
     
     # Try to extract journal entries
-    journal_section = re.search(r"(?:\*\*)?(?:Journal Entries)(?:\*\*)?:?\s*(.*?)(?=(?:\*\*)?(?:References|$))", accounting_guidance, re.DOTALL | re.IGNORECASE)
+    journal_section = re.search(r"(?:\#\#\#|\*\*) ?Journal Entries(?:\#\#\#|\*\*)?\s*(.*?)(?=(?:\#\#\#|\*\*) (?!Journal)|$)", accounting_guidance, re.DOTALL | re.IGNORECASE)
     if journal_section:
         result["journal_entries"] = journal_section.group(1).strip()
     
     # Try to extract references
-    references_section = re.search(r"(?:\*\*)?(?:References)(?:\*\*)?:?\s*(.*?)(?=$)", accounting_guidance, re.DOTALL | re.IGNORECASE)
+    references_section = re.search(r"(?:\#\#\#|\*\*) ?References(?:\#\#\#|\*\*)?\s*(.*?)(?=$)", accounting_guidance, re.DOTALL | re.IGNORECASE)
     if references_section:
         result["references"] = references_section.group(1).strip()
     
     return result
+
+def extract_and_convert_tables(markdown_text):
+    """
+    Extract markdown tables from text and convert them to styled HTML tables.
+    
+    Args:
+        markdown_text: Text containing markdown tables
+        
+    Returns:
+        Text with markdown tables replaced by styled HTML tables
+    """
+    if not markdown_text:
+        return markdown_text
+    
+    # Define regex pattern to find markdown tables
+    table_pattern = r'(\|[\s\-:]*\|[\s\-:]*\|[\s\-:]*\n)(?:\|(?:[^\n]*)\|(?:[^\n]*)\|\n)+'
+    complex_table_pattern = r'(\|(?:[^\n]*)\|\n)(\|[\s\-:]*\|[\s\-:]*\|[\s\-:]*\n)(?:\|(?:[^\n]*)\|(?:[^\n]*)\|\n)+'
+    
+    # CSS for styled tables
+    table_css = """
+    <style>
+    .styled-table {
+        border-collapse: collapse;
+        margin: 25px 0;
+        font-size: 14px;
+        font-family: sans-serif;
+        min-width: 100%;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    }
+    .styled-table thead tr {
+        background-color: #3b82f6;
+        color: #ffffff;
+        text-align: left;
+    }
+    .styled-table th,
+    .styled-table td {
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+    }
+    .styled-table tbody tr {
+        border-bottom: 1px solid #dddddd;
+    }
+    .styled-table tbody tr:nth-of-type(even) {
+        background-color: #f9fafb;
+    }
+    .styled-table tbody tr:last-of-type {
+        border-bottom: 2px solid #3b82f6;
+    }
+    .styled-table tbody tr:hover {
+        background-color: #f0f9ff;
+    }
+    
+    .summary-card {
+        background-color: #f0f9ff;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-left: 5px solid #3b82f6;
+    }
+    .summary-item {
+        display: flex;
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+    .summary-label {
+        font-weight: bold;
+        width: 180px;
+        color: #1e3a8a;
+    }
+    .summary-value {
+        flex: 1;
+    }
+    .section-header {
+        margin-top: 30px;
+        margin-bottom: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        color: #1e3a8a;
+        border-bottom: 2px solid #e0e0e0;
+        padding-bottom: 8px;
+    }
+    </style>
+    """
+    
+    # Function to convert a markdown table to HTML
+    def markdown_table_to_html(table_match):
+        lines = table_match.strip().split('\n')
+        header_row = None
+        
+        # Find header separator row (contains dashes)
+        for i, line in enumerate(lines):
+            if '|' in line and re.match(r'\s*\|[\s\-:]+\|\s*$', line):
+                header_row = i - 1
+                break
+        
+        if header_row is None or header_row < 0:
+            # No header row found, assume first row is header
+            header_row = 0
+        
+        # Start building HTML table
+        html_table = f'<table class="styled-table">\n<thead>\n<tr>\n'
+        
+        # Add header cells
+        if header_row >= 0 and header_row < len(lines):
+            header_cells = lines[header_row].split('|')
+            for cell in header_cells:
+                if cell.strip():  # Skip empty cells
+                    html_table += f'  <th>{cell.strip()}</th>\n'
+            html_table += '</tr>\n</thead>\n<tbody>\n'
+        
+        # Add data rows
+        data_rows = lines[(header_row + 2):] if header_row is not None else lines
+        for row in data_rows:
+            if '|' not in row or row.strip() == '':
+                continue
+            
+            html_table += '<tr>\n'
+            cells = row.split('|')
+            for cell in cells:
+                if cell.strip():  # Skip empty cells from split
+                    # Handle markdown formatting in cell content
+                    cell_content = cell.strip()
+                    # Convert bold (**text**) to <strong>
+                    cell_content = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', cell_content)
+                    # Convert italic (*text*) to <em>
+                    cell_content = re.sub(r'\*(.*?)\*', r'<em>\1</em>', cell_content)
+                    html_table += f'  <td>{cell_content}</td>\n'
+            html_table += '</tr>\n'
+        
+        html_table += '</tbody>\n</table>'
+        return html_table
+    
+    # Find all tables and replace them with HTML
+    # First try to find complex tables with headers
+    for complex_match in re.finditer(complex_table_pattern, markdown_text, re.DOTALL):
+        table_text = complex_match.group(0)
+        html_table = markdown_table_to_html(table_text)
+        markdown_text = markdown_text.replace(table_text, html_table)
+    
+    # Then look for any remaining simple tables
+    for match in re.finditer(table_pattern, markdown_text, re.DOTALL):
+        table_text = match.group(0)
+        if '<table' not in table_text:  # Skip if already converted
+            html_table = markdown_table_to_html(table_text)
+            markdown_text = markdown_text.replace(table_text, html_table)
+    
+    # Add the CSS only if tables were found and converted
+    if '<table class="styled-table">' in markdown_text:
+        markdown_text = table_css + markdown_text
+    else:
+        # Always add CSS for summary cards
+        markdown_text = table_css + markdown_text
+    
+    return markdown_text
+
+def render_summary_card(summary_data):
+    """
+    Render a styled summary card with the summary information.
+    
+    Args:
+        summary_data: Dictionary with summary information
+        
+    Returns:
+        HTML string with formatted summary card
+    """
+    html = "<div class='summary-card'>"
+    
+    # Add standard summary items
+    if summary_data.get("product_type"):
+        html += f"""
+        <div class='summary-item'>
+            <div class='summary-label'>Product Type:</div>
+            <div class='summary-value'>{summary_data["product_type"]}</div>
+        </div>
+        """
+    
+    if summary_data.get("applicable_standards"):
+        standards_str = ", ".join(summary_data["applicable_standards"])
+        html += f"""
+        <div class='summary-item'>
+            <div class='summary-label'>Applicable Standards:</div>
+            <div class='summary-value'>{standards_str}</div>
+        </div>
+        """
+    
+    if summary_data.get("method_used"):
+        html += f"""
+        <div class='summary-item'>
+            <div class='summary-label'>Method Used:</div>
+            <div class='summary-value'>{summary_data["method_used"]}</div>
+        </div>
+        """
+    
+    # Look for additional summary items
+    if summary_data.get("summary"):
+        # Extract additional items from the summary text
+        additional_items = re.findall(r"\*\s+\*\*(.*?):\*\*\s*(.*?)(?=\n\*|\Z)", summary_data["summary"], re.DOTALL)
+        
+        for label, value in additional_items:
+            if label.lower() not in ["islamic financial product type", "applicable aaoifi standard(s)", "method used"]:
+                html += f"""
+                <div class='summary-item'>
+                    <div class='summary-label'>{label}:</div>
+                    <div class='summary-value'>{value.strip()}</div>
+                </div>
+                """
+    
+    html += "</div>"
+    return html
+
+def clean_markdown_tables(markdown_text):
+    """
+    Ensures that markdown tables are correctly formatted for Streamlit rendering.
+    
+    Args:
+        markdown_text: Text containing markdown tables
+        
+    Returns:
+        Cleaned markdown text with properly formatted tables
+    """
+    if not markdown_text:
+        return markdown_text
+    
+    # Make sure table headers have proper spacing
+    lines = markdown_text.split('\n')
+    in_table = False
+    header_row_index = -1
+    
+    for i, line in enumerate(lines):
+        # Check if line contains a table header separator
+        if '|' in line and re.match(r'\s*\|[\s\-:]+\|\s*$', line):
+            in_table = True
+            header_row_index = i - 1
+            
+            # Ensure proper formatting of separator row (the | ---- | ---- | row)
+            cells = line.split('|')
+            formatted_cells = []
+            for cell in cells:
+                if cell.strip():
+                    # Make sure each cell has at least 3 dashes with proper alignment indicators
+                    if ':' in cell:
+                        if cell.strip().startswith(':') and cell.strip().endswith(':'):
+                            formatted_cells.append(' :' + '-' * max(3, len(cell.strip()) - 2) + ': ')
+                        elif cell.strip().startswith(':'):
+                            formatted_cells.append(' :' + '-' * max(3, len(cell.strip()) - 1) + ' ')
+                        elif cell.strip().endswith(':'):
+                            formatted_cells.append(' ' + '-' * max(3, len(cell.strip()) - 1) + ': ')
+                    else:
+                        formatted_cells.append(' ' + '-' * max(3, len(cell.strip())) + ' ')
+                else:
+                    formatted_cells.append('')
+            
+            lines[i] = '|' + '|'.join(formatted_cells) + '|'
+            
+            # If we have a header row, make sure it's properly formatted too
+            if header_row_index >= 0:
+                header_cells = lines[header_row_index].split('|')
+                for j, cell in enumerate(header_cells):
+                    if cell.strip():
+                        header_cells[j] = ' ' + cell.strip() + ' '
+                lines[header_row_index] = '|' + '|'.join(header_cells) + '|'
+    
+    return '\n'.join(lines)
 
 def render_use_case_processor_page():
     """Render the Use Case Processor page."""
@@ -207,6 +483,8 @@ def render_use_case_processor_page():
                                     help="Display the context retrieved from standards")
         show_raw_guidance = st.checkbox("Show Raw Guidance Output", value=False,
                                        help="Display the raw output from the agent")
+        use_html_tables = st.checkbox("Use Enhanced HTML Tables", value=True,
+                                     help="Display tables as styled HTML instead of markdown")
     
     process_btn = st.button("Generate Accounting Guidance", type="primary")
     
@@ -260,15 +538,30 @@ def render_use_case_processor_page():
                     # Parse structured information from the guidance
                     structured_guidance = extract_structured_guidance(accounting_guidance)
                     
+                    # Prepare accounting guidance based on user preferences
+                    if use_html_tables:
+                        # Convert tables to HTML for better display
+                        accounting_guidance_display = extract_and_convert_tables(accounting_guidance)
+                    else:
+                        # Use the markdown cleaner for standard tables
+                        accounting_guidance_display = clean_markdown_tables(accounting_guidance)
+                    
+                    # Generate summary card HTML
+                    summary_card_html = render_summary_card(structured_guidance)
+                    
                     # Format final results
                     formatted_results = {
                         "scenario": scenario_text,
                         "identified_product": structured_guidance["product_type"],
                         "applicable_standards": structured_guidance["applicable_standards"],
+                        "method_used": structured_guidance.get("method_used", ""),
                         "calculation_methodology": structured_guidance["calculation_methodology"],
                         "journal_entries": structured_guidance["journal_entries"],
                         "references": structured_guidance["references"],
-                        "accounting_guidance": accounting_guidance,  # Keep the full guidance too
+                        "summary": structured_guidance.get("summary", ""),
+                        "accounting_guidance": accounting_guidance,  # Keep the original guidance
+                        "accounting_guidance_display": accounting_guidance_display,  # Add the display version
+                        "summary_card_html": summary_card_html,  # Add formatted summary card
                         "raw_guidance": accounting_guidance if show_raw_guidance else None
                     }
                     
@@ -292,15 +585,16 @@ def render_use_case_processor_page():
     if results:
         st.header("Accounting Guidance")
         
-        # Organize results in tabs for better navigation
-        tabs = st.tabs(["Summary", "Calculation Methodology", "Journal Entries", "References"])
-        
-        with tabs[0]:  # Summary tab
-            col1, col2 = st.columns([1, 1])
+        # Display the enhanced summary card if available
+        if results.get("summary_card_html"):
+            st.markdown(results["summary_card_html"], unsafe_allow_html=True)
+        else:
+            # Fallback to simple summary display
+            st.subheader("Summary")
+            col1, col2 = st.columns([1, 3])
             
             with col1:
-                st.subheader("Product Information")
-                st.markdown(f"**Identified Product:**")
+                st.markdown(f"**Product Type:**")
                 st.markdown(f"<div class='diff-stat-item'><div class='diff-stat-value'>{results['identified_product']}</div></div>", unsafe_allow_html=True)
                 
                 st.markdown(f"**Applicable Standards:**")
@@ -308,29 +602,20 @@ def render_use_case_processor_page():
                     st.markdown(f"<div class='diff-stat-item'>{standard}</div>", unsafe_allow_html=True)
             
             with col2:
-                st.subheader("Scenario Summary")
-                st.markdown(f'<div class="diff-container">{results["scenario"][:300]}...</div>', unsafe_allow_html=True)
+                st.markdown(f"<div class='diff-container'>{results['scenario'][:300]}...</div>", unsafe_allow_html=True)
         
-        with tabs[1]:  # Calculation Methodology tab
-            st.subheader("Calculation Methodology")
-            if results.get("calculation_methodology"):
-                st.markdown(f'<div class="proposal-container">{results["calculation_methodology"]}</div>', unsafe_allow_html=True)
-            else:
-                st.markdown(f'<div class="proposal-container">{results["accounting_guidance"]}</div>', unsafe_allow_html=True)
+        # Display the main guidance sections with improved styling
+        st.markdown("<div class='section-header'>Calculation Methodology</div>", unsafe_allow_html=True)
         
-        with tabs[2]:  # Journal Entries tab
-            st.subheader("Journal Entries")
-            if results.get("journal_entries"):
-                st.markdown(f'<div class="proposal-container">{results["journal_entries"]}</div>', unsafe_allow_html=True)
-            else:
-                st.info("No specific journal entries were identified in the guidance.")
-        
-        with tabs[3]:  # References tab
-            st.subheader("References to Standards")
-            if results.get("references"):
-                st.markdown(f'<div class="proposal-container">{results["references"]}</div>', unsafe_allow_html=True)
-            else:
-                st.info("No specific references were identified in the guidance.")
+        # Display the full guidance content in a structured way
+        if "accounting_guidance_display" in results:
+            # First, remove the summary section as we've already displayed it
+            content = results["accounting_guidance_display"]
+            content = re.sub(r"<style>.*?</style>", "", content, flags=re.DOTALL)  # Keep only one copy of the styles
+            content = re.sub(r"(?:\#\#\#|\*\*) ?Summary(?:\#\#\#|\*\*)?\s*.*?(?=(?:\#\#\#|\*\*) (?!Summary)|$)", "", content, flags=re.DOTALL | re.IGNORECASE)
+            st.markdown(content, unsafe_allow_html=True)
+        else:
+            st.markdown(results["accounting_guidance"])
         
         # Show raw output if enabled
         if results.get("raw_guidance") and show_raw_guidance:
@@ -347,14 +632,7 @@ def render_use_case_processor_page():
 ## Applicable Standards
 {chr(10).join(['- ' + std for std in results['applicable_standards']])}
 
-## Calculation Methodology
-{results.get('calculation_methodology', '')}
-
-## Journal Entries
-{results.get('journal_entries', '')}
-
-## References
-{results.get('references', '')}
+{results['accounting_guidance']}
 """,
                 file_name="accounting_guidance.md",
                 mime="text/markdown"
@@ -365,10 +643,9 @@ def render_use_case_processor_page():
             json_data = {
                 "product_type": results['identified_product'],
                 "applicable_standards": results['applicable_standards'],
+                "method_used": results.get('method_used', ''),
                 "scenario": results['scenario'],
-                "calculation_methodology": results.get('calculation_methodology', ''),
-                "journal_entries": results.get('journal_entries', ''),
-                "references": results.get('references', '')
+                "accounting_guidance": results['accounting_guidance']
             }
             
             st.download_button(
