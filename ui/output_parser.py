@@ -1,6 +1,6 @@
 import re
 from typing import Tuple, Dict, Any
-from word_diff import generate_complete_diff
+from ui.word_diff import generate_complete_diff
 
 class OutputParser:
     """Parser for agent output files and enhancement results"""
@@ -23,7 +23,8 @@ class OutputParser:
             "trigger_scenario": r'## Trigger Scenario\n(.*?)(?=\n## |\Z)',
             "review": r'## Review Findings\n(.*?)(?=\n## |\Z)',
             "proposal": r'## Proposed Enhancements\n(.*?)(?=\n## |\Z)',
-            "validation": r'## Validation Results\n(.*?)(?=\n## |\Z)'
+            "validation": r'## Validation Results\n(.*?)(?=\n## |\Z)',
+            "cross_standard_analysis": r'## Cross-Standard Impact Analysis\n(.*?)(?=\n## |\Z)'
         }
         
         for section_name, pattern in section_patterns.items():
@@ -31,10 +32,12 @@ class OutputParser:
             if match:
                 sections[section_name] = match.group(1).strip()
             else:
-                sections[section_name] = f"Section '{section_name}' not found in the output"
+                # Only include section if found in the document
+                if section_name != "cross_standard_analysis":  # This is optional
+                    sections[section_name] = f"Section '{section_name}' not found in the output"
                 
         # If regex approach fails for any section, try alternative parsing
-        if any(v.startswith("Section '") for k, v in sections.items() if k != "standard_id"):
+        if any(v.startswith("Section '") for k, v in sections.items() if k != "standard_id" and k != "cross_standard_analysis"):
             return OutputParser.parse_markdown_sections_fallback(output_text)
                 
         return sections
@@ -74,6 +77,8 @@ class OutputParser:
                         sections["proposal"] = content
                     elif "valid" in header or "result" in header:
                         sections["validation"] = content
+                    elif "cross" in header or "impact" in header:
+                        sections["cross_standard_analysis"] = content
         
         # Ensure all required sections exist
         required_sections = ["trigger_scenario", "review", "proposal", "validation"]
@@ -97,88 +102,117 @@ class OutputParser:
         # Return early if the proposal text is empty or None
         if not proposal_text:
             return "", ""
-            
-        # Try to find sections labeled as original/existing and proposed/enhanced
-        original_patterns = [
-            # Standard patterns
-            r"Original text:(.*?)(?:Proposed text:|$)",
-            r"Existing text:(.*?)(?:Proposed text:|$)",
-            r"Current text:(.*?)(?:Proposed text:|$)",
-            r"Original clause:(.*?)(?:Proposed clause:|$)",
-            r"Original section:(.*?)(?:Proposed section:|$)",
-            r"Original Text:(.*?)(?:Proposed Text:|Proposed Modified Text:|$)",
-            # Section-specific patterns
-            r"Original Text \(.*?\):(.*?)(?:Proposed|$)",
-            r"\*\*Original Text\*\*\s*(?:\(.*?\))?\s*:(.*?)(?:\*\*Proposed|$)",
-            r"> 3/1/1 (.*?)(?:>|Proposed|$)",
-            r">\s*3/1/1(.*?)(?:>|Proposed|$)",
-            r">\s*3/2/1(.*?)(?:>|Proposed|$)",
-            r">\s*2/2/1(.*?)(?:>|Proposed|$)",
-        ]
         
-        proposed_patterns = [
-            # Standard patterns
-            r"Proposed text:(.*?)(?:Rationale:|$)",
-            r"Enhanced text:(.*?)(?:Rationale:|$)",
-            r"Modified text:(.*?)(?:Rationale:|$)",
-            r"Proposed clause:(.*?)(?:Rationale:|$)",
-            r"Proposed section:(.*?)(?:Rationale:|$)",
-            r"Proposed Text:(.*?)(?:Rationale:|$)",
-            r"Proposed Modified Text:(.*?)(?:Rationale:|$)",
-            # Section-specific patterns
-            r"Proposed Modified Text \(.*?\):(.*?)(?:Rationale:|$)",
-            r"\*\*Proposed (?:Modified )?Text\*\*\s*(?:\(.*?\))?\s*:(.*?)(?:\*\*Rationale|$)",
-            r"> 3/1/1 An Istisna'a contract is permissible for the creation(.*?)(?:Rationale:|$)",
-            r">\s*Modify 3/1/1:(.*?)(?:Modify|$)",
-            r">\s*Modify 3/2/1:(.*?)(?:Modify|$)",
-            r">\s*Modify 2/2/1:(.*?)(?:Modify|$)",
-        ]
-        
-        # Try to extract original text
+        # Extract proposals that follow the format in challenge3_output.txt
+        # Look for sections like "Proposal X: ..." followed by "Original Text:" and "Proposed Modified Text:"
         original_text = ""
-        for pattern in original_patterns:
-            match = re.search(pattern, proposal_text, re.DOTALL | re.IGNORECASE)
-            if match:
-                original_text = match.group(1).strip()
-                break
-        
-        # Try to extract proposed text
         proposed_text = ""
-        for pattern in proposed_patterns:
-            match = re.search(pattern, proposal_text, re.DOTALL | re.IGNORECASE)
-            if match:
-                proposed_text = match.group(1).strip()
-                break
-                
-        # Additional processing if we have multiline proposals with numbering
-        if not original_text or not proposed_text:
-            # Look for proposals with "Enhancement Proposal 1:" style headers
-            proposals = re.findall(r'(?:Enhancement|Proposal) (?:Proposal )?\d+:(.*?)(?=(?:Enhancement|Proposal) (?:Proposal )?\d+:|$)', 
-                                 proposal_text, re.DOTALL | re.IGNORECASE)
-            
-            if proposals:
-                # Try finding original and proposed text in each proposal
-                for proposal in proposals:
-                    orig = ""
-                    prop = ""
+        
+        # First try to find proposals with numbered format "Proposal N:"
+        proposals = re.findall(r'(?:Proposal|Enhancement) (?:\d+):(.*?)(?=(?:Proposal|Enhancement) (?:\d+):|$)', 
+                              proposal_text, re.DOTALL | re.IGNORECASE)
+        
+        if proposals:
+            # For challenge3_output.txt format
+            for proposal in proposals:
+                # Extract original text (look for *Original Text:* pattern)
+                orig_match = re.search(r'\*\*Original Text:\*\*(.*?)(?=\*\*Proposed|$)', proposal, re.DOTALL | re.IGNORECASE)
+                if orig_match:
+                    # Found a match in this proposal section
+                    original_text = orig_match.group(1).strip()
                     
-                    # Try all patterns on this specific proposal
-                    for pattern in original_patterns:
-                        match = re.search(pattern, proposal, re.DOTALL | re.IGNORECASE)
-                        if match:
-                            orig = match.group(1).strip()
-                            break
-                            
-                    for pattern in proposed_patterns:
-                        match = re.search(pattern, proposal, re.DOTALL | re.IGNORECASE)
-                        if match:
-                            prop = match.group(1).strip()
-                            break
-                            
-                    if orig and prop:
-                        original_text = orig
-                        proposed_text = prop
+                    # Now look for proposed text
+                    prop_match = re.search(r'\*\*Proposed Modified Text:\*\*(.*?)(?=\*\*Rationale|$)', proposal, re.DOTALL | re.IGNORECASE)
+                    if prop_match:
+                        proposed_text = prop_match.group(1).strip()
+                        # We found both, so break
                         break
+        
+        # If we haven't found original and proposed text, try other patterns
+        if not original_text or not proposed_text:
+            # Try to find sections labeled as original/existing and proposed/enhanced
+            original_patterns = [
+                # Standard patterns
+                r"Original text:(.*?)(?:Proposed text:|$)",
+                r"Existing text:(.*?)(?:Proposed text:|$)",
+                r"Current text:(.*?)(?:Proposed text:|$)",
+                r"Original clause:(.*?)(?:Proposed clause:|$)",
+                r"Original section:(.*?)(?:Proposed section:|$)",
+                r"Original Text:(.*?)(?:Proposed Text:|Proposed Modified Text:|$)",
+                # Section-specific patterns
+                r"Original Text \(.*?\):(.*?)(?:Proposed|$)",
+                r"\*\*Original Text\*\*\s*(?:\(.*?\))?\s*:(.*?)(?:\*\*Proposed|$)",
+                r"\*\*Original Text\*\*\s*(?:\(.*?\))?\s*(.*?)(?:\*\*Proposed|$)",
+                r"> 3/1/1 (.*?)(?:>|Proposed|$)",
+                r">\s*3/1/1(.*?)(?:>|Proposed|$)",
+                r">\s*3/2/1(.*?)(?:>|Proposed|$)",
+                r">\s*2/2/1(.*?)(?:>|Proposed|$)",
+            ]
+            
+            proposed_patterns = [
+                # Standard patterns
+                r"Proposed text:(.*?)(?:Rationale:|$)",
+                r"Enhanced text:(.*?)(?:Rationale:|$)",
+                r"Modified text:(.*?)(?:Rationale:|$)",
+                r"Proposed clause:(.*?)(?:Rationale:|$)",
+                r"Proposed section:(.*?)(?:Rationale:|$)",
+                r"Proposed Text:(.*?)(?:Rationale:|$)",
+                r"Proposed Modified Text:(.*?)(?:Rationale:|$)",
+                # Section-specific patterns
+                r"Proposed Modified Text \(.*?\):(.*?)(?:Rationale:|$)",
+                r"\*\*Proposed (?:Modified )?Text\*\*\s*(?:\(.*?\))?\s*:(.*?)(?:\*\*Rationale|$)",
+                r"\*\*Proposed (?:Modified )?Text\*\*\s*(?:\(.*?\))?\s*(.*?)(?:\*\*Rationale|$)",
+                r"> 3/1/1 An Istisna'a contract is permissible for the creation(.*?)(?:Rationale:|$)",
+                r">\s*Modify 3/1/1:(.*?)(?:Modify|$)",
+                r">\s*Modify 3/2/1:(.*?)(?:Modify|$)",
+                r">\s*Modify 2/2/1:(.*?)(?:Modify|$)",
+            ]
+            
+            # Try to extract original text
+            original_text = ""
+            for pattern in original_patterns:
+                match = re.search(pattern, proposal_text, re.DOTALL | re.IGNORECASE)
+                if match:
+                    original_text = match.group(1).strip()
+                    break
+            
+            # Try to extract proposed text
+            proposed_text = ""
+            for pattern in proposed_patterns:
+                match = re.search(pattern, proposal_text, re.DOTALL | re.IGNORECASE)
+                if match:
+                    proposed_text = match.group(1).strip()
+                    break
+                    
+            # Additional processing if we have multiline proposals with numbering
+            if not original_text or not proposed_text:
+                # Look for proposals with "Enhancement Proposal 1:" style headers
+                proposals = re.findall(r'(?:Enhancement|Proposal) (?:Proposal )?\d+:(.*?)(?=(?:Enhancement|Proposal) (?:Proposal )?\d+:|$)', 
+                                     proposal_text, re.DOTALL | re.IGNORECASE)
+                
+                if proposals:
+                    # Try finding original and proposed text in each proposal
+                    for proposal in proposals:
+                        orig = ""
+                        prop = ""
+                        
+                        # Try all patterns on this specific proposal
+                        for pattern in original_patterns:
+                            match = re.search(pattern, proposal, re.DOTALL | re.IGNORECASE)
+                            if match:
+                                orig = match.group(1).strip()
+                                break
+                                
+                        for pattern in proposed_patterns:
+                            match = re.search(pattern, proposal, re.DOTALL | re.IGNORECASE)
+                            if match:
+                                prop = match.group(1).strip()
+                                break
+                                
+                        if orig and prop:
+                            original_text = orig
+                            proposed_text = prop
+                            break
         
         # If still not found, look for markdown quote blocks (often used in proposals)
         if not original_text or not proposed_text:
@@ -349,8 +383,9 @@ class OutputParser:
             
         # Try to import word_diff, fall back to simple diff if not available
         try:
-            from word_diff import generate_complete_diff
-            return generate_complete_diff(original_text, proposed_text)
+            # Call the generate_complete_diff from the word_diff module
+            diff_result = generate_complete_diff(original_text, proposed_text)
+            return diff_result
         except ImportError:
             print("WARNING: word_diff module not available, falling back to simple diff")
             # Create a simplified diff result with basic HTML
@@ -386,8 +421,8 @@ class OutputParser:
                     "words_added": 0,
                     "words_deleted": 0,
                     "words_unchanged": 0,
-                    "total_words_original": len(re.findall(r'\w+', original_text)),
-                    "total_words_proposed": len(re.findall(r'\w+', proposed_text)),
+                    "total_words_original": len(re.findall(r'\w+', original_text)) if original_text else 0,
+                    "total_words_proposed": len(re.findall(r'\w+', proposed_text)) if proposed_text else 0,
                     "percent_changed": 0
                 },
                 "change_summary": f"Error: {e}"
@@ -411,6 +446,7 @@ class OutputParser:
             review = results.get("review", "")
             proposal = results.get("proposal", "")
             validation = results.get("validation", "")
+            cross_standard_analysis = results.get("cross_standard_analysis", "")
             
             # Check for missing critical values and add warnings
             missing_sections = []
@@ -433,42 +469,27 @@ class OutputParser:
                 proposed_text = results.get("proposed_text", "")
             else:
                 original_text, proposed_text = OutputParser.extract_original_and_proposed(proposal)
+                # Store extracted text back in results for future use
+                results["original_text"] = original_text
+                results["proposed_text"] = proposed_text
             
-            # Generate both simple and enhanced diffs
-            # If the diffs are already in the results, use them
-            if "simple_diff" in results and "simple_diff_html" in results:
-                simple_diff = results["simple_diff"]
-                simple_diff_html = results["simple_diff_html"]
-            else:
+            # Generate both simple and enhanced diffs if not already present
+            if "simple_diff" not in results or "simple_diff_html" not in results:
                 simple_diff = OutputParser.format_text_diff(original_text, proposed_text)
                 simple_diff_html = OutputParser.format_diff_html(simple_diff)
+                results["simple_diff"] = simple_diff
+                results["simple_diff_html"] = simple_diff_html
             
             # Generate enhanced diff if not already present
             if "enhanced_diff" not in results:
                 enhanced_diff = OutputParser.generate_enhanced_diff(original_text, proposed_text)
-            else:
-                enhanced_diff = results["enhanced_diff"]
+                results["enhanced_diff"] = enhanced_diff
             
-            # Combine everything into a structured result
-            structured_results = {
-                "standard_id": standard_id,
-                "trigger_scenario": trigger_scenario,
-                "review": review,
-                "proposal": proposal,
-                "validation": validation,
-                "original_text": original_text,
-                "proposed_text": proposed_text,
-                "simple_diff": simple_diff,
-                "simple_diff_html": simple_diff_html,
-                "enhanced_diff": enhanced_diff
-            }
-            
-            # Add any other fields from the original results
-            for key, value in results.items():
-                if key not in structured_results:
-                    structured_results[key] = value
-                    
-            return structured_results
+            # Add cross-standard analysis if present
+            if cross_standard_analysis:
+                results["cross_standard_analysis"] = cross_standard_analysis
+                
+            return results
         except Exception as e:
             # If parsing fails, return a minimal but valid structure with the error
             print(f"ERROR parsing results: {e}")
