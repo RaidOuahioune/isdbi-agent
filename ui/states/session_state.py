@@ -55,8 +55,37 @@ def get_use_case_results() -> Optional[Dict[str, Any]]:
     """Get the use case results from the session state."""
     return st.session_state.use_case_results
 
+# Add product design state functions
+def init_product_design_state():
+    """Initialize the session state for product design."""
+    if 'product_design_results' not in st.session_state:
+        st.session_state.product_design_results = None
+    if 'saved_designs' not in st.session_state:
+        st.session_state.saved_designs = []
+
+def set_product_design_results(results: Dict[str, Any]):
+    """Set the product design results in the session state."""
+    st.session_state.product_design_results = results
+
+def get_product_design_results() -> Optional[Dict[str, Any]]:
+    """Get the product design results from the session state."""
+    return st.session_state.product_design_results
+
+def add_saved_design(design: Dict[str, Any]):
+    """Add a design to the saved designs list."""
+    if 'saved_designs' not in st.session_state:
+        st.session_state.saved_designs = []
+    st.session_state.saved_designs.append(design)
+
+def get_saved_designs() -> List[Dict[str, Any]]:
+    """Get the list of saved designs."""
+    if 'saved_designs' not in st.session_state:
+        st.session_state.saved_designs = []
+    return st.session_state.saved_designs
+
 def init_all_states():
     """Initialize all session states."""
     init_enhancement_state()
     init_transaction_analysis_state()
-    init_use_case_state() 
+    init_use_case_state()
+    init_product_design_state() 

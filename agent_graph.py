@@ -29,6 +29,9 @@ from components.agents.validator_agent import validator_agent
 from components.agents.transaction_analyzer import transaction_analyzer
 from components.agents.transaction_rationale import transaction_rationale
 from components.agents.knowledge_integration import knowledge_integration
+# Import new agents for product design
+from components.agents.product_design import product_design_advisor
+from components.agents.compliance_check import product_compliance_checker
 
 # Import graph routing and node functions
 from components.graph.router import route_query, route_after_standards_extraction
@@ -44,6 +47,10 @@ from components.graph.nodes import (
     analyze_transaction,
     explain_standards_rationale,
     integrate_transaction_knowledge,
+    # Add new node functions for product design
+    process_product_design,
+    check_product_compliance,
+    format_product_design_results,
 )
 
 
@@ -58,6 +65,8 @@ def build_agent_graph() -> StateGraph:
     - Transaction Analyzer Agent - for analyzing reverse transactions
     - Transaction Rationale Agent - for explaining standard applicability
     - Knowledge Integration Agent - for integrating transaction analysis with standards
+    - Product Design Advisor Agent - for designing financial products
+    - Product Compliance Checker Agent - for checking Shariah compliance
 
     The graph is designed to be extensible for future agent additions.
     """
@@ -73,6 +82,11 @@ def build_agent_graph() -> StateGraph:
     graph_builder.add_node("transaction_analyzer", analyze_transaction)
     graph_builder.add_node("transaction_rationale", explain_standards_rationale)
     graph_builder.add_node("knowledge_integration", integrate_transaction_knowledge)
+
+    # Add Category 4 specialized nodes for product design
+    graph_builder.add_node("product_design", process_product_design)
+    graph_builder.add_node("product_compliance", check_product_compliance)
+    graph_builder.add_node("format_product_results", format_product_design_results)
 
     # Add a final response node
     graph_builder.add_node("final_response", lambda state: (END, state))
@@ -105,6 +119,7 @@ def build_agent_graph() -> StateGraph:
             "enhancement_workflow": "extract_enhancement_info",
             END: END,
             "transaction_analyzer": "transaction_analyzer",
+            "product_design": "product_design",  # Add route to product design
         }
     )
 
@@ -140,6 +155,11 @@ def build_agent_graph() -> StateGraph:
     graph_builder.add_edge("transaction_rationale", "knowledge_integration")
     graph_builder.add_edge("knowledge_integration", "final_response")
     graph_builder.add_edge("final_response", END)
+
+    # Product design workflow
+    graph_builder.add_edge("product_design", "product_compliance")
+    graph_builder.add_edge("product_compliance", "format_product_results")
+    graph_builder.add_edge("format_product_results", END)
 
     # Compile the graph
     return graph_builder.compile()

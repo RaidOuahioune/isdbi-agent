@@ -6,6 +6,9 @@ import streamlit as st
 import sys
 import json
 from pathlib import Path
+import traceback
+import requests
+import time
 
 # Add the parent directory to the path so we can import from the main project
 parent_dir = str(Path(__file__).parent.parent.parent)
@@ -16,60 +19,39 @@ if parent_dir not in sys.path:
 from ui.styles.main import load_css
 from ui.states.session_state import init_transaction_analysis_state, set_transaction_analysis_results, get_transaction_analysis_results
 
+# Import our helper utils instead of the agent directly
+from ui.utils.transaction_utils import analyze_transaction, DIRECT_IMPORT_AVAILABLE
+
+# API endpoint as fallback
+API_ENDPOINT = "http://localhost:8000/api/agent"
+
 def render_transaction_analysis_page():
-    """Render the Transaction Analysis page."""
+    """Render the Transaction Analysis page for Challenge 2: Reverse Transactions."""
     # Initialize session state
     init_transaction_analysis_state()
     
-    # Set page configuration
-    st.set_page_config(
-        page_title="Islamic Finance Transaction Analysis",
-        page_icon="📝",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
-    
-    # Apply CSS
-    st.markdown(load_css(), unsafe_allow_html=True)
-    
-    # Page title
+    # Page title and description
     st.title("📝 Islamic Finance Transaction Analysis")
-    st.markdown("### Identify applicable AAOIFI standards from journal entries")
+    st.markdown("""
+    ### Identify applicable AAOIFI standards from journal entries (Challenge 2)
     
-    # Sidebar
+    This module analyzes financial journal entries to identify which AAOIFI Financial Accounting 
+    Standards (FAS) are most applicable. Enter transaction details or select from samples 
+    to receive a detailed analysis.
+    """)
+    
+    # Create sidebar for options
     st.sidebar.title("Transaction Options")
     
     # Input method selection
     input_method = st.sidebar.radio(
         "Input Method",
-        ["Sample Transactions", "Custom Transaction"]
+        ["Free-text Input", "Sample Transactions", "Structured Input"]
     )
     
     if input_method == "Sample Transactions":
-        st.sidebar.markdown("### Sample Transactions")
-        # In a real implementation, these would be loaded from a file or database
-        sample_transactions = [
-            {
-                "name": "Partner Equity Buyout",
-                "description": "Transaction involves buyout of a partner's stake",
-                "journal_entries": [
-                    {"account": "Partner's Equity", "debit": 100000, "credit": 0},
-                    {"account": "Cash", "debit": 0, "credit": 100000}
-                ],
-                "context": "Islamic bank buying out a Mudarabah partner's stake."
-            },
-            {
-                "name": "Ijarah Asset Transfer",
-                "description": "Transfer of asset at the end of Ijarah term",
-                "journal_entries": [
-                    {"account": "Ijarah Asset", "debit": 0, "credit": 50000},
-                    {"account": "Accumulated Depreciation", "debit": 30000, "credit": 0},
-                    {"account": "Cash", "debit": 5000, "credit": 0},
-                    {"account": "Gain on Disposal", "debit": 0, "credit": 5000}
-                ],
-                "context": "Transfer of asset to lessee at the end of Ijarah MBT contract term."
-            }
-        ]
+        # Load sample transactions from a predefined list
+        sample_transactions = load_sample_transactions()
         
         # Create a dropdown for sample transactions
         transaction_names = [t["name"] for t in sample_transactions]
@@ -80,16 +62,155 @@ def render_transaction_analysis_page():
         )
         
         selected_transaction = sample_transactions[selected_idx]
+        display_transaction(selected_transaction)
+        transaction_details = selected_transaction
         
-        # Display selected transaction
-        st.subheader(f"Transaction: {selected_transaction['name']}")
-        st.markdown(f"**Description:** {selected_transaction['description']}")
-        st.markdown(f"**Context:** {selected_transaction['context']}")
+    elif input_method == "Structured Input":
+        transaction_details = handle_custom_transaction_input()
+    else:  # Free-text Input
+        transaction_details = handle_free_text_input()
+    
+    # Analysis button
+    analyze_col1, analyze_col2 = st.columns([1, 3])
+    with analyze_col1:
+        analyze_btn = st.button("Analyze Transaction", type="primary", use_container_width=True)
+    
+    with analyze_col2:
+        st.markdown("""
+        <div style="padding: 10px 0px 0px 10px; color: #6c757d; font-size: 0.9em;">
+        Analysis will identify applicable AAOIFI standards with detailed rationale.
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Method selection for analysis (hidden in sidebar)
+    analysis_method = st.sidebar.radio(
+        "Analysis Method",
+        ["Direct (Faster)", "API (More Stable)"],
+        help="Direct method calls the agent directly. API method uses the server endpoint."
+    ) if DIRECT_IMPORT_AVAILABLE else "API (More Stable)"
+    
+    # Handle analysis button click
+    if analyze_btn:
+        if input_method == "Free-text Input" and not transaction_details.get("context", "").strip():
+            st.error("Please provide some transaction details to analyze.")
+        elif input_method == "Structured Input" and not is_balanced(transaction_details.get("journal_entries", [])):
+            st.warning("Journal entries are not balanced. Analysis may be less accurate.")
+            # Continue anyway - don't enforce balance for jury testing
+            with st.spinner("Analyzing transaction..."):
+                process_analysis(transaction_details, analysis_method)
+        else:
+            with st.spinner("Analyzing transaction..."):
+                process_analysis(transaction_details, analysis_method)
+    
+    # Display results if available
+    results = get_transaction_analysis_results()
+    if results:
+        display_analysis_results(results)
+
+def process_analysis(transaction_details, analysis_method):
+    """Process the transaction analysis based on the selected method."""
+    try:
+        # Process based on selected method using our helper
+        use_api = analysis_method != "Direct (Faster)"
+        results = analyze_transaction(transaction_details, use_api=use_api)
         
-        # Display journal entries
-        st.subheader("Journal Entries")
+        # Check if results are valid
+        if not results or (isinstance(results, dict) and "error" in results):
+            error_msg = results.get("error", "Unknown error") if isinstance(results, dict) else "Failed to analyze transaction"
+            st.error(f"Analysis failed: {error_msg}")
+        else:
+            # Save results to session state
+            set_transaction_analysis_results(results)
+            
+            # Success message
+            st.success("Transaction analysis completed!")
+    except Exception as e:
+        st.error(f"Error analyzing transaction: {str(e)}")
+        st.error(traceback.format_exc())
+
+def load_sample_transactions():
+    """Load sample transactions for demo purposes."""
+    return [
+        {
+            "name": "Salam Contract Cancellation",
+            "description": "Al-Falah Agricultural Bank cancels a Salam agreement with Sunrise Farms due to crop failure",
+            "journal_entries": [
+                {"account": "Cash", "debit": 825000, "credit": 0},
+                {"account": "Cancellation Income", "debit": 25000, "credit": 0},
+                {"account": "Commodity Receivables", "debit": 0, "credit": 850000},
+                {"account": "Cash", "debit": 0, "credit": 15000},
+                {"account": "Termination Fee Expense", "debit": 15000, "credit": 0}
+            ],
+            "context": """
+            Al-Falah Agricultural Bank had entered into an advance purchase agreement (Salam) with Sunrise Farms for wheat.
+            Terms: 
+            - Advance payment: $850,000
+            - Quantity: 10,000 bushels of wheat
+            - Delivery Date: Originally scheduled for 6 months after payment
+            - Reason for Cancellation: Crop failure at Sunrise Farms, preventing delivery
+            - The bank had a parallel agreement to sell the wheat to a third party
+
+            The parties agree to cancel the contract, with Sunrise Farms returning the advance minus $25,000 as cancellation income.
+            Al-Falah pays a $15,000 termination fee related to its parallel agreement.
+            """
+        },
+        {
+            "name": "Partner Equity Buyout",
+            "description": "GreenTech exits in Year 3, and Al Baraka Bank buys out its stake",
+            "journal_entries": [
+                {"account": "GreenTech Equity", "debit": 1750000, "credit": 0},
+                {"account": "Cash", "debit": 0, "credit": 1750000}
+            ],
+            "context": """
+            Context: GreenTech exits in Year 3, and Al Baraka Bank buys out its stake.
+            Adjustments:
+            - Buyout Price: $1,750,000
+            - Bank Ownership: 100%
+            - Accounting Treatment:
+              - Derecognition of GreenTech's equity
+              - Recognition of acquisition expense
+            """
+        },
+        {
+            "name": "Contract Change Order Reversal",
+            "description": "The client cancels the change order, reverting to the original contract terms",
+            "journal_entries": [
+                {"account": "Accounts Payable", "debit": 1000000, "credit": 0},
+                {"account": "Work-in-Progress", "debit": 0, "credit": 1000000}
+            ],
+            "context": """
+            Context: The client cancels the change order, reverting to the original contract terms.
+            Adjustments:
+            - Revised Contract Value: Back to $5,000,000 (from $6,000,000)
+            - Timeline Restored: 2 years (from 2.5 years)
+            - Accounting Treatment:
+              - Adjustment of revenue and cost projections
+              - Reversal of additional cost accruals
+            This restores the original contract cost.
+            """
+        }
+    ]
+
+def display_transaction(transaction):
+    """Display transaction details in a structured format."""
+    # Create expander for transaction details
+    with st.expander("Transaction Details", expanded=True):
+        # Title and description
+        st.subheader(f"{transaction['name']}")
+        st.markdown(f"**Description:** {transaction['description']}")
+        
+        # Context in a formatted box
+        st.markdown("### Context")
+        st.markdown(f"""
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+            {transaction['context']}
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Journal entries in a table
+        st.markdown("### Journal Entries")
         entries_data = []
-        for entry in selected_transaction["journal_entries"]:
+        for entry in transaction["journal_entries"]:
             entries_data.append({
                 "Account": entry["account"],
                 "Debit": f"${entry['debit']:,.2f}" if entry["debit"] > 0 else "",
@@ -98,164 +219,246 @@ def render_transaction_analysis_page():
         
         st.table(entries_data)
         
-        # Transaction details to analyze
-        transaction_details = {
-            "name": selected_transaction["name"],
-            "context": selected_transaction["context"],
-            "journal_entries": selected_transaction["journal_entries"]
-        }
+        # Calculate and display totals
+        total_debits = sum(entry["debit"] for entry in transaction["journal_entries"])
+        total_credits = sum(entry["credit"] for entry in transaction["journal_entries"])
         
-    else:  # Custom Transaction
-        st.sidebar.markdown("### Custom Transaction")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(f"**Total Debits:** ${total_debits:,.2f}")
+        with col2:
+            st.markdown(f"**Total Credits:** ${total_credits:,.2f}")
         
-        transaction_name = st.sidebar.text_input("Transaction Name", "")
-        transaction_context = st.sidebar.text_area(
-            "Transaction Context",
-            "",
-            help="Provide context about the transaction, including its purpose and nature."
-        )
-        
-        # Custom journal entries input
-        st.subheader("Journal Entries")
-        st.markdown("Enter the journal entries for the transaction:")
-        
-        # Initialize entries if needed
-        if "journal_entries" not in st.session_state:
-            st.session_state.journal_entries = [
-                {"account": "", "debit": 0, "credit": 0}
-            ]
-        
-        # Function to add a new entry
-        def add_entry():
-            st.session_state.journal_entries.append({"account": "", "debit": 0, "credit": 0})
-        
-        # Function to remove an entry
-        def remove_entry(idx):
-            st.session_state.journal_entries.pop(idx)
-        
-        # Display entries
-        for i, entry in enumerate(st.session_state.journal_entries):
-            cols = st.columns([3, 2, 2, 1])
-            with cols[0]:
-                st.session_state.journal_entries[i]["account"] = st.text_input(
-                    "Account", 
-                    entry["account"], 
-                    key=f"account_{i}"
-                )
-            with cols[1]:
-                st.session_state.journal_entries[i]["debit"] = st.number_input(
-                    "Debit", 
-                    min_value=0.0, 
-                    value=float(entry["debit"]), 
-                    key=f"debit_{i}"
-                )
-            with cols[2]:
-                st.session_state.journal_entries[i]["credit"] = st.number_input(
-                    "Credit", 
-                    min_value=0.0, 
-                    value=float(entry["credit"]), 
-                    key=f"credit_{i}"
-                )
-            with cols[3]:
-                if i > 0:  # Don't allow removing the first entry
-                    st.button("Remove", key=f"remove_{i}", on_click=remove_entry, args=(i,))
-        
-        # Add entry button
-        st.button("Add Entry", on_click=add_entry)
-        
-        # Validate entries
-        total_debits = sum(entry["debit"] for entry in st.session_state.journal_entries)
-        total_credits = sum(entry["credit"] for entry in st.session_state.journal_entries)
-        
-        # Check if entries balance
-        if abs(total_debits - total_credits) > 0.01:
-            st.warning(f"Journal entries do not balance. Debits: ${total_debits:,.2f}, Credits: ${total_credits:,.2f}")
+        # Check if balanced
+        if abs(total_debits - total_credits) <= 0.01:
+            st.success("Journal entries are balanced.")
         else:
-            st.success(f"Journal entries balance. Total: ${total_debits:,.2f}")
-        
-        # Transaction details to analyze
-        transaction_details = {
-            "name": transaction_name,
-            "context": transaction_context,
-            "journal_entries": st.session_state.journal_entries
-        }
+            st.warning("Journal entries are not balanced.")
+
+def handle_custom_transaction_input():
+    """Handle input for custom transaction details."""
+    st.sidebar.markdown("### Structured Transaction Input")
     
-    # Analysis button
-    analyze_btn = st.button("Analyze Transaction", type="primary")
+    transaction_name = st.sidebar.text_input("Transaction Name", "")
+    transaction_context = st.sidebar.text_area(
+        "Transaction Context",
+        "",
+        help="Provide context about the transaction, including its purpose and nature."
+    )
     
-    if analyze_btn:
-        if input_method == "Custom Transaction" and (not transaction_details["name"] or not transaction_details["context"]):
-            st.error("Please provide a transaction name and context.")
-        elif input_method == "Custom Transaction" and abs(total_debits - total_credits) > 0.01:
-            st.error("Journal entries must balance before analysis.")
-        else:
-            with st.spinner("Analyzing transaction..."):
-                # In a real implementation, this would call an API or backend function
-                # For now, we'll just create a mock response
-                
-                # Import here to avoid circular imports
-                try:
-                    # Try to import the actual analyzer if available
-                    from components.agents import transaction_analyzer
-                    results = transaction_analyzer.analyze_transaction(json.dumps(transaction_details))
-                except ImportError:
-                    # Mock response for placeholder
-                    results = {
-                        "analysis": f"Analysis of {transaction_details['name']}:\n\nBased on the journal entries and context provided, this transaction appears to be related to the following Islamic finance concepts:\n\n1. The transaction involves a financial exchange that might be governed by AAOIFI standards.\n2. The nature of the entries suggests a transfer of ownership or rights.",
-                        "identified_standards": [
-                            {
-                                "standard_id": "FAS 28",
-                                "name": "Ijarah",
-                                "probability": "High",
-                                "reasoning": "The entries and context suggest a lease transaction with transfer of ownership (Ijarah Muntahia Bittamleek)."
-                            },
-                            {
-                                "standard_id": "FAS 7",
-                                "name": "Musharakah",
-                                "probability": "Medium",
-                                "reasoning": "The transaction could involve a partnership arrangement given the context."
-                            }
-                        ]
-                    }
-                
-                # Save results to session state
-                set_transaction_analysis_results(results)
-                
-                # Success message
-                st.success("Transaction analysis completed!")
+    # Custom journal entries input
+    st.markdown("## Enter Journal Entries")
+    st.markdown("Add the journal entries for your transaction:")
     
-    # Display results if available
-    results = get_transaction_analysis_results()
-    if results:
-        st.header("Analysis Results")
+    # Initialize entries if needed
+    if "journal_entries" not in st.session_state:
+        st.session_state.journal_entries = [
+            {"account": "", "debit": 0, "credit": 0}
+        ]
+    
+    # Display header row
+    header_cols = st.columns([3, 2, 2, 1])
+    with header_cols[0]:
+        st.markdown("**Account**")
+    with header_cols[1]:
+        st.markdown("**Debit**")
+    with header_cols[2]:
+        st.markdown("**Credit**")
+    
+    # Display entries
+    for i, entry in enumerate(st.session_state.journal_entries):
+        cols = st.columns([3, 2, 2, 1])
+        with cols[0]:
+            st.session_state.journal_entries[i]["account"] = st.text_input(
+                "Account", 
+                entry["account"], 
+                key=f"account_{i}",
+                label_visibility="collapsed"
+            )
+        with cols[1]:
+            st.session_state.journal_entries[i]["debit"] = st.number_input(
+                "Debit", 
+                min_value=0.0, 
+                value=float(entry["debit"]), 
+                key=f"debit_{i}",
+                label_visibility="collapsed"
+            )
+        with cols[2]:
+            st.session_state.journal_entries[i]["credit"] = st.number_input(
+                "Credit", 
+                min_value=0.0, 
+                value=float(entry["credit"]), 
+                key=f"credit_{i}",
+                label_visibility="collapsed"
+            )
+        with cols[3]:
+            if i > 0:  # Don't allow removing the first entry
+                st.button("✕", key=f"remove_{i}", on_click=remove_entry, args=(i,), help="Remove this entry")
+    
+    # Add entry button
+    st.button("Add Entry", on_click=add_entry)
+    
+    # Validate entries
+    entries = st.session_state.journal_entries
+    total_debits = sum(entry["debit"] for entry in entries)
+    total_credits = sum(entry["credit"] for entry in entries)
+    
+    # Display totals
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"**Total Debits:** ${total_debits:,.2f}")
+    with col2:
+        st.markdown(f"**Total Credits:** ${total_credits:,.2f}")
+    
+    # Check if entries balance
+    if abs(total_debits - total_credits) > 0.01:
+        st.warning(f"Journal entries do not balance. Debits: ${total_debits:,.2f}, Credits: ${total_credits:,.2f}")
+    else:
+        st.success(f"Journal entries balance. Total: ${total_debits:,.2f}")
+    
+    # Filter out empty entries
+    valid_entries = [
+        entry for entry in entries 
+        if entry["account"] and (entry["debit"] > 0 or entry["credit"] > 0)
+    ]
+    
+    # Return transaction details
+    return {
+        "name": transaction_name,
+        "context": transaction_context,
+        "journal_entries": valid_entries,
+        "description": "Custom transaction"
+    }
+
+def handle_free_text_input():
+    """Handle free-text input for maximal flexibility."""
+    st.markdown("## Free-text Transaction Input")
+    st.markdown("""
+    Enter any transaction details below. You can use any format or structure you prefer.
+    There are no constraints - paste or type your transaction description, journal entries, 
+    or any other information in whatever format is most convenient.
+    
+    Your input will be analyzed to identify applicable AAOIFI standards.
+    """)
+    
+    # Text area for free-text input with large height for jury convenience
+    transaction_text = st.text_area(
+        "Enter Transaction Details",
+        "",
+        height=400,
+        help="Enter transaction details in any format. Complete flexibility for your analysis needs."
+    )
+    
+    return {"context": transaction_text}
+
+def add_entry():
+    """Add a new journal entry."""
+    st.session_state.journal_entries.append({"account": "", "debit": 0, "credit": 0})
+
+def remove_entry(idx):
+    """Remove a journal entry at the given index."""
+    st.session_state.journal_entries.pop(idx)
+
+def is_balanced(entries):
+    """Check if journal entries are balanced."""
+    if not entries:
+        return False
         
-        # Display analysis
-        st.subheader("Transaction Analysis")
-        st.markdown(f'<div class="review-container">{results["analysis"]}</div>', unsafe_allow_html=True)
+    total_debits = sum(entry["debit"] for entry in entries)
+    total_credits = sum(entry["credit"] for entry in entries)
+    return abs(total_debits - total_credits) <= 0.01
+
+def display_analysis_results(results):
+    """Display the transaction analysis results in a structured format."""
+    st.header("Analysis Results")
+    
+    # Create tabs for different sections of the analysis
+    tab1, tab2, tab3 = st.tabs(["Transaction Analysis", "Applicable Standards", "Detailed Rationale"])
+    
+    with tab1:
+        st.subheader("Transaction Summary")
+        st.markdown(f"""
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+            {results.get("transaction_summary", "No summary provided.")}
+        </div>
+        """, unsafe_allow_html=True)
         
-        # Display identified standards
-        st.subheader("Identified Standards")
+        st.markdown(f"""
+        <div style="background-color: #e8f4f8; padding: 15px; border-radius: 5px; margin-top: 20px;">
+            <h3 style="margin-top: 0;">Correct Standard: {results.get("correct_standard", "Not determined")}</h3>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with tab2:
+        st.subheader("Applicable Standards (Ranked by Probability)")
         
-        for standard in results["identified_standards"]:
+        for standard in results.get("applicable_standards", []):
             # Set color based on probability
-            color = "#f8d7da"  # Red for low
-            if standard["probability"].lower() == "high":
+            probability = standard.get("probability", "0%")
+            prob_value = 0
+            
+            if isinstance(probability, str):
+                # Handle percentage string
+                if "%" in probability:
+                    try:
+                        prob_value = float(probability.strip("%"))
+                    except ValueError:
+                        pass
+                # Handle text-based probability
+                elif probability.lower() in ["high", "very high"]:
+                    prob_value = 80
+                elif probability.lower() == "medium":
+                    prob_value = 50
+                elif probability.lower() in ["low", "very low"]:
+                    prob_value = 20
+            
+            if prob_value >= 70:
                 color = "#d4edda"  # Green for high
-            elif standard["probability"].lower() == "medium":
+            elif prob_value >= 30:
                 color = "#fff3cd"  # Yellow for medium
+            else:
+                color = "#f8d7da"  # Red for low
                 
             # Display the standard card
             st.markdown(
                 f"""
                 <div style="background-color: {color}; padding: 15px; 
-                      border-radius: 5px; margin-bottom: 10px;">
-                    <h3>{standard["standard_id"]} - {standard.get("name", "")}</h3>
-                    <p><b>Probability:</b> {standard["probability"]}</p>
-                    <p><b>Reasoning:</b> {standard["reasoning"]}</p>
+                      border-radius: 5px; margin-bottom: 15px;">
+                    <h3>{standard.get("standard_id", "")} - {standard.get("name", "")}</h3>
+                    <p><b>Probability:</b> {probability}</p>
+                    <p><b>Reasoning:</b> {standard.get("reasoning", "No reasoning provided.")}</p>
                 </div>
                 """, 
                 unsafe_allow_html=True
             )
+    
+    with tab3:
+        st.subheader("Standard Application Rationale")
+        st.markdown(f"""
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px; white-space: pre-line;">
+            {results.get("standard_rationale", "No detailed rationale provided.")}
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Add a citation/reference section if available
+        if results.get("citations"):
+            st.subheader("Citations & References")
+            for citation in results["citations"]:
+                st.markdown(f"- **{citation['source']}:** {citation['text']}")
+        
+        # Add complete analysis in expander for reference
+        if results.get("analysis"):
+            with st.expander("Show Complete Analysis", expanded=False):
+                st.markdown("```\n" + results["analysis"] + "\n```")
+        
+        # Add retrieval stats for transparency
+        if results.get("retrieval_stats"):
+            with st.expander("Retrieval Statistics", expanded=False):
+                st.markdown(f"**Number of chunks retrieved:** {results['retrieval_stats'].get('chunk_count', 0)}")
+                if results['retrieval_stats'].get('chunks_summary'):
+                    st.markdown("**Sample chunks:**")
+                    for i, chunk in enumerate(results['retrieval_stats']['chunks_summary'][:3]):
+                        st.markdown(f"{i+1}. {chunk}")
 
 if __name__ == "__main__":
     render_transaction_analysis_page() 
