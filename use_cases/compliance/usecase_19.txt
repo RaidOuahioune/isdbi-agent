@@ -1,0 +1,72 @@
+OK, here's the markdown document for a simulated quarterly financial report, followed by the list of violations.
+
+```markdown
+# Al-Amanah Islamic Bank - Quarterly Financial Report (Q3 2024)
+
+**For the period ended September 30, 2024 (Unaudited)**
+
+## Executive Summary
+
+Al-Amanah Islamic Bank reports a stable Q3 2024, demonstrating resilience in a dynamic economic climate. Financing activities remain robust, and customer deposits continue to grow steadily. The bank is committed to upholding Shari'ah principles in all its operations. This report provides a condensed overview of the bank’s financial performance and position as of September 30, 2024.
+
+## Condensed Interim Statement of Financial Position (Balance Sheet)
+
+| Assets                                   | Sep 30, 2024 (SAR '000) | Dec 31, 2023 (SAR '000) |
+|------------------------------------------|-------------------------|-------------------------|
+| Cash and Balances with Central Bank       | 1,500                   | 1,200                   |
+| Murabaha and Salam Financing              | 3,200                   | 2,900                   |
+| Istisna' Assets                           | 800                     | 700                     |
+| Ijarah Assets                             | 1,000                   | 900                     |
+| Sukuk Investments                         | 500                     | 450                     |
+| Other Assets                              | 200                     | 180                     |
+| **Total Assets**                          | **7,200**               | **6,330**               |
+
+| Liabilities and Equity                     | Sep 30, 2024 (SAR '000) | Dec 31, 2023 (SAR '000) |
+|------------------------------------------|-------------------------|-------------------------|
+| Customer Deposits                         | 5,000                   | 4,500                   |
+| Investment Accounts                       | 1,000                   | 900                     |
+| Other Liabilities                         | 200                     | 180                     |
+| Equity                                    | 1,000                   | 750                     |
+| **Total Liabilities and Equity**          | **7,200**               | **6,330**               |
+
+## Condensed Interim Income Statement
+
+| Income                                   | Q3 2024 (SAR '000) | Q3 2023 (SAR '000) |
+|------------------------------------------|--------------------|--------------------|
+| Income from Murabaha and Salam             | 300                | 270                |
+| Income from Istisna'                      | 80                 | 70                 |
+| Income from Ijarah                        | 100                | 90                 |
+| Income from Sukuk                          | 50                 | 45                 |
+| Other Income                              | 20                 | 15                 |
+| **Total Income**                          | **550**            | **490**            |
+
+| Expenses                                 | Q3 2024 (SAR '000) | Q3 2023 (SAR '000) |
+|------------------------------------------|--------------------|--------------------|
+| Operating Expenses                        | 200                | 180                |
+| Provision for Credit Losses               | 50                 | 40                 |
+| **Total Expenses**                          | **250**            | **220**            |
+
+| **Net Income**                            | **300**            | **270**            |
+
+## Notes to the Financial Statements
+
+1.  **Basis of Preparation:** This condensed interim financial report has been prepared in accordance with generally accepted accounting principles and relevant guidelines issued by the Saudi Central Bank (SAMA).
+
+2.  **Financing Activities:** The bank's primary financing activities include Murabaha, Salam, Istisna', and Ijarah.
+
+3.  **Sukuk Investments:** Represent investments in Shari'ah-compliant Sukuk certificates.
+
+4.  **Equity:** Equity comprises share capital and retained earnings.
+
+5.  **Ijarah Assets:** These assets are leased to customers under agreements that transfer substantially all the risks and rewards of ownership.
+
+6.  **Shari’ah Supervisory Board:** The bank operates under the guidance of a Shari’ah Supervisory Board, ensuring compliance with Islamic principles.
+```
+
+- VIOLATIONS:
+
+1.  **FAS 10 (Istisna and Parallel Istisna):** No mention of whether the Istisna' assets involve parallel Istisna'. This lack of disclosure obscures the bank's potential exposure to risks associated with parallel structures.
+
+2.  **FAS 28 (Disclosure on Islamic Financing and Investment Assets):** The Financing Activities section (Note 2) aggregates Murabaha, Salam, Istisna’, and Ijarah, rather than providing separate details for each type of financing. The details of income generated from the activities are shown in the Income Statement, but there is not a clear overview of the volume of each Financing product within the financial statement.
+
+3.  **FAS 32 (Ijarah):** Note 5 states that Ijarah assets transfer all risks and rewards of ownership, implying a finance lease, but these are reported as Operating Leases within the balance sheet.

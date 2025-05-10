@@ -1,0 +1,70 @@
+DOCUMENT:
+
+# Al-Noor Islamic Bank - Interim Financial Report
+## Third Quarter 2024 (Unaudited)
+
+**Introduction**
+
+This report provides a condensed interim financial statement for Al-Noor Islamic Bank for the period ended September 30, 2024. The financial information presented herein is unaudited and should be read in conjunction with the Bank's audited annual financial statements for the year ended December 31, 2023.
+
+**Statement of Financial Position (Condensed)**
+As at September 30, 2024 (Unaudited)
+
+| Assets                                    | Q3 2024 (USD '000) | Q2 2024 (USD '000) |
+|-------------------------------------------|---------------------|---------------------|
+| Cash and Balances with Central Bank        | 25,000              | 22,000              |
+| Murabaha Receivables                     | 85,000              | 80,000              |
+| Ijarah Assets                             | 50,000              | 48,000              |
+| Istisna' Assets                           | 40,000              | 38,000              |
+| Sukuk Investments                        | 30,000              | 28,000              |
+| Other Assets                             | 10,000              | 9,000               |
+| **Total Assets**                          | **240,000**         | **225,000**         |
+
+| Liabilities and Equity                     | Q3 2024 (USD '000) | Q2 2024 (USD '000) |
+|-------------------------------------------|---------------------|---------------------|
+| Current Accounts                         | 60,000              | 55,000              |
+| Investment Accounts (Unrestricted)        | 90,000              | 85,000              |
+| Other Liabilities                        | 15,000              | 14,000              |
+| **Total Liabilities**                     | **165,000**         | **154,000**         |
+| Equity                                      | 75,000              | 71,000              |
+| **Total Liabilities & Equity**            | **240,000**         | **225,000**         |
+
+**Statement of Income (Condensed)**
+For the Three Months Ended September 30, 2024 (Unaudited)
+
+| Income                                    | Q3 2024 (USD '000) | Q3 2023 (USD '000) |
+|-------------------------------------------|---------------------|---------------------|
+| Income from Murabaha                       | 5,000               | 4,500               |
+| Income from Ijarah                          | 3,000               | 2,800               |
+| Income from Istisna'                        | 2,500               | 2,300               |
+| Income from Sukuk                          | 1,500               | 1,400               |
+| Other Income                             | 500                 | 400                 |
+| **Total Income**                          | **12,500**          | **11,400**          |
+
+| Expenses                                   | Q3 2024 (USD '000) | Q3 2023 (USD '000) |
+|-------------------------------------------|---------------------|---------------------|
+| Operating Expenses                         | 4,000               | 3,800               |
+| Distribution to Investment Account Holders | 3,000               | 2,700               |
+| Other Expenses                             | 500                 | 400                 |
+| **Total Expenses**                          | **7,500**           | **6,900**           |
+
+| **Net Income**                            | **5,000**           | **4,500**           |
+
+**Notes to the Financial Statements**
+
+1.  The Bank is incorporated in accordance with the laws of [Country Name] and operates as a full-fledged Islamic bank.
+2.  These condensed interim financial statements have been prepared in accordance with generally accepted accounting principles (GAAP) applicable to Islamic financial institutions in [Country Name].
+3.  Ijarah assets are presented net of accumulated depreciation. These are treated as operating leases.
+4.  Murabaha receivables represent amounts due from customers under Murabaha financing arrangements.
+5.  Istisna' assets represent the cost of projects under construction for customers.
+6.  Sukuk investments are classified as held-to-maturity.
+7.  The Shari’ah Supervisory Board provides oversight on the Bank's compliance with Shari’ah principles.
+8.  Figures might not add up due to rounding.
+
+---
+*End of Report*
+
+VIOLATIONS:
+
+*   **FAS 32 (Ijarah):** Note 3 states, "These are treated as operating leases." Islamic Ijarah is a financing lease, not an operating lease, and this misclassification affects how the asset and related income are accounted for.
+*   **FAS 28 (Disclosure on Islamic Financing and Investment Assets):** The balance sheet provides aggregated data on financing assets (Murabaha, Ijarah, Istisna’). There is no disaggregation by type of customer (e.g., retail, corporate) or industry sector, limiting the understanding of the bank's financing portfolio.

@@ -1,0 +1,80 @@
+```markdown
+# Al-Amin Islamic Bank - Condensed Interim Financial Statements
+## For the Quarter Ended March 31, 2024 (Unaudited)
+
+**[Currency: Saudi Riyal (SAR)]**
+
+## Condensed Interim Statement of Financial Position
+
+| Assets                                        | March 31, 2024 | December 31, 2023 |
+|-----------------------------------------------|----------------|-------------------|
+| Cash and Balances with Central Bank           | 1,500,000,000   | 1,350,000,000     |
+| Murabaha Receivables                         | 2,200,000,000   | 2,100,000,000     |
+| Ijara Assets                                  | 1,800,000,000   | 1,700,000,000     |
+| Istisna' Assets                               | 1,000,000,000   | 900,000,000       |
+| Sukuk Investments                             | 800,000,000     | 750,000,000       |
+| Other Assets                                  | 300,000,000     | 250,000,000       |
+| **Total Assets**                              | **7,600,000,000** | **7,050,000,000**   |
+
+| Liabilities and Equity                        | March 31, 2024 | December 31, 2023 |
+|-----------------------------------------------|----------------|-------------------|
+| Current Accounts                              | 2,500,000,000   | 2,400,000,000     |
+| Savings Accounts                              | 1,800,000,000   | 1,700,000,000     |
+| Investment Accounts                             | 2,000,000,000   | 1,900,000,000     |
+| Other Liabilities                             | 200,000,000     | 180,000,000       |
+| Equity                                        | 1,100,000,000   | 870,000,000       |
+| **Total Liabilities and Equity**              | **7,600,000,000** | **7,050,000,000**   |
+
+## Condensed Interim Statement of Income
+
+|                                                 | Quarter Ended March 31, 2024 | Quarter Ended March 31, 2023 |
+|-------------------------------------------------|------------------------------|------------------------------|
+| Income from Murabaha                             | 150,000,000                  | 140,000,000                  |
+| Income from Ijara                                | 120,000,000                  | 110,000,000                  |
+| Income from Istisna'                             | 80,000,000                   | 70,000,000                   |
+| Income from Sukuk                                | 60,000,000                   | 55,000,000                   |
+| Other Income                                     | 20,000,000                   | 15,000,000                   |
+| **Total Income**                                 | **430,000,000**              | **390,000,000**              |
+| Expenses                                         | (250,000,000)                | (230,000,000)                |
+| **Net Income**                                   | **180,000,000**              | **160,000,000**              |
+
+## Notes to the Condensed Interim Financial Statements
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with generally accepted accounting principles in the Kingdom of Saudi Arabia.
+
+2.  **Ijara Assets:** These primarily represent real estate and equipment leased to customers. The Bank acts as the lessor, and the lease terms typically range from 3 to 5 years.
+
+3.  **Istisna' Assets:** These represent construction projects undertaken by the Bank on behalf of customers. Upon completion, the projects are delivered, and the Bank receives payment.
+
+4.  **Sukuk Investments:** These are Shari'ah-compliant fixed income securities issued by various entities.
+
+5.  **Investment Accounts:** These accounts represent funds deposited by customers for investment purposes. Profits earned are distributed to account holders periodically.
+
+6.  **Shari'ah Supervisory Board Review:** The financial statements have been presented to the Shari’ah Supervisory Board.
+
+---
+
+## Al-Amin Islamic Bank - Condensed Interim Financial Statements (Continued)
+## For the Quarter Ended March 31, 2024 (Unaudited)
+
+**[Currency: Saudi Riyal (SAR)]**
+
+7.  **Murabaha Receivables:** These are amounts due from customers arising from Murabaha financing transactions.
+
+8.  **Contingencies:** There are no material contingencies as of March 31, 2024.
+
+9.  **Related Party Transactions:** The bank has entered into transactions with related parties, mainly consisting of financing arrangements. These transactions are conducted on an arm’s-length basis.
+
+10. **Segmental Reporting**: The bank operates primarily in retail and corporate banking segments.
+
+11. **Subsequent Events**: There have been no material subsequent events requiring disclosure.
+
+---
+```
+
+```
+- VIOLATIONS:
+    - FAS 7: Omission of the profit-sharing basis/ratio for investment accounts (Note 5).
+    - FAS 28: Aggregated reporting of Islamic financing assets (Murabaha, Ijara, Istisna) without disaggregation by type of customer or industry.
+    - FAS 32: Ijara Assets are mentioned in Note 2, but there is no discussion of whether these are treated as finance leases (Ijarah Muntahia Bittamleek) or operating leases and no mention of the associated accounting treatment. It is stated that the Bank acts as the lessor, and the lease terms typically range from 3 to 5 years. This is not enough information to properly ascertain whether the bank is in compliance.
+```

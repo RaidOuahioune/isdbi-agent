@@ -1,0 +1,80 @@
+```markdown
+# Al-Barakah Islamic Bank - Quarterly Financial Report - Q3 2024
+
+**For the Quarter Ended September 30, 2024 (Unaudited)**
+
+## Condensed Statement of Financial Position (Balance Sheet)
+
+| Assets                                   | Sep 30, 2024 (SAR '000) | Dec 31, 2023 (SAR '000) |
+|-------------------------------------------|------------------------|------------------------|
+| Cash and Balances with Central Bank       | 1,250                  | 1,100                  |
+| Murabaha Receivables                     | 3,500                  | 3,200                  |
+| Istisna' Assets                          | 1,800                  | 1,650                  |
+| Ijarah Assets                            | 1,000                  | 900                    |
+| Sukuk Investments                        | 800                    | 750                    |
+| Other Assets                             | 250                    | 200                    |
+| **Total Assets**                         | **8,600**              | **7,800**              |
+
+| Liabilities & Equity                     | Sep 30, 2024 (SAR '000) | Dec 31, 2023 (SAR '000) |
+|-------------------------------------------|------------------------|------------------------|
+| Current Accounts                         | 2,500                  | 2,300                  |
+| Savings Accounts                         | 1,500                  | 1,400                  |
+| Investment Accounts                      | 2,000                  | 1,800                  |
+| Other Liabilities                        | 300                    | 250                    |
+| **Total Liabilities**                    | **6,300**              | **5,750**              |
+| Share Capital                            | 1,000                  | 1,000                  |
+| Retained Earnings                        | 1,300                  | 1,050                  |
+| **Total Equity**                         | **2,300**              | **2,050**              |
+| **Total Liabilities & Equity**            | **8,600**              | **7,800**              |
+
+## Condensed Statement of Income
+
+| Income                                    | Q3 2024 (SAR '000) | Q3 2023 (SAR '000) |
+|--------------------------------------------|----------------------|----------------------|
+| Income from Murabaha                      | 350                  | 320                  |
+| Income from Istisna'                       | 200                  | 180                  |
+| Income from Ijarah                         | 120                  | 110                  |
+| Income from Sukuk                          | 80                   | 70                   |
+| Other Income                             | 30                   | 25                   |
+| **Total Income**                           | **780**              | **705**              |
+
+| Expenses                                  | Q3 2024 (SAR '000) | Q3 2023 (SAR '000) |
+|--------------------------------------------|----------------------|----------------------|
+| Operating Expenses                        | 300                  | 275                  |
+| Provision for Credit Losses               | 50                   | 40                   |
+| **Total Expenses**                         | **350**              | **315**              |
+
+| **Net Income**                             | **430**              | **390**              |
+
+## Notes to the Financial Statements
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with generally accepted accounting principles in the Kingdom of [Country Name], and applicable AAOIFI standards.
+
+2.  **Murabaha Receivables:** Represent amounts due from customers under Murabaha contracts.
+
+3.  **Istisna' Assets:** These assets relate to construction and manufacturing contracts undertaken by the bank.
+
+4.  **Ijarah Assets:** These assets represent properties leased to customers. The bank treats these as operating leases.
+
+5.  **Sukuk Investments:** Represent investments in Shariah-compliant Sukuk.
+
+6.  **Investment Accounts:** These accounts represent customer deposits held for investment purposes.
+
+7. **Financing Activities** The total financings provided by the bank this quarter is SAR 5,300,000.
+
+8.  **Shari'ah Board:** The Shari'ah board ensures the bank's compliance with Shari'ah principles.
+
+---
+
+# Al-Barakah Islamic Bank - Quarterly Financial Report - Q3 2024 (Cont.)
+
+## Additional Information
+
+The Bank's performance remains strong. The management is committed to achieving better results, and looks forward to the next quarter.
+```
+
+- VIOLATIONS:
+1.  **FAS 7: Profit Allocation Between Owners and Investment Account Holders:** The report omits the profit-sharing basis (e.g., Mudarabah ratio) between the bank and investment account holders. Note 6 mentions Investment Accounts, but does not specify any sharing ratio.
+2.  **FAS 10: Istisna and Parallel Istisna:** The report mentions Istisna' Assets in the balance sheet and income statement, but there is no disclosure on whether any of these transactions involved Parallel Istisna'. Such disclosure is required for transparency.
+3. **FAS 28: Disclosure on Islamic Financing and Investment Assets** The Bank has aggregated all financings provided in Note 7. Detailed breakdowns of the various types of financings are not given.
+4.  **FAS 32: Ijarah:** Note 4 says "The bank treats these as operating leases." This implies that the Ijarah assets are treated as operating leases when, in reality, they are likely to be finance leases (Ijarah Muntahia Bittamleek), which is a direct violation.

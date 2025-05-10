@@ -1,0 +1,74 @@
+```markdown
+# Al-Barakah Islamic Bank - Condensed Interim Financial Statements
+## For the Quarter Ended March 31, 2024 (Unaudited)
+
+**[Image: Bank Logo - Placeholder]**
+
+### Statement of Financial Position (Condensed)
+
+| Assets                                          | March 31, 2024 | December 31, 2023 |
+|-------------------------------------------------|-----------------|-------------------|
+| Cash and Balances with Banks                    | 1,250,000       | 1,100,000        |
+| Murabaha Receivables                              | 3,500,000       | 3,200,000        |
+| Ijarah Assets                                   | 2,000,000       | 1,900,000        |
+| Istisna' Assets                                 | 1,800,000       | 1,700,000        |
+| Sukuk Investments                               | 1,500,000       | 1,400,000        |
+| Other Assets                                     | 250,000         | 200,000          |
+| **Total Assets**                                | **10,300,000**  | **9,500,000**    |
+
+| Liabilities & Equity                              | March 31, 2024 | December 31, 2023 |
+|-------------------------------------------------|-----------------|-------------------|
+| Current Accounts                                  | 2,500,000       | 2,300,000        |
+| Savings Accounts                                  | 3,000,000       | 2,800,000        |
+| Investment Accounts                               | 2,000,000       | 1,800,000        |
+| Other Liabilities                                | 300,000         | 250,000          |
+| **Total Liabilities**                            | **7,800,000**  | **7,150,000**    |
+| Equity                                          | 2,500,000       | 2,350,000        |
+| **Total Liabilities & Equity**                 | **10,300,000**  | **9,500,000**    |
+
+### Statement of Income (Condensed)
+
+| Income/Expense                                   | Quarter Ended March 31, 2024 | Quarter Ended March 31, 2023 |
+|--------------------------------------------------|-------------------------------|-------------------------------|
+| Income from Murabaha                             | 400,000                       | 350,000                       |
+| Income from Ijarah                               | 250,000                       | 220,000                       |
+| Income from Istisna'                             | 200,000                       | 180,000                       |
+| Income from Sukuk                                | 150,000                       | 130,000                       |
+| Other Income                                      | 50,000                        | 40,000                        |
+| **Total Income**                                 | **1,050,000**                 | **920,000**                 |
+| Distribution to Investment Account Holders       | 150,000                       | 130,000                       |
+| Operating Expenses                               | 400,000                       | 350,000                       |
+| **Net Income Before Zakat & Tax**               | **500,000**                 | **440,000**                 |
+| Zakat                                            | 25,000                        | 22,000                        |
+| Income Tax                                       | 50,000                        | 44,000                        |
+| **Net Income After Zakat & Tax**                | **425,000**                 | **374,000**                 |
+
+---
+
+### Notes to the Condensed Interim Financial Statements
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with generally accepted accounting principles for Islamic financial institutions.
+
+2.  **Murabaha Receivables:** Represents amounts due from customers under Murabaha contracts. These are generally short-term in nature.
+
+3.  **Ijarah Assets:** These represent assets leased to customers under operating lease agreements. Depreciation is charged on a straight-line basis over the lease term.
+
+4.  **Istisna' Assets:** Represents the cost of goods under construction for customers under Istisna' contracts, less any advances received.
+
+5.  **Sukuk Investments:** These represent investments in Shariah-compliant Sukuk certificates.
+
+6.  **Investment Accounts:** Represents customer deposits held in Shariah-compliant investment accounts. Returns are distributed periodically.
+
+7. **Shari’ah Supervisory Board**: The Bank operates under the guidance of a Shari’ah Supervisory Board who review the operations to ensure compliance with Shari’ah principles. The board meets on a quarterly basis to review the Bank’s activities and provide guidance.
+
+---
+
+**[End of Report]**
+```
+
+- VIOLATIONS:
+```
+*   FAS 7: Omission of profit-sharing basis for investment accounts (Note 6 only mentions "returns are distributed periodically" without specifying the profit-sharing ratio or mechanism).
+*   FAS 32: Misreporting of Ijarah assets as operating leases (Note 3 mentions "operating lease agreements" but Ijarah is a form of Islamic financing lease, so it should be a financing lease rather than an operating lease under conventional accounting).
+* FAS 28: Aggregated rather than disaggregated financing data (The SOFP consolidates all financings in large groupings and doesn’t break down by each financing type.)
+```

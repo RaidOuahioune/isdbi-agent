@@ -1,0 +1,87 @@
+DOCUMENT:
+
+# Al-Barakah Islamic Bank - Condensed Interim Financial Statements
+## For the Quarter Ended March 31, 2024 (Unaudited)
+
+**[Shari’ah Board Review Note: *Statement on compliance to be issued in annual report*]**
+
+---
+
+## Condensed Statement of Financial Position (Balance Sheet)
+(Amounts stated in thousands of USD)
+
+| Assets                                         | March 31, 2024 | December 31, 2023 |
+|-------------------------------------------------|-----------------|--------------------|
+| Cash and Balances with Central Banks            | 12,500          | 10,000             |
+| Murabaha and Commodity Murabaha Receivables      | 45,000          | 40,000             |
+| Ijarah Assets                                    | 28,000          | 25,000             |
+| Istisna' Assets                                  | 15,000          | 12,000             |
+| Sukuk Investments                                | 20,000          | 18,000             |
+| Other Assets                                     | 5,000           | 4,000              |
+| **Total Assets**                                 | **125,500**      | **109,000**         |
+
+| Liabilities and Equity                            | March 31, 2024 | December 31, 2023 |
+|-------------------------------------------------|-----------------|--------------------|
+| Current Accounts (Wadiah)                       | 20,000          | 18,000             |
+| Savings Accounts (Qard Hasan)                   | 15,000          | 13,000             |
+| Investment Accounts (Mudarabah)                 | 40,000          | 35,000             |
+| Other Liabilities                                | 5,500           | 4,000              |
+| **Total Liabilities**                            | **80,500**      | **70,000**         |
+
+| Equity                                          | March 31, 2024 | December 31, 2023 |
+|-------------------------------------------------|-----------------|--------------------|
+| Share Capital                                   | 30,000          | 30,000             |
+| Retained Earnings                               | 15,000          | 9,000              |
+| **Total Equity**                                | **45,000**      | **39,000**         |
+
+| **Total Liabilities and Equity**               | **125,500**      | **109,000**         |
+
+---
+
+## Condensed Statement of Income
+(Amounts stated in thousands of USD)
+
+| Income                                         | Quarter Ended March 31, 2024 | Quarter Ended March 31, 2023 |
+|-------------------------------------------------|-----------------------------|-----------------------------|
+| Income from Murabaha and Commodity Murabaha      | 4,500                       | 4,000                       |
+| Income from Ijarah                             | 2,800                       | 2,500                       |
+| Income from Istisna'                            | 1,500                       | 1,200                       |
+| Income from Sukuk Investments                  | 1,000                       | 900                         |
+| Other Income                                     | 500                         | 400                         |
+| **Total Income**                                 | **10,300**                  | **9,000**                  |
+
+| Expenses                                       | Quarter Ended March 31, 2024 | Quarter Ended March 31, 2023 |
+|-------------------------------------------------|-----------------------------|-----------------------------|
+| Operating Expenses                             | 3,500                       | 3,000                       |
+| Provisions for Impairment                       | 300                         | 200                         |
+| **Total Expenses**                               | **3,800**                  | **3,200**                  |
+
+| **Net Income Before Distribution to IAHs**      | **6,500**                  | **5,800**                  |
+| Distribution to Investment Account Holders      | 2,000                       | 1,800                      |
+| **Net Income After Distribution to IAHs**       | **4,500**                  | **4,000**                  |
+
+---
+
+## Selected Notes to the Financial Statements
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with generally accepted accounting principles for Islamic financial institutions.
+
+2.  **Murabaha and Commodity Murabaha:** These represent short-term financing arrangements for the purchase of goods and commodities.
+
+3.  **Ijarah Assets:** These comprise of assets acquired for the purpose of leasing. The Bank retains ownership of the assets. *Depreciation is calculated using the straight-line method over the assets’ estimated useful lives.*
+
+4.  **Istisna' Assets:** These represent the cost of work in progress related to manufacturing contracts undertaken by the Bank.
+
+5.  **Sukuk Investments:** These are Shari’ah-compliant investment certificates.
+
+6.  **Segment Reporting:** The Bank operates primarily within the domestic market and offers a range of Islamic banking products and services. *Detailed segment reporting is provided in the annual report.*
+
+7.  **Related Party Transactions:** The Bank engages in transactions with related parties, including key management personnel and their close family members. *These transactions are conducted at arm's length.*
+
+---
+
+VIOLATIONS:
+
+*   **FAS 4:** The Shari’ah Board review note is inadequate. It mentions that a statement on compliance will be issued in the annual report, but provides no specific commentary on the current interim period. The role of the Shari'ah board in monitoring activities during the interim period is not clear.
+*   **FAS 7:** The statement of income includes a "Distribution to Investment Account Holders" line. However, the basis for this distribution (the profit-sharing ratio or other relevant details) is not disclosed anywhere in the report.
+*   **FAS 32:** The Ijarah assets are described as assets acquired for the purpose of leasing, which is correct. However, the note on Ijarah assets does not specify that these are *finance leases* which is implied as the bank retains ownership and it is depreciating the assets. They appear to be reported as operating leases.

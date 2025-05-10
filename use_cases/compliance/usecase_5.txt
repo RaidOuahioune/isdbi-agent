@@ -1,0 +1,73 @@
+DOCUMENT:
+# Al-Amin Islamic Bank - Condensed Interim Financial Statements
+## For the Quarter Ended March 31, 2024 (Unaudited)
+
+**[Currency: United States Dollar (USD)]**
+
+**Chairman's Statement**
+
+Al-Amin Islamic Bank continued its steady growth trajectory in Q1 2024. We remain committed to providing Sharia-compliant financial solutions and delivering value to our stakeholders. Prudent risk management and a focus on ethical banking practices are central to our operations. We are optimistic about the future and the role Al-Amin will continue to play in the community.
+
+**Condensed Interim Statement of Financial Position (Balance Sheet)**
+
+| Assets                                       | March 31, 2024 (USD) | December 31, 2023 (USD) |
+| -------------------------------------------- | -------------------- | ---------------------- |
+| Cash and Balances with Central Bank            | 15,000,000           | 12,500,000             |
+| Murabaha Receivables                         | 35,000,000           | 30,000,000             |
+| Istisna’ Assets                               | 20,000,000           | 18,000,000             |
+| Ijarah Assets                                | 10,000,000           | 9,000,000             |
+| Sukuk Investments                            | 25,000,000           | 22,000,000             |
+| Other Assets                                  | 5,000,000            | 4,500,000              |
+| **Total Assets**                             | **110,000,000**       | **96,000,000**          |
+
+| Liabilities and Equity                       | March 31, 2024 (USD) | December 31, 2023 (USD) |
+| -------------------------------------------- | -------------------- | ---------------------- |
+| Current Accounts                             | 40,000,000           | 35,000,000             |
+| Investment Accounts                          | 30,000,000           | 27,000,000             |
+| Other Liabilities                            | 5,000,000            | 4,000,000              |
+| Equity                                         | 35,000,000           | 30,000,000             |
+| **Total Liabilities and Equity**             | **110,000,000**       | **96,000,000**          |
+
+**Condensed Interim Income Statement**
+
+| Income                                        | Quarter Ended March 31, 2024 (USD) |
+| --------------------------------------------- | ----------------------------------- |
+| Income from Murabaha                           | 2,000,000                           |
+| Income from Istisna’                           | 1,500,000                           |
+| Income from Ijarah                             | 800,000                             |
+| Income from Sukuk                              | 1,200,000                           |
+| Other Income                                   | 300,000                             |
+| **Total Income**                               | **5,800,000**                       |
+
+| Expenses                                      | Quarter Ended March 31, 2024 (USD) |
+| --------------------------------------------- | ----------------------------------- |
+| Operating Expenses                             | 2,500,000                           |
+| Provisions for Credit Losses                  | 500,000                             |
+| **Total Expenses**                             | **3,000,000**                       |
+
+| Net Income                                    | **2,800,000**                       |
+
+**Notes to the Condensed Interim Financial Statements**
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with International Financial Reporting Standards (IFRS).
+
+2.  **Murabaha Receivables:** Represents outstanding amounts due from customers under Murabaha financing agreements.
+
+3.  **Istisna’ Assets:** Relates to construction contracts entered into by the bank, recognized at cost less accumulated impairment losses.
+
+4.  **Ijarah Assets:** Represent assets leased to customers under operating lease arrangements. The bank retains ownership of these assets.
+
+5.  **Sukuk Investments:** Comprise investments in Sharia-compliant Sukuk instruments.
+
+6.  **Investment Accounts:** Funds received from customers for investment purposes, managed according to Sharia principles.
+
+7.  **Shari'ah Board Commentary:** The bank's Shari'ah Supervisory Board reviews all transactions and products to ensure compliance with Islamic principles.
+
+8.  **Contingencies:** There are no material contingent liabilities as of March 31, 2024, that require disclosure.
+---
+End of Report
+VIOLATIONS:
+
+*   **FAS 10: Istisna and Parallel Istisna:**  Note 3 mentions *Istisna Assets*, but there's no disclosure of the use of, or accounting for, parallel Istisna' arrangements, which are often used in larger construction projects.
+*   **FAS 32: Ijarah:** Note 4 classifies *Ijarah Assets* as *operating leases*. According to FAS 32, these are typically *finance leases*, where the bank transfers substantially all the risks and rewards of ownership. This is a misclassification.
+*   **FAS 4: General Presentation and Disclosure:** Note 7 contains a very generic statement regarding the Shari'ah Board. There are no details or specifics regarding the board's composition, responsibilities, or the nature of their reviews of bank activities and products. A statement like this is not detailed enough.

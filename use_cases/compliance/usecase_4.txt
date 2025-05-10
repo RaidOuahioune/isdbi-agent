@@ -1,0 +1,80 @@
+DOCUMENT:
+
+# Al-Amin Islamic Bank - Quarterly Financial Report (Q3 2024)
+
+**For the period ended September 30, 2024**
+*(Unaudited Condensed Interim Financial Information)*
+
+## Summary
+
+This report presents the unaudited condensed interim financial information of Al-Amin Islamic Bank for the third quarter ended September 30, 2024. All figures are presented in thousands of US Dollars (USD '000) unless otherwise stated. The Bank operates in accordance with Shari’ah principles and is subject to the regulatory oversight of the Central Bank of [Fictional Country].
+
+## Condensed Interim Statement of Financial Position (Balance Sheet)
+
+| Assets                                      | Sep 30, 2024 | Dec 31, 2023 |
+|----------------------------------------------|--------------|--------------|
+| Cash and Balances with Banks                | 15,250       | 12,800       |
+| Murabaha Receivables                         | 32,500       | 28,750       |
+| Istisna' Assets                              | 8,750        | 7,500        |
+| Ijarah Assets                                | 12,200       | 10,500       |
+| Sukuk Investments                            | 18,000       | 16,500       |
+| Other Assets                                 | 3,500        | 3,000        |
+| **Total Assets**                             | **90,200**     | **79,050**     |
+
+| Liabilities and Equity                         | Sep 30, 2024 | Dec 31, 2023 |
+|----------------------------------------------|--------------|--------------|
+| Demand Deposits                              | 25,000       | 22,000       |
+| Savings Accounts                             | 18,500       | 16,000       |
+| Investment Accounts                            | 20,000       | 18,000       |
+| Other Liabilities                            | 4,700        | 4,250        |
+| **Total Liabilities**                          | **68,200**     | **60,250**     |
+| Equity                                       |              |              |
+| Share Capital                                | 15,000       | 15,000       |
+| Retained Earnings                            | 7,000        | 3,800        |
+| **Total Equity**                             | **22,000**     | **18,800**     |
+| **Total Liabilities and Equity**             | **90,200**     | **79,050**     |
+
+## Condensed Interim Income Statement
+
+|                                               | Q3 2024      | Q3 2023      | YTD 2024     | YTD 2023     |
+|----------------------------------------------|--------------|--------------|--------------|--------------|
+| Income from Murabaha                           | 4,500        | 4,000        | 13,000       | 11,500       |
+| Income from Ijarah                             | 2,000        | 1,800        | 5,800        | 5,200        |
+| Income from Sukuk Investments                 | 1,500        | 1,300        | 4,300        | 3,800        |
+| Other Income                                 | 500          | 400          | 1,400        | 1,200        |
+| **Total Income**                             | **8,500**      | **7,500**      | **24,500**     | **21,700**     |
+| Direct Expenses                              | (1,500)      | (1,300)      | (4,300)      | (3,800)      |
+| General and Administrative Expenses          | (3,000)      | (2,700)      | (8,700)      | (7,900)      |
+| **Total Expenses**                             | **(4,500)**    | **(4,000)**    | **(13,000)**   | **(11,700)**   |
+| **Net Profit**                               | **4,000**      | **3,500**      | **11,500**     | **10,000**     |
+
+## Notes to the Financial Statements
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with [Fictional Country] Islamic Banking Regulations and generally accepted accounting principles for Islamic financial institutions.
+
+2.  **Murabaha Receivables:** Represents financing extended to customers under Murabaha contracts.
+
+3.  **Ijarah Assets:** Includes properties leased to customers under Ijarah agreements. These leases are classified as operating leases.
+
+4.  **Sukuk Investments:** Consists of investments in Shari’ah-compliant Sukuk issued by various entities.
+
+5.  **Investment Accounts:** Represent funds received from customers under Mudarabah arrangements. Profits are distributed to investment account holders based on the bank's overall performance.
+
+6.  **Related Party Transactions:** The Bank has entered into transactions with related parties, including key management personnel. These transactions are conducted on an arm's length basis.
+
+7.  **Shari'ah Supervisory Board:** The Shari'ah Supervisory Board provides guidance on Shari'ah compliance matters.
+
+---
+
+## Management Commentary
+
+Al-Amin Islamic Bank reported a net profit of USD 4,000 thousand for the third quarter of 2024, an increase of 14.3% compared to the same period last year. The Bank's performance was driven by growth in Murabaha and Ijarah financing activities. Management remains committed to upholding Shari'ah principles and delivering sustainable value to its stakeholders. The bank continues to diversify its investment portfolio and strengthen its risk management practices. We are optimistic about the prospects for continued growth in the coming quarters.
+
+---
+VIOLATIONS:
+
+*   **FAS 7: Profit Allocation Between Owners and Investment Account Holders:** Note 5 states profits are distributed based on "the bank's overall performance," lacking specific details on the profit-sharing ratio (PSR) and the allocation methodology between the bank and investment account holders.
+
+*   **FAS 32: Ijarah:** Note 3 states, "These leases are classified as operating leases." This misclassification is a violation if these Ijarah assets are in fact *financed leases* and should be reported as such.
+
+*   **FAS 28: Disclosure on Islamic Financing and Investment Assets:** The Balance Sheet itemizes *types* of financing (Murabaha, Istisna, Ijarah), but these are not disaggregated by *sector*. The disclosure could be improved with a breakdown of financing by sector, such as real estate, manufacturing, and consumer finance.

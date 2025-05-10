@@ -1,0 +1,82 @@
+```markdown
+# Al-Barakah Islamic Bank - Quarterly Financial Report (Q3 2024)
+
+**For the Period Ended September 30, 2024 (Unaudited)**
+
+## Overview
+
+This report presents the condensed interim financial statements of Al-Barakah Islamic Bank for the quarter ended September 30, 2024. These statements have been prepared in accordance with generally accepted accounting principles for Islamic financial institutions. All amounts are presented in USD thousands unless otherwise stated.
+
+## Condensed Balance Sheet
+
+| Assets                                         | September 30, 2024 | December 31, 2023 |
+| ---------------------------------------------- | -------------------- | ------------------- |
+| Cash and Balances with Central Banks         | 12,500               | 10,000              |
+| Murabaha Receivables                          | 35,000               | 30,000              |
+| Ijarah Assets                               | 28,000               | 25,000              |
+| Istisna' Assets                               | 15,000               | 12,000              |
+| Sukuk Investments                             | 20,000               | 18,000              |
+| Other Assets                                   | 5,000                | 4,000               |
+| **Total Assets**                               | **115,500**          | **99,000**           |
+
+| Liabilities and Equity                       | September 30, 2024 | December 31, 2023 |
+| ---------------------------------------------- | -------------------- | ------------------- |
+| Current Accounts                               | 20,000               | 18,000              |
+| Investment Accounts                            | 60,000               | 50,000              |
+| Other Liabilities                             | 5,500                | 4,000               |
+| Equity                                         | 30,000               | 27,000              |
+| **Total Liabilities and Equity**                | **115,500**          | **99,000**           |
+
+## Condensed Income Statement
+
+|                                              | Quarter Ended Sep 30, 2024 | Quarter Ended Sep 30, 2023 |
+| -------------------------------------------- | ---------------------------- | ---------------------------- |
+| Income from Murabaha                         | 5,000                        | 4,000                        |
+| Income from Ijarah                           | 3,500                        | 3,000                        |
+| Income from Istisna'                         | 2,000                        | 1,500                        |
+| Income from Sukuk                              | 1,500                        | 1,200                        |
+| Other Income                                   | 500                          | 400                          |
+| **Total Income**                               | **12,500**                   | **10,100**                   |
+| Distribution to Investment Account Holders  | 4,000                        | 3,200                        |
+| Operating Expenses                             | 4,500                        | 3,800                        |
+| **Net Income Before Provisions**              | **4,000**                    | **3,100**                    |
+| Provisions for Impairment Losses              | 500                          | 400                          |
+| **Net Income**                               | **3,500**                    | **2,700**                    |
+
+## Notes to the Financial Statements
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with generally accepted accounting principles for Islamic financial institutions.
+
+2.  **Murabaha Receivables:** Represents amounts due from customers under Murabaha financing arrangements.
+
+3.  **Ijarah Assets:** Include assets leased to customers under Ijarah contracts. *Note: These are classified as operating leases.*
+
+4.  **Istisna' Assets:** Represents the cost of goods under construction for customers under Istisna' contracts, recognized over the construction period.
+
+5.  **Sukuk Investments:** Represent investments in Shari'ah-compliant Sukuk certificates.
+
+6.  **Investment Accounts:** These are profit-sharing investment accounts managed by the bank. Returns on these accounts are distributed quarterly.
+
+7.  **Shari'ah Supervisory Board:** The bank operates under the supervision of an independent Shari'ah Supervisory Board, which provides guidance and oversight on all aspects of the bank's operations. *Note: further details of their specific commentary or activities within this quarter are not included.*
+
+8.  **Related Party Transactions:** The bank enters into transactions with related parties in the normal course of business. These transactions are conducted on an arm's-length basis.
+
+9.  **Financing Portfolio:** Total financing comprises Murabaha, Ijarah, and Istisna' activities.
+
+---
+
+## Management's Discussion and Analysis
+
+The Bank has experienced steady growth in its financing portfolio and overall profitability during the third quarter of 2024. We continue to focus on providing innovative Shari'ah-compliant financial solutions to meet the needs of our customers.
+
+The Bank remains committed to maintaining strong asset quality and prudent risk management practices.
+
+We anticipate continued growth in the coming quarters, driven by increasing demand for Islamic financial services.
+```
+
+- VIOLATIONS:
+1. **FAS 7:** Omission of profit-sharing basis for investment accounts. Note 6 mentions that investment accounts are profit-sharing, but it fails to mention the exact ratio used to allocate profits between the bank and the investment account holders.
+
+2. **FAS 32:** Misreporting of Ijarah assets as operating leases. Note 3 incorrectly states "These are classified as operating leases." Under AAOIFI standards, Ijarah assets should be recognized as finance leases (unless they meet very specific exceptions) if the bank is substantially bearing the risks and rewards of ownership.
+
+3. **FAS 4:** Limited Shari'ah Board Commentary. Note 7 mentions the board and its role in broad terms but does not provide any specific comments or activities undertaken by the Shari'ah Board during the reporting period. This violates FAS 4's requirement for adequate disclosure of the Shari'ah Board's role and opinions.

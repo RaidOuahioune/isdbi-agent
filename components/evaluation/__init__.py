@@ -29,6 +29,7 @@ class ISDBIEvaluator:
         self,
         prompt: str,
         response: str,
+        reference_answer: Optional[str] = None,  # Add reference_answer parameter
         retrieve_context: bool = True,
         output_format: str = "text",
     ) -> Dict[str, Any]:
@@ -38,6 +39,7 @@ class ISDBIEvaluator:
         Args:
             prompt: The original user prompt
             response: The system response to evaluate
+            reference_answer: Optional ground truth/reference answer for comparison
             retrieve_context: Whether to retrieve context from vector DB
             output_format: Format for the report ('text', 'json', or 'markdown')
 
@@ -51,9 +53,12 @@ class ISDBIEvaluator:
         if retrieve_context:
             context = retrieve_evaluation_context(prompt, response)
 
-        # Run the evaluation
+        # Run the evaluation with reference answer if provided
         evaluation_result = self.evaluation_manager.evaluate_response(
-            prompt, response, context
+            prompt=prompt,
+            response=response,
+            reference_answer=reference_answer,
+            context=context
         )
 
         # Generate report in the requested format

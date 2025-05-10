@@ -1,0 +1,67 @@
+DOCUMENT:
+# Al-Amin Islamic Bank - Condensed Interim Financial Statements
+## For the Quarter Ended March 31, 2024 (Unaudited)
+
+**(Currency: United States Dollars in Thousands)**
+
+**Statement of Financial Position (Condensed)**
+
+| Assets                                   | March 31, 2024 | December 31, 2023 |
+|------------------------------------------|----------------|-------------------|
+| Cash and Bank Balances                   |      $25,500     |        $22,000     |
+| Sukuk Investments                        |      $48,000     |        $45,000     |
+| Murabaha Receivables                     |     $112,000    |      $105,000      |
+| Ijarah Assets                           |      $65,000     |        $60,000     |
+| Istisna Assets                          |      $30,000     |        $28,000     |
+| Other Assets                             |      $12,500     |        $11,000     |
+| **Total Assets**                         |    **$293,000**   |     **$271,000**    |
+
+| Liabilities and Equity                     | March 31, 2024 | December 31, 2023 |
+|------------------------------------------|----------------|-------------------|
+| Current Accounts (Wadiah)                |      $35,000     |        $32,000     |
+| Savings Accounts (Mudarabah)             |      $50,000     |        $45,000     |
+| Investment Accounts (Mudarabah)          |      $80,000     |        $75,000     |
+| Other Liabilities                        |      $18,000     |        $16,000     |
+| **Total Liabilities**                   |   **$183,000**   |     **$168,000**    |
+| Equity                                    |    $110,000     |    $103,000      |
+| **Total Liabilities and Equity**         |    **$293,000**   |     **$271,000**    |
+
+**Statement of Income (Condensed)**
+
+| Income                                   | Quarter Ended March 31, 2024 | Quarter Ended March 31, 2023 |
+|------------------------------------------|-----------------------------|-----------------------------|
+| Income from Murabaha                     |          $8,000             |          $7,500             |
+| Income from Ijarah                       |          $4,500             |          $4,000             |
+| Income from Sukuk                         |          $2,200             |          $2,000             |
+| Income from Istisna                      |          $1,800             |          $1,600             |
+| Other Income                             |          $1,000             |          $900               |
+| **Total Income**                         |        **$17,500**           |        **$16,000**           |
+
+| Expenses                                 | Quarter Ended March 31, 2024 | Quarter Ended March 31, 2023 |
+|------------------------------------------|-----------------------------|-----------------------------|
+| Personnel Expenses                       |          $4,000             |          $3,800             |
+| Operating Expenses                       |          $3,000             |          $2,800             |
+| Provision for Credit Losses               |          $500               |          $400               |
+| **Total Expenses**                       |        **$7,500**           |        **$7,000**           |
+
+| **Net Income**                           |        **$10,000**           |        **$9,000**           |
+
+**Notes to the Condensed Interim Financial Statements:**
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with generally accepted accounting principles and applicable local regulations. They do not include all the information and disclosures required for full annual financial statements.
+
+2.  **Significant Accounting Policies:** The significant accounting policies applied in preparing these condensed interim financial statements are consistent with those applied in the audited financial statements for the year ended December 31, 2023.
+
+3.  **Ijarah Assets:** Ijarah assets represent properties leased to customers under lease agreements. The Bank retains ownership of the assets. These leases are classified as operating leases. Depreciation is charged on a straight-line basis over the estimated useful lives of the assets.
+
+4.  **Murabaha Receivables:** Murabaha receivables represent amounts due from customers for goods sold on a deferred payment basis.
+
+5.  **Investment Accounts:** Investment accounts represent funds received from customers under Mudarabah arrangements. These funds are invested in Shariah-compliant activities. Profits are distributed between the bank and the investment account holders based on a pre-agreed ratio.
+
+6.  **Sukuk Investments:** Sukuk represent investments in Shariah-compliant debt instruments.
+
+7.  **Shari'ah Supervisory Board:** The Bank operates under the guidance of its Shari'ah Supervisory Board, which ensures that all activities are in compliance with Shari'ah principles. The Board reviews and approves all major products and transactions.
+
+VIOLATIONS:
+*   FAS 7: Note 5 mentions a pre-agreed profit-sharing ratio but fails to disclose the actual ratio used between the bank and investment account holders.
+*   FAS 32: Note 3 misreports the Ijarah assets. They should be treated as finance leases, not operating leases, since the "Bank retains ownership of the assets" implies it has transferred substantially all the risks and rewards of ownership to the lessee.

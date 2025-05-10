@@ -1,0 +1,72 @@
+DOCUMENT:
+
+# Al-Amin Islamic Bank - Condensed Interim Financial Statement
+## For the Quarter Ended March 31, 2024 (Unaudited)
+
+**Chairman's Statement**
+
+Al-Amin Islamic Bank continues to demonstrate resilience and growth in the first quarter of 2024. We remain committed to providing Sharia-compliant financial solutions and delivering value to our stakeholders. We are proud of our team’s dedication to ethical banking practices and sound financial management.
+
+**Condensed Statement of Financial Position (Balance Sheet)**
+*(All amounts in thousands of USD)*
+
+| Assets                        | March 31, 2024 | December 31, 2023 |
+|-------------------------------|----------------|-------------------|
+| Cash and Balances with Banks  | 5,500          | 4,800             |
+| Murabaha Receivables          | 12,000         | 11,000            |
+| Istisna’ Assets               | 8,000          | 7,500             |
+| Ijarah Assets                 | 6,000          | 5,500             |
+| Sukuk Investments             | 4,500          | 4,000             |
+| Other Assets                  | 1,000          | 900               |
+| **Total Assets**              | **37,000**     | **33,700**        |
+
+| Liabilities & Equity             | March 31, 2024 | December 31, 2023 |
+|----------------------------------|----------------|-------------------|
+| Current Accounts                | 7,000          | 6,500             |
+| Savings Accounts                | 8,000          | 7,500             |
+| Investment Accounts             | 12,000         | 11,000            |
+| Other Liabilities               | 1,000          | 900               |
+| **Total Liabilities**           | **28,000**     | **25,900**        |
+| Equity                          | 9,000          | 7,800             |
+| **Total Liabilities & Equity** | **37,000**     | **33,700**        |
+
+**Condensed Statement of Income**
+*(All amounts in thousands of USD)*
+
+|                                      | Quarter Ended March 31, 2024 | Quarter Ended March 31, 2023 |
+|--------------------------------------|------------------------------|------------------------------|
+| Income from Murabaha                 | 1,200                        | 1,100                        |
+| Income from Ijarah                   | 700                          | 650                          |
+| Income from Sukuk                    | 400                          | 350                          |
+| Other Income                         | 100                          | 80                           |
+| **Total Income**                     | **2,400**                    | **2,180**                    |
+| Distribution to Investment Ac Holders| 600                          | 550                           |
+| Operating Expenses                   | 800                          | 750                          |
+| **Net Income**                       | **1,000**                    | **880**                      |
+
+---
+
+**Notes to the Condensed Interim Financial Statements:**
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with the accounting standards issued by [Country's Regulatory Body], and based on historical cost convention, except for certain financial assets and liabilities that are measured at fair value.
+
+2.  **Murabaha Receivables:** Represents amounts due from customers for Murabaha transactions.
+
+3.  **Istisna’ Assets:** Represents the cost of assets under construction for Istisna’ contracts.
+
+4.  **Ijarah Assets:** Represents assets leased to customers under Ijarah agreements. These are accounted for as operating leases.
+
+5.  **Sukuk Investments:** Represents investments in Sharia-compliant Sukuk.
+
+6.  **Investment Accounts:** These accounts represent funds received from customers for investment purposes. Profit is distributed to investment account holders based on performance.
+
+7.  **Shari’ah Supervisory Board:** The Bank operates under the guidance of a dedicated Shari’ah Supervisory Board, ensuring all activities comply with Islamic principles.
+
+8. Figures may not add up due to rounding.
+
+---
+
+VIOLATIONS:
+
+*   **FAS 7:** The profit-sharing ratio (or other basis) for investment accounts is not specified in Note 6 or elsewhere.
+*   **FAS 32:** Ijarah assets are incorrectly classified and accounted for as operating leases in Note 4, when they should be classified as finance leases.
