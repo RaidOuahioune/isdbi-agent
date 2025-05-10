@@ -10,7 +10,7 @@ import logging
 import traceback
 import requests
 from pathlib import Path
-from typing import Dict, Any, Optional, Union
+from typing import Dict,List, Any, Optional, Union
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

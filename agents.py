@@ -8,7 +8,7 @@ from components.agents.use_case_processor import use_case_processor
 from components.agents.use_case_verifier import use_case_verifier
 from components.agents.reviewer_agent import reviewer_agent
 from components.agents.proposer_agent import proposer_agent
-
+from components.agents.validator_agent import validator_agent
 from components.agents.transaction_analyzer import transaction_analyzer
 from components.agents.transaction_rationale import transaction_rationale
 from components.agents.knowledge_integration import knowledge_integration

@@ -72,7 +72,7 @@ def main():
     elif current_page == "use_case_processor":
         render_use_case_processor_page()
     elif current_page == "product_design":
-        render_product_design_page()
+        render_product_design_page(standalone=False)
 
 def render_home_page():
     """Render the home page of the application."""
@@ -184,4 +184,4 @@ def render_home_page():
     """)
 
 if __name__ == "__main__":
-    main() 
+    main()

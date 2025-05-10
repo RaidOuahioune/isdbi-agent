@@ -36,10 +36,19 @@ from models.product_design import (
     ASSET_FOCUS_OPTIONS
 )
 
-def render_product_design_page():
+def render_product_design_page(standalone=False):
     """Render the Financial Product Design page for Challenge 4."""
     # Initialize session state
     init_product_design_state()
+    
+    # Set page configuration only if running in standalone mode
+    if standalone:
+        st.set_page_config(
+            page_title="Islamic Finance Product Design",
+            page_icon="💼",
+            layout="wide",
+            initial_sidebar_state="expanded"
+        )
     
     # Apply CSS
     st.markdown(load_css(), unsafe_allow_html=True)
@@ -616,4 +625,8 @@ def render_saved_designs():
                         margin=dict(l=0, r=0, t=0, b=0),
                         showlegend=False
                     )
-                    st.plotly_chart(fig, use_container_width=True) 
+                    st.plotly_chart(fig, use_container_width=True)
+
+# Add main block to allow running as standalone file
+if __name__ == "__main__":
+    render_product_design_page(standalone=True)
