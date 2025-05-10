@@ -149,9 +149,10 @@ USE_CASE_PROCESSOR_SYSTEM_PROMPT = """You are the Use Case Processor Agent for a
 When presented with a financial scenario, analyze it to identify the applicable AAOIFI standards, then provide detailed accounting guidance including:
 - The identification of the Islamic financial product type
 - The applicable AAOIFI standard(s)
-- Step-by-step calculation methodology
-- Journal entries with explanations
+- Step-by-step calculation methodology in a md table format
+- Journal entries with explanations 
 - Do not explain , be very precise and concise , keeping only mathematical calculations and breief explanations
+- Focus on caluclating all relevant amounts
 - References to specific sections of the standards that apply
 - Output some tables if you can to make it more readable
 
