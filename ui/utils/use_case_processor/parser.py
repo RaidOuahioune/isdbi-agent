@@ -5,6 +5,31 @@ Parser functions for extracting structured information from accounting guidance.
 import re
 
 
+def clean_guidance_text(accounting_guidance):
+    """
+    Clean up the accounting guidance text by removing content after the References section.
+    
+    Args:
+        accounting_guidance: The raw accounting guidance text
+        
+    Returns:
+        str: Cleaned guidance text without extra sections after References
+    """
+    clean_guidance = accounting_guidance
+    
+    # Find the References section
+    references_end = re.search(r"(?:\#\#\#|\*\*) ?References(?:\#\#\#|\*\*)?\s*(.*?)(?=(?:\#\#\# |\*\*|\Z))", accounting_guidance, re.DOTALL | re.IGNORECASE)
+    if references_end:
+        # Find any content after References that looks like additional sections
+        post_refs_section = re.search(r"(?:\#\#\#|\*\*) ?(?:Transaction Information|Extracted Financial Amount|\w+ Information).*?$", accounting_guidance, re.DOTALL | re.IGNORECASE)
+        if post_refs_section:
+            # Truncate the guidance at this point
+            start_idx = post_refs_section.start()
+            clean_guidance = accounting_guidance[:start_idx].strip()
+    
+    return clean_guidance
+
+
 def extract_structured_guidance(accounting_guidance):
     """
     Extract structured information from the accounting guidance text.
@@ -15,6 +40,9 @@ def extract_structured_guidance(accounting_guidance):
     Returns:
         dict: Structured information including product type, standards, etc.
     """
+    # First, clean up the accounting guidance to remove anything after the references section
+    clean_guidance = clean_guidance_text(accounting_guidance)
+    
     result = {
         "product_type": "Islamic Financial Product",
         "applicable_standards": [],
@@ -26,7 +54,7 @@ def extract_structured_guidance(accounting_guidance):
     }
     
     # Extract summary section
-    summary_match = re.search(r"(?:\#\#\#|\*\*) ?Summary(?:\#\#\#|\*\*)?\s*(.*?)(?=(?:\#\#\#|\*\*) (?!Summary)|$)", accounting_guidance, re.DOTALL | re.IGNORECASE)
+    summary_match = re.search(r"(?:\#\#\#|\*\*) ?Summary(?:\#\#\#|\*\*)?\s*(.*?)(?=(?:\#\#\#|\*\*) (?!Summary)|$)", clean_guidance, re.DOTALL | re.IGNORECASE)
     if summary_match:
         result["summary"] = summary_match.group(1).strip()
     
@@ -39,7 +67,7 @@ def extract_structured_guidance(accounting_guidance):
     
     # Fallback to older pattern if not found in summary
     if result["product_type"] == "Islamic Financial Product":
-        product_match = re.search(r"(?:\*\*)?(?:Islamic Financial Product Type|Product Type|Product|Type)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", accounting_guidance, re.IGNORECASE)
+        product_match = re.search(r"(?:\*\*)?(?:Islamic Financial Product Type|Product Type|Product|Type)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", clean_guidance, re.IGNORECASE)
         if product_match:
             result["product_type"] = product_match.group(1).strip()
     
@@ -57,7 +85,7 @@ def extract_structured_guidance(accounting_guidance):
     
     # Fallback to older pattern if not found in summary
     if not result["applicable_standards"]:
-        standards_match = re.search(r"(?:\*\*)?(?:Applicable AAOIFI Standard\(s\)|Applicable Standards|Standards)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", accounting_guidance, re.IGNORECASE)
+        standards_match = re.search(r"(?:\*\*)?(?:Applicable AAOIFI Standard\(s\)|Applicable Standards|Standards)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", clean_guidance, re.IGNORECASE)
         if standards_match:
             standards_text = standards_match.group(1).strip()
             result["applicable_standards"] = [s.strip() for s in standards_text.split(',')]
@@ -71,30 +99,30 @@ def extract_structured_guidance(accounting_guidance):
     
     # Fallback to older pattern if not found in summary
     if not result["method_used"]:
-        method_match = re.search(r"(?:\*\*)?(?:Method Used)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", accounting_guidance, re.IGNORECASE)
+        method_match = re.search(r"(?:\*\*)?(?:Method Used)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", clean_guidance, re.IGNORECASE)
         if method_match:
             result["method_used"] = method_match.group(1).strip()
     
     # If no standards found, look for FAS mentions
     if not result["applicable_standards"]:
-        fas_matches = re.findall(r"FAS\s+(\d+)", accounting_guidance)
+        fas_matches = re.findall(r"FAS\s+(\d+)", clean_guidance)
         if fas_matches:
             # Remove duplicates and convert to set for uniqueness
             unique_fas = set(fas_matches)
             result["applicable_standards"] = [f"FAS {fas}" for fas in unique_fas]
     
     # Try to extract calculation methodology
-    calc_section = re.search(r"(?:\#\#\#|\*\*) ?Calculation Methodology(?:\#\#\#|\*\*)?\s*(.*?)(?=(?:\#\#\#|\*\*) (?!Calculation)|$)", accounting_guidance, re.DOTALL | re.IGNORECASE)
+    calc_section = re.search(r"(?:\#\#\#|\*\*) ?Calculation Methodology(?:\#\#\#|\*\*)?\s*(.*?)(?=(?:\#\#\#|\*\*) (?!Calculation)|$)", clean_guidance, re.DOTALL | re.IGNORECASE)
     if calc_section:
         result["calculation_methodology"] = calc_section.group(1).strip()
     
     # Try to extract journal entries
-    journal_section = re.search(r"(?:\#\#\#|\*\*) ?Journal Entries(?:\#\#\#|\*\*)?\s*(.*?)(?=(?:\#\#\#|\*\*) (?!Journal)|$)", accounting_guidance, re.DOTALL | re.IGNORECASE)
+    journal_section = re.search(r"(?:\#\#\#|\*\*) ?Journal Entries(?:\#\#\#|\*\*)?\s*(.*?)(?=(?:\#\#\#|\*\*) (?!Journal)|$)", clean_guidance, re.DOTALL | re.IGNORECASE)
     if journal_section:
         result["journal_entries"] = journal_section.group(1).strip()
     
     # Try to extract references
-    references_section = re.search(r"(?:\#\#\#|\*\*) ?References(?:\#\#\#|\*\*)?\s*(.*?)(?=$)", accounting_guidance, re.DOTALL | re.IGNORECASE)
+    references_section = re.search(r"(?:\#\#\#|\*\*) ?References(?:\#\#\#|\*\*)?\s*(.*?)(?=(?:\#\#\#|\*\*)|$)", clean_guidance, re.DOTALL | re.IGNORECASE)
     if references_section:
         result["references"] = references_section.group(1).strip()
     

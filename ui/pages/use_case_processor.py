@@ -22,12 +22,14 @@ from ui.utils.progress_display import display_progress_bar
 from retreiver import retriever
 
 # Import utility functions from our new modules
-from ui.utils.use_case_processor import (
+from ui.utils.use_case_processor .parser import (
     extract_structured_guidance,
-    format_content_for_display,
-    render_summary_card
+    clean_guidance_text,
 )
-
+from ui.utils.use_case_processor.formatter import (
+    format_content_for_display,
+  
+)
 
 def render_use_case_processor_page():
     """Render the Use Case Processor page."""
@@ -213,15 +215,16 @@ def render_use_case_processor_page():
                     # Extract information from the results
                     accounting_guidance = results["accounting_guidance"]
                     
+                    # Clean the accounting guidance to remove transaction info section
+                    cleaned_guidance = clean_guidance_text(accounting_guidance)
+                    
                     # Parse structured information from the guidance
                     structured_guidance = extract_structured_guidance(accounting_guidance)
                     
                     # Format the guidance for display
-                    formatted_guidance = format_content_for_display(accounting_guidance)
+                    formatted_guidance = format_content_for_display(cleaned_guidance)
                     
-                    # Generate summary card HTML
-                    summary_card_html = render_summary_card(structured_guidance)
-                    
+
                     # Format final results
                     formatted_results = {
                         "scenario": scenario_text,
@@ -232,10 +235,9 @@ def render_use_case_processor_page():
                         "journal_entries": structured_guidance["journal_entries"],
                         "references": structured_guidance["references"],
                         "summary": structured_guidance.get("summary", ""),
-                        "accounting_guidance": accounting_guidance,  # Keep the original guidance
-                        "formatted_guidance": formatted_guidance,    # Format with custom HTML
-                        "summary_card_html": summary_card_html,      # The formatted summary card
-                        "raw_guidance": accounting_guidance if show_raw_guidance else None
+                        "accounting_guidance": cleaned_guidance,  # Use the cleaned guidance
+                        "formatted_guidance": formatted_guidance,    # Format with custom HTML   # The formatted summary card
+                        "raw_guidance": cleaned_guidance if show_raw_guidance else None
                     }
                     
                     # Save results to session state
