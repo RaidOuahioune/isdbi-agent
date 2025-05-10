@@ -1,0 +1,87 @@
+You are a financial reporting auditor specializing in Islamic finance. Analyze the user's financial report and assess its compliance with the following AAOIFI Financial Accounting Standards:
+
+    FAS 4: General Presentation and Disclosure
+
+    FAS 7: Disclosure of Bases for Profit Allocation between Owners’ Equity and Investment Account Holders
+
+    FAS 10: Istisna'a and Parallel Istisna'a
+
+    FAS 28: Disclosure on Islamic Financing and Investment Assets
+
+    FAS 32: Ijarah
+
+    Produce a clean table with the following columns:
+
+    AAOIFI Standard
+
+    Requirement (briefly state the key expectations)
+
+    Status (✅ Compliant / ⚠️ Partial / ❌ Missing)
+
+    Comments or Suggestions (highlight missing disclosures, unclear treatments, or good practices)
+
+    Be concise but precise. DO NOT DISPLAY ANYTHING EXCEPT THE TABLE. Only rely on the content of the uploaded report. If something is missing, flag it. Do not assume compliance without evidence. This table will be used by Islamic finance auditors for compliance tracking.    
+
+
+            Financial Report:
+            # Al-Amin Islamic Bank – Condensed Interim Financial Statement
+## For the Quarter Ended March 31, 2024 (Unaudited)
+
+**Statement of Financial Position (Condensed)**
+(Amounts in thousands of USD)
+
+| Assets                                   | March 31, 2024 | December 31, 2023 |
+|------------------------------------------|----------------|-------------------|
+| Cash and Balances with Central Bank      | 12,500         | 11,000            |
+| Murabaha Receivables                     | 25,000         | 23,500            |
+| Ijara Assets                             | 18,000         | 17,000            |
+| Istisna' Assets                          | 10,000         | 9,000             |
+| Sukuk Investments                        | 8,000          | 7,500             |
+| Other Assets                             | 3,500          | 3,000             |
+| **Total Assets**                         | **77,000**       | **71,000**          |
+
+| Liabilities and Equity                     | March 31, 2024 | December 31, 2023 |
+|------------------------------------------|----------------|-------------------|
+| Current Accounts                         | 15,000         | 14,000            |
+| Savings Accounts                         | 10,000         | 9,000             |
+| Investment Accounts                      | 20,000         | 18,000            |
+| Other Liabilities                        | 2,000          | 1,500             |
+| **Total Liabilities**                    | **47,000**       | **42,500**          |
+| Share Capital                            | 20,000         | 20,000            |
+| Retained Earnings                        | 10,000         | 8,500             |
+| **Total Equity**                         | **30,000**       | **28,500**          |
+| **Total Liabilities and Equity**          | **77,000**       | **71,000**          |
+
+**Statement of Income (Condensed)**
+(Amounts in thousands of USD)
+
+| Income                                    | Quarter Ended March 31, 2024 | Quarter Ended March 31, 2023 |
+|-------------------------------------------|------------------------------|------------------------------|
+| Income from Murabaha                       | 2,000                        | 1,800                        |
+| Income from Ijara                          | 1,500                        | 1,400                        |
+| Income from Istisna'                       | 900                          | 800                          |
+| Income from Sukuk                          | 600                          | 550                          |
+| Other Income                             | 200                          | 150                          |
+| **Total Income**                           | **5,200**                      | **4,700**                      |
+| Expenses                                  |                              |                              |
+| Operating Expenses                         | 2,500                        | 2,300                        |
+| Provision for Credit Losses              | 200                          | 150                          |
+| **Total Expenses**                         | **2,700**                      | **2,450**                      |
+| **Net Income Before Distribution to IAH**| **2,500**                      | **2,250**                      |
+| Distribution to Investment Account Holders | 700                      | 600                      |
+| **Net Income Attributable to Shareholders**| **1,800**                      | **1,650**                      |
+
+**Notes to the Condensed Interim Financial Statements**
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with generally accepted accounting principles.
+
+2.  **Significant Accounting Policies:** The accounting policies adopted are consistent with those of the previous financial year.
+
+3.  **Ijara Assets:** Represent properties leased under operating lease agreements.
+
+4.  **Financing Assets:** Total financing assets amounted to USD 53,000 thousand (December 31, 2023: USD 49,500 thousand) including Murabaha, Ijara, and Istisna'.
+
+5.  **Investment Accounts:** Represent customer deposits held under Mudarabah arrangements. These accounts participate in the profit of the Bank.
+
+6.  **Contingencies:** The Bank is involved in certain legal proceedings, the outcome of which is uncertain.
+        

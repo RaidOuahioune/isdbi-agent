@@ -26,8 +26,7 @@ class ComplianceVerifierAgent(Agent):
         standards_context = ""
         if standards_info:
             standards_context = f"\nPossibly Relevant Standards Information:\n{standards_info['extracted_info']}"
-        print("Standards:", standards_context)
-        print()
+        
         # Use retriever to get additional relevant information
         retrieved_nodes = retriever.retrieve(document)
         additional_context = "\n\n".join([node.text for node in retrieved_nodes])
@@ -35,16 +34,16 @@ class ComplianceVerifierAgent(Agent):
         # Prepare message for compliance verification
         messages = [
             SystemMessage(content=self.system_prompt),
-            HumanMessage(content=f"""Can you check compliance of this report with AAOIFI standards? Highlight flagged entries, violations, and suggestions in a clean table.
-            
-    Document:
-    {document}
-
-    {standards_context}
-    Additional Context:
-    {additional_context}
-""")
+            HumanMessage(content=f"""
+            Financial Report:
+            {document}
+        """)
         ]
+
+        # Create a new file inside logs directory and write the messages to it
+        with open("logs/compliance_verification.txt", "w") as f:
+            for message in messages:
+                f.write(f"{message.content}\n")
         
         # Get compliance verification result
         response = self.llm.invoke(messages)

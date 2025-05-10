@@ -20,6 +20,7 @@ logging.basicConfig(
 from utils.interactive_session import run_interactive_session
 from utils.sample_tests import run_sample_tests
 from utils.transaction_tests import run_category2_tests
+from utils.verify_compliance import verify_document_compliance
 
 # Load environment variables
 load_dotenv()
@@ -56,9 +57,24 @@ if __name__ == "__main__":
         action="store_true",
         help="Run standalone evaluation tests with detailed output",
     )
+
+    parser.add_argument(
+        "--verify",
+        type=str,
+        help="Verify compliance of a document (provide file path)",
+    )
+
+    parser.add_argument(
+        "--verify-verbose",
+        action="store_true",
+        help="Show detailed output during verification",
+    )
+    
     args = parser.parse_args()
 
-    if args.category2_verbose:
+    if args.verify:
+        verify_document_compliance(args.verify, args.verify_verbose)
+    elif args.category2_verbose:
         run_category2_tests(verbose=True)
     elif args.category2_evaluate:
         run_category2_tests(evaluate=True)
