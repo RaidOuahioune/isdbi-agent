@@ -7,6 +7,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from agent_graph import agent_graph
 from state import create_empty_state
 
+
 def process_query(query: str) -> AIMessage:
     """
     Process a user query through the multi-agent system.
