@@ -13,6 +13,12 @@ class DocumentProcessor:
         return text_content
     
     @staticmethod
+    def read_text_file(file_path: str) -> str:
+        """Extract text content from a plain text file"""
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    
+    @staticmethod
     def get_file_type(file_path: str) -> str:
         """Detect file type using python-magic"""
         return magic.from_file(file_path, mime=True)
@@ -23,6 +29,8 @@ class DocumentProcessor:
         
         if file_type == 'application/pdf':
             content = self.read_pdf(file_path)
+        elif file_type == 'text/plain':
+            content = self.read_text_file(file_path)
         else:
             raise ValueError(f"Unsupported file type: {file_type}")
         
