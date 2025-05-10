@@ -1,0 +1,74 @@
+DOCUMENT:
+
+# Al-Amanah Islamic Bank
+## Condensed Interim Financial Statements
+### For the Quarter Ended March 31, 2024 (Unaudited)
+
+**[All amounts in thousands of USD unless otherwise stated]**
+
+---
+
+**Condensed Statement of Financial Position (Balance Sheet)**
+
+| Assets                                          | March 31, 2024 | December 31, 2023 |
+|-------------------------------------------------|----------------|-------------------|
+| Cash and Balances with Central Bank              | 12,500          | 11,000            |
+| Murabaha Receivables                           | 25,000          | 22,000            |
+| Istisna' Assets                               | 15,000          | 13,000            |
+| Ijarah Assets                                 | 18,000          | 16,000            |
+| Sukuk Investments                              | 10,000          | 9,000             |
+| Other Assets                                   | 3,500           | 3,000             |
+| **Total Assets**                               | **84,000**       | **74,000**          |
+
+| Liabilities and Equity                          | March 31, 2024 | December 31, 2023 |
+|-------------------------------------------------|----------------|-------------------|
+| Current Accounts                               | 20,000          | 18,000            |
+| Savings Accounts                               | 15,000          | 13,000            |
+| Investment Accounts                             | 22,000          | 20,000            |
+| Other Liabilities                                | 2,000           | 1,500             |
+| **Total Liabilities**                          | **59,000**       | **52,500**          |
+| Equity Attributable to Shareholders            | 25,000          | 21,500            |
+| **Total Liabilities and Equity**                 | **84,000**       | **74,000**          |
+
+---
+
+**Condensed Statement of Income**
+
+|                                            | Quarter Ended March 31, 2024 | Quarter Ended March 31, 2023 |
+|---------------------------------------------|-----------------------------|-----------------------------|
+| Income from Murabaha                           | 3,000                       | 2,500                       |
+| Income from Istisna'                            | 2,000                       | 1,700                       |
+| Income from Ijarah                             | 2,500                       | 2,200                       |
+| Income from Sukuk Investments                   | 1,000                       | 900                         |
+| Other Income                                   | 500                         | 400                         |
+| **Total Income**                               | **9,000**                   | **7,700**                   |
+| Direct Expenses                              | (1,500)                     | (1,300)                     |
+| General and Administrative Expenses           | (3,000)                     | (2,700)                     |
+| **Total Expenses**                             | **(4,500)**                 | **(4,000)**                 |
+| **Net Income Before Distribution to IAH**     | **4,500**                   | **3,700**                   |
+| Distribution to Investment Account Holders    | (1,000)                     | (800)                      |
+| **Net Income Attributable to Shareholders** | **3,500**                   | **2,900**                   |
+
+---
+
+**Notes to the Condensed Interim Financial Statements**
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with International Accounting Standard 34, "Interim Financial Reporting." They do not include all the information required for full annual financial statements and should be read in conjunction with the Bank's annual financial statements for the year ended December 31, 2023.
+
+2.  **Significant Accounting Policies:** The accounting policies applied in these condensed interim financial statements are consistent with those applied in the annual financial statements for the year ended December 31, 2023.
+
+3.  **Istisna' Assets:** Represents contracts for the manufacture of goods.
+
+4.  **Ijarah Assets:** These are assets leased to customers under lease agreements.
+
+5. **Islamic Financing Data**: Financing data is classified by product.
+
+6. **Shari'ah Board:** The bank operates under the guidance of its Shari'ah Supervisory Board, ensuring compliance with Islamic principles.
+
+---
+
+VIOLATIONS:
+
+*   **FAS 7:** The profit-sharing arrangement with Investment Account Holders is not detailed. The percentage of profit allocated is not disclosed.
+*   **FAS 10:** There is no mention of any parallel Istisna' transactions relating to the Istisna' assets reported. The bank may be using parallel Istisna' to finance the Istisna' asset, but this isn't disclosed.
+*   **FAS 32:** The description of Ijarah assets implies that they are accounted for as *operating* leases, whereas under AAOIFI standards, they should be treated as *finance* leases, and the details of each portfolio should be disclosed, not aggregated.

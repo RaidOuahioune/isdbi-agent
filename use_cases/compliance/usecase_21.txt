@@ -1,0 +1,74 @@
+## DOCUMENT:
+
+# Al-Amanah Islamic Bank - Condensed Interim Financial Report
+**For the Quarter Ended March 31, 2024**
+(Unaudited)
+
+**1. Introduction**
+
+Al-Amanah Islamic Bank is committed to providing Shari’ah-compliant financial solutions. This condensed interim financial report presents a summary of the Bank's financial performance and position for the quarter ended March 31, 2024. This report is presented in accordance with International Financial Reporting Standards (IFRS) and, where applicable, Accounting and Auditing Organisation for Islamic Financial Institutions (AAOIFI) standards.
+
+**2. Condensed Interim Statement of Financial Position (Balance Sheet)**
+
+| Assets                                        | March 31, 2024 (USD '000) | December 31, 2023 (USD '000) |
+| --------------------------------------------- | -------------------------- | --------------------------- |
+| Cash and Balances with Central Bank            | 5,500                      | 4,800                       |
+| Murabaha Receivables                           | 12,300                     | 11,500                      |
+| Istisna' Assets                               | 8,700                      | 7,900                       |
+| Ijarah Assets                                  | 6,200                      | 5,800                       |
+| Sukuk Investments                              | 9,500                      | 9,000                       |
+| Other Assets                                     | 1,800                      | 1,600                       |
+| **Total Assets**                               | **44,000**                 | **40,600**                  |
+
+| Liabilities & Equity                               | March 31, 2024 (USD '000) | December 31, 2023 (USD '000) |
+| -------------------------------------------------- | -------------------------- | --------------------------- |
+| Current Accounts (Wadiah)                          | 8,000                      | 7,500                       |
+| Investment Accounts (Mudarabah)                    | 15,000                     | 14,000                      |
+| Other Liabilities                                 | 2,500                      | 2,300                       |
+| **Total Liabilities**                              | **25,500**                 | **23,800**                  |
+| Equity Attributable to Shareholders               | 18,500                     | 16,800                  |
+| **Total Liabilities & Equity**                     | **44,000**                 | **40,600**                  |
+
+**3. Condensed Interim Income Statement**
+
+|                                                     | Quarter Ended March 31, 2024 (USD '000) | Quarter Ended March 31, 2023 (USD '000) |
+| --------------------------------------------------- | --------------------------------------- | --------------------------------------- |
+| Income from Murabaha                                | 1,200                                   | 1,100                                   |
+| Income from Istisna'                                | 900                                     | 800                                     |
+| Income from Ijarah                                  | 700                                     | 650                                     |
+| Income from Sukuk                                   | 800                                     | 750                                     |
+| Other Income                                        | 200                                     | 180                                     |
+| **Total Income**                                    | **3,800**                               | **3,480**                               |
+| Distribution to Investment Account Holders           | 800                                     | 700                                     |
+| Operating Expenses                                  | 1,800                                   | 1,650                                   |
+| **Net Profit Before Tax**                           | **1,200**                               | **1,130**                               |
+| Taxation                                            | 300                                     | 280                                     |
+| **Net Profit After Tax Attributable to Shareholders** | **900**                                 | **850**                                 |
+
+**4. Notes to the Condensed Interim Financial Statements**
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with IFRS and applicable AAOIFI standards.
+
+2.  **Murabaha Receivables:** Represents financing provided to customers under Murabaha contracts.
+
+3.  **Istisna' Assets:** Represents the cost of construction projects undertaken by the Bank under Istisna' contracts.
+
+4.  **Ijarah Assets:** Consists of properties leased to customers under Ijarah agreements.
+
+5.  **Sukuk Investments:** Investments in Shari'ah-compliant Sukuk.
+
+6.  **Investment Accounts (Mudarabah):** Funds received from depositors under Mudarabah arrangements, managed by the Bank.
+
+7.  **Shari'ah Supervisory Board Review:** The Shari'ah Supervisory Board has reviewed and approved the financial statements.
+
+**Management's Commentary:**
+
+The Bank achieved steady growth in its core Islamic financing activities during the quarter. We remain committed to providing innovative and Shari’ah-compliant financial solutions to our customers. We anticipate continued growth in the coming quarters.
+
+***
+
+## VIOLATIONS:
+
+1.  **FAS 7: Profit Allocation Between Owners and Investment Account Holders:** Omission of specific profit-sharing ratios or the method used to determine the profit distribution to investment account holders (Mudarabah).
+2.  **FAS 32: Ijarah:** The nature of Ijarah assets isn't clear. If it's Ijarah Muntahia Bittamleek (hire purchase), it should be disclosed and not simply booked as an operating lease as implied.
+3.  **FAS 28: Disclosure on Islamic Financing and Investment Assets:** The financing portfolio should ideally be disaggregated into more granular detail (e.g., by sector, maturity) rather than simply presenting aggregate figures.

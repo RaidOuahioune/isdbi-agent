@@ -1,0 +1,98 @@
+```markdown
+# Al-Barakah Islamic Bank - Quarterly Financial Report
+## Q3 2024 (Unaudited)
+
+**Prepared for: Board of Directors and Stakeholders**
+**Date: October 26, 2024**
+
+This report provides a condensed interim financial statement for Al-Barakah Islamic Bank for the third quarter of 2024, ending September 30, 2024. All figures are presented in thousands of US Dollars (USD '000) unless otherwise stated.
+
+## Condensed Interim Statement of Financial Position (Balance Sheet)
+
+| Assets                                        | Sep 30, 2024 | Dec 31, 2023 |
+|-----------------------------------------------|-------------:|-------------:|
+| Cash and Balances with Central Banks           |     1,250    |     1,100    |
+| Murabaha and Commodity Murabaha Receivables  |     5,800    |     5,500    |
+| Istisna' Assets                               |     2,500    |     2,300    |
+| Ijarah Assets                                  |     1,800    |     1,700    |
+| Sukuk Investments                             |     3,000    |     2,800    |
+| Other Assets                                   |       550    |       500    |
+| **Total Assets**                            |    14,900    |    13,900    |
+
+| Liabilities and Equity                       | Sep 30, 2024 | Dec 31, 2023 |
+|-----------------------------------------------|-------------:|-------------:|
+| Current Accounts                               |     3,500    |     3,300    |
+| Savings Accounts                               |     2,000    |     1,900    |
+| Investment Accounts                            |     4,000    |     3,800    |
+| Other Liabilities                            |       400    |       350    |
+| **Total Liabilities**                         |     9,900    |     9,350    |
+
+| Equity                                          |             |             |
+|-----------------------------------------------|-------------:|-------------:|
+| Share Capital                                  |     3,000    |     3,000    |
+| Retained Earnings                              |     2,000    |     1,550    |
+| **Total Equity**                             |     5,000    |     4,550    |
+
+| **Total Liabilities and Equity**             |    14,900    |    13,900    |
+
+## Condensed Interim Income Statement
+
+|                                                   | Q3 2024  | Q3 2023  |
+|---------------------------------------------------|----------:|----------:|
+| Income from Murabaha and Commodity Murabaha        |    600    |    550    |
+| Income from Ijarah                                |    250    |    230    |
+| Income from Sukuk Investments                     |    150    |    140    |
+| Income from Istisna'                               |    300    |    280    |
+| Other Income                                      |     50    |     40    |
+| **Total Income**                                  |  1,350    |  1,240    |
+
+|                                                   |          |          |
+|---------------------------------------------------|----------:|----------:|
+| Distribution to Investment Account Holders       |    400    |    370    |
+| Operating Expenses                                |    500    |    450    |
+| **Total Expenses**                                |    900    |    820    |
+
+| **Net Profit**                                   |    450    |    420    |
+
+## Notes to the Condensed Interim Financial Statements
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with International Financial Reporting Standards (IFRS) and relevant AAOIFI standards.
+
+2.  **Murabaha and Commodity Murabaha:** Represents receivables from sale of goods under Murabaha and Commodity Murabaha contracts.
+
+3.  **Istisna' Assets:** Represents the value of assets under construction as per Istisna' agreements. This includes construction projects initiated by the bank on behalf of clients.
+
+4. **Ijarah Assets:** These assets are leased to customers under operating lease arrangements. The bank retains ownership of the assets.
+
+5.  **Sukuk Investments:** Represents investments in Shariah-compliant Sukuk (Islamic bonds).
+
+6.  **Investment Accounts:** These are profit-sharing investment accounts held by customers. Profits are distributed based on a pre-agreed percentage.
+
+7.  **Shari'ah Supervisory Board Review:** The financial statements have been reviewed for compliance with Shari'ah principles by management, and are pending the formal review from the Shari’ah Supervisory Board.
+
+8.  **Comparative Figures:** Comparative figures are based on the audited financial statements for the year ended December 31, 2023.
+
+---
+End of Report.
+```
+
+- VIOLATIONS:
+```
+[
+    {
+        "Standard": "FAS 28: Disclosure on Islamic Financing and Investment Assets",
+        "Violation": "Aggregated rather than disaggregated financing data. The report lumps all financing assets (Murabaha, Istisna', Ijarah) together without providing a breakdown by sector, maturity, or geographical location. This limits transparency.",
+        "Justification": "Murabaha, Istisna' and Ijarah are shown as a single line in the Balance Sheet, instead of the required disaggregation."
+    },
+    {
+       "Standard": "FAS 32: Ijarah",
+       "Violation": "Misreporting of Ijarah assets as operating leases. Note 4 classifies Ijarah assets solely as 'operating lease arrangements.' This can hide the fact that these could be Ijarah Muntahia Bittamleek (lease to ownership) where the ownership will eventually transfer to the customer. It is important to show the financial leases separately and operating leases separately.",
+       "Justification": "Ijarah is classified as operating lease, while there could be Financial Leases hidden in it"
+    },
+    {
+        "Standard": "FAS 7: Profit Allocation Between Owners and Investment Account Holders",
+        "Violation": "Omission of profit-sharing basis for investment accounts. While note 6 mentions a 'pre-agreed percentage,' it fails to specify the actual profit-sharing ratio between the bank and the investment account holders. This is essential for transparency and ensuring fairness.",
+        "Justification": "Profit sharing ratios are not explicitely mentioned"
+    }
+]
+```

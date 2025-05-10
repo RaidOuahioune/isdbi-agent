@@ -1,0 +1,76 @@
+DOCUMENT:
+```markdown
+# Al-Amanah Islamic Bank - Condensed Interim Financial Statement
+## For the Quarter Ended March 31, 2024 (Unaudited)
+
+**Date of Report:** April 28, 2024
+
+**1. Introduction**
+
+This condensed interim financial statement provides a summary of Al-Amanah Islamic Bank's financial performance and position for the quarter ended March 31, 2024. This report should be read in conjunction with the Bank's audited financial statements for the year ended December 31, 2023.
+
+**2. Statement of Financial Position (Condensed)**
+
+| Assets                                           | March 31, 2024 (USD '000) | December 31, 2023 (USD '000) |
+|---------------------------------------------------|---------------------------|-----------------------------|
+| Cash and Balances with Central Banks             | 5,500                      | 5,000                        |
+| Murabaha Receivables                            | 12,000                     | 11,000                       |
+| Istisna Assets                                  | 8,000                      | 7,500                        |
+| Ijarah Assets                                      | 6,000                      | 5,500                        |
+| Sukuk Investments                                 | 10,000                     | 9,500                        |
+| Other Assets                                       | 1,500                      | 1,300                        |
+| **Total Assets**                                  | **43,000**                 | **39,800**                    |
+
+| Liabilities and Equity                              | March 31, 2024 (USD '000) | December 31, 2023 (USD '000) |
+|---------------------------------------------------|---------------------------|-----------------------------|
+| Current Accounts                                   | 10,000                     | 9,000                        |
+| Savings Accounts                                   | 8,000                      | 7,500                        |
+| Investment Accounts                                | 15,000                     | 14,000                       |
+| Other Liabilities                                    | 2,000                      | 1,800                        |
+| **Total Liabilities**                               | **35,000**                 | **32,300**                    |
+
+| Equity                                           | March 31, 2024 (USD '000) | December 31, 2023 (USD '000) |
+|---------------------------------------------------|---------------------------|-----------------------------|
+| Share Capital                                      | 5,000                      | 5,000                        |
+| Retained Earnings                                  | 3,000                      | 2,500                        |
+| **Total Equity**                                   | **8,000**                  | **7,500**                     |
+| **Total Liabilities and Equity**                     | **43,000**                 | **39,800**                    |
+
+**3. Statement of Income (Condensed)**
+
+| Income                                           | Quarter Ended March 31, 2024 (USD '000) | Quarter Ended March 31, 2023 (USD '000) |
+|---------------------------------------------------|---------------------------------------|---------------------------------------|
+| Income from Murabaha                               | 800                                    | 700                                    |
+| Income from Istisna                                | 600                                    | 550                                    |
+| Income from Ijarah                                   | 400                                    | 350                                    |
+| Income from Sukuk Investments                       | 300                                    | 250                                    |
+| Other Income                                       | 100                                    | 80                                     |
+| **Total Income**                                   | **2,200**                               | **1,930**                               |
+
+| Expenses                                         | Quarter Ended March 31, 2024 (USD '000) | Quarter Ended March 31, 2023 (USD '000) |
+|---------------------------------------------------|---------------------------------------|---------------------------------------|
+| Personnel Expenses                                 | 700                                    | 650                                    |
+| Administrative Expenses                            | 500                                    | 450                                    |
+| Depreciation                                      | 100                                    | 90                                     |
+| **Total Expenses**                                 | **1,300**                               | **1,190**                               |
+
+| Net Income                                         | **900**                               | **740**                               |
+
+**4. Notes to the Condensed Interim Financial Statements**
+
+1.  The accounting policies applied are consistent with those used in the annual financial statements for the year ended December 31, 2023.
+2.  Istisna Assets represent contracts for the manufacture of goods for customers.
+3.  Ijarah Assets represent leased properties.
+4.  Sukuk Investments are Shariah-compliant fixed income securities.
+5.  Murabaha Receivables are amounts due from customers under Murabaha contracts.
+6.  The Shari’ah Supervisory Board reviews and approves the Bank's products and activities to ensure compliance with Shari'ah principles.
+
+**[End of Report]**
+```
+
+VIOLATIONS:
+```
+- FAS 7: The basis for profit allocation between owners and investment account holders (e.g., Mudarabah, Wakala) is not disclosed in the notes or anywhere in the statement.
+- FAS 32: Ijarah assets are classified as operating leases instead of correctly reflecting their nature as finance leases, resulting in an understatement of assets and liabilities. This is implied as no distinction between finance and operating lease is made.
+- FAS 28: Financing data is aggregated into broad categories like "Murabaha Receivables" without providing a disaggregated view based on sector, maturity, or credit quality.
+```

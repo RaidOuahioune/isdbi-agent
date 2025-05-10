@@ -49,6 +49,7 @@ class EvaluationManager(Agent):
         self,
         prompt: str,
         response: str,
+        reference_answer: Optional[str] = None,
         context: Optional[List[Dict[str, str]]] = None,
         fetch_additional_context: bool = True,
     ) -> Dict[str, Any]:
@@ -58,6 +59,7 @@ class EvaluationManager(Agent):
         Args:
             prompt: Original user prompt
             response: The multi-agent system response to evaluate
+            reference_answer: Optional ground truth/reference answer
             context: Optional list of context documents from vector DB
             fetch_additional_context: Whether to fetch additional context automatically
 
@@ -65,6 +67,14 @@ class EvaluationManager(Agent):
             Comprehensive evaluation report with scores and feedback
         """
         logger.info(f"Starting evaluation of response to prompt: {prompt}")
+
+        # Update evaluation context with reference answer if provided
+        evaluation_context = {
+            "prompt": prompt,
+            "response": response,
+            "reference_answer": reference_answer,
+            "context": context
+        }
 
         # Collect evaluations from each expert agent
         expert_evaluations = {}

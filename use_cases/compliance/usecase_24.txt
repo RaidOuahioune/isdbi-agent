@@ -1,0 +1,61 @@
+```markdown
+# Al-Barakah Islamic Bank - Condensed Interim Financial Statements
+## For the Quarter Ended March 31, 2024 (Unaudited)
+
+**Statement of Financial Position (Condensed)**
+(Amounts in Thousands of USD)
+
+| Assets                           | March 31, 2024 | December 31, 2023 |
+|-----------------------------------|----------------|-------------------|
+| Cash and Balances with Banks       | 12,500         | 11,000            |
+| Murabaha Receivables               | 35,000         | 32,000            |
+| Istisna' Assets                   | 18,000         | 16,500            |
+| Ijarah Assets                     | 22,000         | 20,000            |
+| Sukuk Investments                  | 15,000         | 14,000            |
+| Other Assets                      | 5,000          | 4,500             |
+| **Total Assets**                   | **107,500**    | **98,000**        |
+
+| Liabilities & Equity              | March 31, 2024 | December 31, 2023 |
+|-----------------------------------|----------------|-------------------|
+| Current Accounts                  | 20,000         | 18,000            |
+| Investment Accounts               | 40,000         | 36,000            |
+| Other Liabilities                 | 2,500          | 2,000             |
+| Share Capital                     | 30,000         | 30,000            |
+| Retained Earnings                 | 15,000         | 12,000            |
+| **Total Liabilities & Equity**     | **107,500**    | **98,000**        |
+**Statement of Income (Condensed)**
+(Amounts in Thousands of USD)
+
+| Income                              | Quarter Ended March 31, 2024 | Quarter Ended March 31, 2023 |
+|--------------------------------------|-----------------------------|-----------------------------|
+| Income from Murabaha                | 3,500                       | 3,200                       |
+| Income from Istisna'                  | 2,000                       | 1,800                       |
+| Income from Ijarah                     | 2,200                       | 2,000                       |
+| Income from Sukuk                     | 1,500                       | 1,400                       |
+| Other Income                          | 500                         | 400                         |
+| **Total Income**                       | **9,700**                    | **8,800**                    |
+| Operating Expenses                    | (3,700)                     | (3,400)                     |
+| **Net Income Before Provisions**      | **6,000**                    | **5,400**                    |
+| Provision for Credit Losses           | (500)                       | (400)                       |
+| **Net Income**                        | **5,500**                    | **5,000**                    |
+# Notes to the Condensed Interim Financial Statements
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with generally accepted accounting principles for Islamic financial institutions.
+
+2.  **Significant Accounting Policies:** The accounting policies adopted are consistent with those of the annual financial statements for the year ended December 31, 2023.
+
+3.  **Investment Accounts:** Investment accounts represent funds received from customers for investment purposes. The bank acts as a Mudarib for these funds. Profits are distributed to investment account holders after deducting the Mudarib's fee.
+
+4.  **Ijarah Assets:** These assets represent properties leased to customers under leasing arrangements. The bank retains ownership of the assets.
+5.  **Financing Portfolio:** The financing portfolio consists of Murabaha, Istisna', and Ijarah contracts.
+6.  **Shari'ah Supervisory Board:** The Shari’ah Supervisory Board (SSB) reviews the Bank's products and activities to ensure compliance with Shari’ah principles. The SSB's role is to provide guidance and oversight on all aspects of the Bank's operations.
+
+7.  **Commitments and Contingencies:** The bank has outstanding commitments and contingencies in the normal course of business. These are not expected to have a material adverse effect on the bank's financial position.
+---
+
+- VIOLATIONS:
+
+1.  **FAS 7 (Profit Allocation):** Note 3 mentions profit distribution but omits the specific profit-sharing ratio between the bank and the investment account holders.
+2.  **FAS 32 (Ijarah):** Note 4 vaguely describes Ijarah assets. While it says the bank retains ownership, it doesn't explicitly state that these are *finance* leases. It is easy to misunderstand and report as operating leases.
+3.  **FAS 28 (Disclosure on Islamic Financing):** The financing portfolio in Note 5 is disclosed in an aggregated manner. The individual balances and details pertaining to Murabaha, Istisna and Ijarah contracts are not disclosed separately.
+```

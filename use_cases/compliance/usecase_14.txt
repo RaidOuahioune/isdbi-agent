@@ -1,0 +1,66 @@
+DOCUMENT:
+
+# Al-Barakah Islamic Bank - Quarterly Financial Report (Q3 2024)
+
+**For the Period Ended September 30, 2024 (Unaudited)**
+
+**1. Statement of Financial Position (Condensed)**
+(Amounts in Thousands of USD)
+
+| Assets                      | Sept 30, 2024 | Dec 31, 2023 |
+|-----------------------------|---------------|---------------|
+| Cash and Balances with Banks | 15,500        | 12,000        |
+| Islamic Financing Assets     | 85,000        | 75,000        |
+| *Murabaha*                 | 35,000        | 30,000        |
+| *Ijarah*                   | 20,000        | 18,000        |
+| *Istisna'*                  | 30,000        | 27,000        |
+| Investment Securities       | 10,000        | 8,000         |
+| Other Assets                | 5,000         | 4,000         |
+| **Total Assets**            | **115,500**   | **99,000**    |
+
+| Liabilities & Equity            | Sept 30, 2024 | Dec 31, 2023 |
+|---------------------------------|---------------|---------------|
+| Current Accounts                | 20,000        | 18,000        |
+| Savings Accounts                | 15,000        | 13,000        |
+| Investment Accounts             | 50,000        | 40,000        |
+| Other Liabilities               | 2,000         | 1,500         |
+| **Total Liabilities**           | **87,000**    | **72,500**    |
+| Equity                          | 28,500        | 26,500        |
+| **Total Liabilities & Equity** | **115,500**   | **99,000**    |
+
+**2. Statement of Income (Condensed)**
+(Amounts in Thousands of USD)
+
+|                                         | Q3 2024 | Q3 2023 | YTD 2024 | YTD 2023 |
+|-----------------------------------------|---------|---------|----------|----------|
+| Income from Islamic Financing           | 6,000   | 5,000   | 17,000   | 14,000   |
+| Income from Investments                 | 500     | 400     | 1,400    | 1,100    |
+| Other Operating Income                  | 200     | 150     | 600      | 400      |
+| **Total Operating Income**             | **6,700** | **5,550** | **19,000** | **15,500** |
+| Operating Expenses                      | 3,000   | 2,500   | 8,500    | 7,000    |
+| **Net Operating Income**               | **3,700** | **3,050** | **10,500** | **8,500**  |
+| Profit Attributable to Owners of Bank | 2,800   | 2,300   | 8,000    | 6,500    |
+
+**3. Notes to the Financial Statements**
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with generally accepted accounting principles in [Country Name] and applicable Shari'ah principles.
+
+2.  **Islamic Financing Assets:**  Represent financing activities based on Murabaha, Ijarah, and Istisna' contracts.  These assets are stated net of specific provisions for impairment.
+
+3.  **Investment Accounts:**  Represent Mudaraba and Wakala based investment accounts.  Profits are distributed to account holders after deducting the bank’s share as per the agreed upon ratios.
+
+4.  **Ijarah Assets:** Consist primarily of equipment leased to customers under operating lease arrangements.
+
+5.  **Commitments and Contingencies:** The bank has certain commitments and contingencies arising in the ordinary course of business.
+
+---
+
+**Statement from the Shari’ah Supervisory Board:**
+
+The Shari’ah Supervisory Board has reviewed the operations of the bank for the quarter ended September 30, 2024 and confirms that, to the best of its knowledge, the bank has complied with Shari’ah principles in its material operations.
+
+VIOLATIONS:
+
+*   **FAS 7:** The specific profit-sharing ratios for the Investment Accounts (Mudaraba and Wakala) are not explicitly disclosed in Note 3.
+*   **FAS 32:** Note 4 states that *Ijarah* assets are treated as operating leases, which is often incorrect for *Ijarah Muntahia Bit Tamleek* (lease-to-own), which are technically a form of financing.
+*   **FAS 28:** Aggregated financing data is presented in the Balance Sheet. There are no further details (such as maturity or sector) disclosed in a separate note.

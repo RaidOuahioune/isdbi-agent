@@ -1,0 +1,69 @@
+DOCUMENT:
+
+# Al-Amanah Islamic Bank
+## Condensed Interim Financial Statements (Unaudited)
+### For the Quarter Ended March 31, 2024
+
+**Statement of Financial Position (Condensed)**
+(In thousands of US Dollars)
+
+| Assets                                  | March 31, 2024 | December 31, 2023 |
+| ---------------------------------------- | --------------- | ------------------ |
+| Cash and Balances with Central Bank      | 1,500           | 1,200              |
+| Murabaha Receivables                    | 8,000           | 7,500              |
+| Ijarah Assets                           | 5,000           | 4,800              |
+| Istisna' Assets                         | 3,000           | 2,800              |
+| Sukuk Investments                        | 2,000           | 2,000              |
+| Other Assets                            | 500             | 400                |
+| **Total Assets**                        | **20,000**      | **18,700**         |
+
+| Liabilities and Equity                      | March 31, 2024 | December 31, 2023 |
+| ---------------------------------------- | --------------- | ------------------ |
+| Demand Deposits                          | 6,000           | 5,500              |
+| Investment Accounts                     | 7,000           | 6,500              |
+| Other Liabilities                         | 500             | 400                |
+| **Total Liabilities**                   | **13,500**      | **12,400**         |
+| Equity                                    | 6,500           | 6,300              |
+| **Total Liabilities and Equity**        | **20,000**      | **18,700**         |
+
+**Statement of Income (Condensed)**
+(In thousands of US Dollars)
+
+| Income                                  | Quarter Ended March 31, 2024 | Quarter Ended March 31, 2023 |
+| ---------------------------------------- | ---------------------------- | ---------------------------- |
+| Income from Murabaha                     | 400                          | 350                          |
+| Income from Ijarah                       | 250                          | 220                          |
+| Income from Istisna'                      | 150                          | 130                          |
+| Income from Sukuk Investments           | 100                          | 90                           |
+| Other Income                             | 50                           | 40                           |
+| **Total Income**                        | **950**                      | **830**                      |
+
+| Expenses                                  | Quarter Ended March 31, 2024 | Quarter Ended March 31, 2023 |
+| ---------------------------------------- | ---------------------------- | ---------------------------- |
+| Operating Expenses                        | 350                          | 300                          |
+| Provision for Credit Losses               | 50                           | 40                           |
+| **Total Expenses**                        | **400**                      | **340**                      |
+
+| Profit Before Allocation to IAHs         | 550                          | 490                          |
+| Profit Allocated to Investment Accounts   | 250                          | 220                          |
+| **Net Profit Attributable to Shareholders** | **300**                      | **270**                      |
+
+**Notes to the Condensed Interim Financial Statements**
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with generally accepted accounting principles, consistently applied.
+2.  **Murabaha Receivables:** Represents amounts due from customers under Murabaha financing arrangements.
+3.  **Ijarah Assets:** These consist primarily of leased properties held under operating lease arrangements.
+4.  **Istisna' Assets:** Represents the cost incurred on projects under construction for customers under Istisna' contracts.
+5.  **Investment Accounts:** Represents customer deposits held in investment accounts. Profits are allocated based on a pre-agreed ratio.
+6.  **Shari'ah Compliance:** The Bank operates in accordance with Shari'ah principles as determined by the Bank's internal Shari'ah Supervisory Board.
+7.  **Subsequent Events:** There have been no material subsequent events that require disclosure in these financial statements.
+
+---
+End of Report
+---
+
+VIOLATIONS:
+
+*   **FAS 7 (Profit Allocation Between Owners and Investment Account Holders):** Note 5 only vaguely states "profits are allocated based on a pre-agreed ratio" but provides no details on the ratio. Specific profit-sharing percentages (e.g., Mudarabah ratio or Wakalah fee) are absent, failing to give Investment Account Holders full disclosure.
+*   **FAS 32 (Ijarah):** Note 3 misreports Ijarah assets as operating leases. Under Shari'ah, Ijarah contracts that transfer ownership at the end of the lease term must be treated as finance leases. This misclassification impacts the recognition of revenue, depreciation, and asset classification.
+*   **FAS 28 (Disclosure on Islamic Financing and Investment Assets):** The Bank presented aggregated financing data rather than disaggregated. The report presents only total Murabaha, Ijarah and Istisna' amounts. However, there are no breakdowns related to tenor, industry sector, or geographic location.

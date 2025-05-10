@@ -3,7 +3,7 @@ Interactive session module for the Islamic Finance standards system.
 """
 
 import os
-from utils.query_processor import process_query
+# from utils.query_processor import process_query
 from enhancement import (
     run_standards_enhancement,
     ENHANCEMENT_TEST_CASES,
@@ -136,9 +136,9 @@ def run_interactive_session():
             continue
 
         # Process the query through our agent system
-        try:
-            response = process_query(query)
-            print(f"\nAssistant: {response.content}")
-        except Exception as e:
-            print(f"\nError processing query: {e}")
-            print("Please try again with a different query.")
+        # try:
+        #     response = process_query(query)
+        #     print(f"\nAssistant: {response.content}")
+        # except Exception as e:
+        #     print(f"\nError processing query: {e}")
+        #     print("Please try again with a different query.")

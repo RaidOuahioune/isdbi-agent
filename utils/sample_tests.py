@@ -3,7 +3,7 @@ Sample testing module for the Islamic Finance standards system.
 """
 
 from typing import List, Dict
-from utils.query_processor import process_query
+# from utils.query_processor import process_query
 
 def sample_queries() -> List[Dict[str, str]]:
     """
@@ -129,7 +129,7 @@ def run_sample_tests():
         print("\n----- RESPONSE -----")
 
         try:
-            response = process_query(sample["query"])
+            # response = process_query(sample["query"])
             print(response.content)
         except Exception as e:
             print(f"Error processing sample: {e}")

@@ -1,0 +1,62 @@
+DOCUMENT:
+
+# Al-Amin Islamic Bank - Interim Financial Report (Q3 2024)
+
+**For the Period Ended September 30, 2024 (Unaudited)**
+
+## Condensed Interim Statement of Financial Position (Balance Sheet)
+
+| Assets                                          | September 30, 2024 (USD '000) | December 31, 2023 (USD '000) |
+|-------------------------------------------------|---------------------------------|---------------------------------|
+| Cash and Balances with Banks                    | 12,500                          | 10,000                          |
+| Murabaha Receivables                              | 25,000                          | 22,000                          |
+| Istisna' Assets                                  | 18,000                          | 15,000                          |
+| Ijarah Assets                                  | 10,000                          | 9,000                           |
+| Sukuk Investments                               | 8,000                           | 7,000                           |
+| Other Assets                                     | 2,000                           | 1,500                           |
+| **Total Assets**                                | **75,500**                      | **64,500**                      |
+
+| Liabilities and Equity                               | September 30, 2024 (USD '000) | December 31, 2023 (USD '000) |
+|-----------------------------------------------------|---------------------------------|---------------------------------|
+| Current Accounts (Wadiah)                             | 15,000                          | 13,000                          |
+| Savings Accounts (Qard Hasan)                            | 10,000                          | 8,000                           |
+| Investment Accounts (Mudarabah)                       | 20,000                          | 18,000                          |
+| Other Liabilities                                       | 5,000                           | 4,000                           |
+| **Total Liabilities**                                  | **50,000**                      | **43,000**                      |
+| Equity Attributable to Shareholders                     | 25,500                          | 21,500                          |
+| **Total Liabilities and Equity**                        | **75,500**                      | **64,500**                      |
+
+## Condensed Interim Statement of Income
+
+|                                                    | Q3 2024 (USD '000) | Q3 2023 (USD '000) | YTD 2024 (USD '000) | YTD 2023 (USD '000) |
+|----------------------------------------------------|---------------------|---------------------|----------------------|----------------------|
+| Income from Murabaha                               | 2,500               | 2,200               | 7,000                | 6,000                |
+| Income from Ijarah                                 | 1,000               | 900                 | 2,800                | 2,500                |
+| Income from Istisna'                                | 1,500               | 1,300               | 4,200                | 3,500                |
+| Income from Sukuk Investments                       | 800                 | 700                 | 2,100                | 1,900                |
+| Other Income                                         | 200                 | 150                 | 550                  | 400                  |
+| **Total Income**                                   | **6,000**           | **5,250**           | **16,650**           | **14,300**           |
+| Distribution to Investment Account Holders        | 1,800               | 1,575               | 5,000                | 4,290                |
+| Operating Expenses                                 | 2,000               | 1,800               | 5,600                | 4,800                |
+| **Net Profit Attributable to Shareholders**        | **2,200**           | **1,875**           | **6,050**           | **5,210**           |
+
+## Notes to the Condensed Interim Financial Statements
+
+1.  **Basis of Preparation:** These condensed interim financial statements have been prepared in accordance with generally accepted accounting principles for Islamic financial institutions.
+
+2.  **Significant Accounting Policies:** The accounting policies adopted are consistent with those of the previous financial year.
+
+3.  **Istisna' Assets:** Represents construction financing provided to customers.
+
+4.  **Ijarah Assets:** These assets are leased to customers under various lease agreements. The leases are classified as operating leases.
+
+5.  **Related Party Transactions:** The bank entered into transactions with related parties, including directors and key management personnel, on terms comparable to those available to other customers. These transactions included Murabaha financing and deposit accounts.
+
+6.  **Capital Adequacy:** The bank maintains adequate capital levels to meet regulatory requirements.
+
+7.  **Shari’ah Supervisory Board:** The Shari’ah Supervisory Board has reviewed and approved the Bank’s operations for the period.
+
+VIOLATIONS:
+
+*   **FAS 7:** The specific profit-sharing ratio used to determine the distribution to Investment Account Holders is not disclosed. (Omission of profit-sharing basis for investment accounts)
+*   **FAS 32:** The leases categorized as operating leases might be more accurately classified as finance leases per AAOIFI standards. (Misreporting of Ijarah assets as operating leases)
