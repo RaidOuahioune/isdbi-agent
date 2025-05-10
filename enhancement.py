@@ -101,6 +101,11 @@ def run_standards_enhancement(
     if progress_callback:
         progress_callback("validation_complete", "Validation phase completed")
     
+    # First try to extract original and proposed text from the proposal
+    from ui.output_parser import OutputParser
+    proposal_text = proposal_result["enhancement_proposal"]
+    original_text, proposed_text = OutputParser.extract_original_and_proposed(proposal_text)
+    
     # Compile initial results
     results = {
         "standard_id": standard_id,
@@ -108,6 +113,8 @@ def run_standards_enhancement(
         "review": review_result["review_analysis"],
         "proposal": proposal_result["enhancement_proposal"],
         "validation": validation_result["validation_result"],
+        "original_text": original_text,
+        "proposed_text": proposed_text,
         "full_results": {
             "review_result": review_result,
             "proposal_result": proposal_result,
@@ -131,7 +138,10 @@ def run_standards_enhancement(
         results["compatibility_matrix"] = cross_analysis_result["compatibility_matrix"]
         results["full_results"]["cross_analysis_result"] = cross_analysis_result
     
-    return results
+    # Pre-process the results to ensure diffs are generated 
+    processed_results = OutputParser.parse_results_from_agents(results)
+    
+    return processed_results
 
 
 def format_results_for_display(results: Dict[str, Any]) -> str:

@@ -24,6 +24,91 @@ from ui.states.session_state import init_enhancement_state, set_enhancement_resu
 from ui.utils.enhancement_utils import save_enhancement, load_past_enhancements, create_export_markdown, create_export_html
 from ui.styles.main import load_css
 
+# Add some custom CSS for the standardized proposal format
+def get_enhanced_css():
+    """Add custom CSS for the standardized proposal format"""
+    return """
+    <style>
+        /* Proposal formatting */
+        .proposal-container h1 {
+            background-color: #f0f7ff; 
+            padding: 10px;
+            border-left: 4px solid #3b82f6;
+            margin-top: 25px;
+        }
+        
+        .proposal-container h2 {
+            color: #3b82f6;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 5px;
+            margin-top: 20px;
+        }
+        
+        .proposal-container strong {
+            color: #1e40af;
+        }
+        
+        /* Styling for Original Text and Proposed Text */
+        .proposal-container h2:contains("Original Text") + p,
+        .proposal-container h2:contains("Proposed Modified Text") + p {
+            background-color: #f9fafb;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #e5e7eb;
+            font-family: 'Courier New', monospace;
+        }
+        
+        /* Make diff visualization more readable */
+        .diff-container {
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #e5e7eb;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        
+        .deletion {
+            background-color: #fee2e2;
+            text-decoration: line-through;
+            color: #991b1b;
+        }
+        
+        .addition {
+            background-color: #dcfce7;
+            color: #166534;
+            font-weight: 500;
+        }
+        
+        /* Stats boxes */
+        .diff-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .diff-stat-item {
+            text-align: center;
+            background-color: #f9fafb;
+            padding: 10px;
+            border-radius: 5px;
+            flex: 1;
+            margin: 0 5px;
+        }
+        
+        .diff-stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        
+        .diff-stat-label {
+            font-size: 0.8rem;
+            color: #4b5563;
+        }
+    </style>
+    """
+
 def render_standards_enhancement_page():
     """Render the Standards Enhancement page."""
     # Initialize session state
@@ -39,6 +124,8 @@ def render_standards_enhancement_page():
     
     # Apply CSS
     st.markdown(load_css(), unsafe_allow_html=True)
+    # Add enhanced CSS for proposal formatting
+    st.markdown(get_enhanced_css(), unsafe_allow_html=True)
     
     # Page title
     st.title("📊 AAOIFI Standards Enhancement System")

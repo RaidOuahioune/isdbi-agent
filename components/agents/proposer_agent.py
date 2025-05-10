@@ -39,11 +39,32 @@ Relevant Standard Content:
 Reviewer Analysis:
 {review_analysis}
 
-Provide specific enhancement proposals including:
-1. The original text of sections needing enhancement
-2. Your proposed modified text
-3. Clear rationale for each proposed change
-4. How the change addresses the trigger scenario
+IMPORTANT: Your response must follow this EXACT format for each proposed enhancement:
+
+```
+# Proposal 1: [Brief name of enhancement]
+
+## Issue Identified
+[Brief description of the issue this enhancement addresses]
+
+## Original Text
+**Original Text:** [Exact text from the standard that needs enhancement]
+
+## Proposed Modified Text
+**Proposed Modified Text:** [Clear suggested text to replace the original]
+
+## Rationale
+[Clear explanation of why this change is needed and how it addresses the issue]
+```
+
+If multiple enhancements are needed, use Proposal 2, Proposal 3, etc. with the EXACT same format for each.
+
+Ensure that each proposal clearly identifies:
+1. The exact original text from the standard that needs enhancement
+2. The exact recommended replacement text
+3. A clear rationale for the change
+
+This precise formatting is critical for downstream processes that will parse your response.
             """)
         ]
         
