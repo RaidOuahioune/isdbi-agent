@@ -46,21 +46,50 @@ def extract_structured_guidance(accounting_guidance):
     if summary_match:
         result["summary"] = summary_match.group(1).strip()
     
-    # Try to extract product type
-    product_match = re.search(r"(?:\*\*)?(?:Islamic Financial Product Type|Product Type|Product|Type)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", accounting_guidance, re.IGNORECASE)
-    if product_match:
-        result["product_type"] = product_match.group(1).strip()
+    # Try to extract product type from summary section
+    if result["summary"]:
+        # Look for product type in bullet format: * **Islamic Financial Product Type:** Istisna'a
+        product_match = re.search(r'\*\s+\*\*(?:Islamic Financial Product Type|Product Type|Product|Type)\*\*:\s*(.*?)(?=\n\*|\Z)', result["summary"], re.IGNORECASE | re.DOTALL)
+        if product_match:
+            result["product_type"] = product_match.group(1).strip()
     
-    # Try to extract standards
-    standards_match = re.search(r"(?:\*\*)?(?:Applicable AAOIFI Standard\(s\)|Applicable Standards|Standards)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", accounting_guidance, re.IGNORECASE)
-    if standards_match:
-        standards_text = standards_match.group(1).strip()
-        result["applicable_standards"] = [s.strip() for s in standards_text.split(',')]
+    # Fallback to older pattern if not found in summary
+    if result["product_type"] == "Islamic Financial Product":
+        product_match = re.search(r"(?:\*\*)?(?:Islamic Financial Product Type|Product Type|Product|Type)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", accounting_guidance, re.IGNORECASE)
+        if product_match:
+            result["product_type"] = product_match.group(1).strip()
     
-    # Try to extract method used
-    method_match = re.search(r"(?:\*\*)?(?:Method Used)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", accounting_guidance, re.IGNORECASE)
-    if method_match:
-        result["method_used"] = method_match.group(1).strip()
+    # Try to extract standards from summary section
+    if result["summary"]:
+        # Look for standards in bullet format: * **Applicable AAOIFI Standard(s):** FAS 10
+        standards_match = re.search(r'\*\s+\*\*(?:Applicable AAOIFI Standard\(s\)|Applicable Standards|Standards)\*\*:\s*(.*?)(?=\n\*|\Z)', result["summary"], re.IGNORECASE | re.DOTALL)
+        if standards_match:
+            standards_text = standards_match.group(1).strip()
+            # Handle both comma-separated and parentheses format: FAS 10 (Istisna'a and Parallel Istisna'a)
+            if ',' in standards_text:
+                result["applicable_standards"] = [s.strip() for s in standards_text.split(',')]
+            else:
+                result["applicable_standards"] = [standards_text.strip()]
+    
+    # Fallback to older pattern if not found in summary
+    if not result["applicable_standards"]:
+        standards_match = re.search(r"(?:\*\*)?(?:Applicable AAOIFI Standard\(s\)|Applicable Standards|Standards)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", accounting_guidance, re.IGNORECASE)
+        if standards_match:
+            standards_text = standards_match.group(1).strip()
+            result["applicable_standards"] = [s.strip() for s in standards_text.split(',')]
+    
+    # Try to extract method used from summary section
+    if result["summary"]:
+        # Look for method in bullet format: * **Method Used:** Percentage-of-Completion Method
+        method_match = re.search(r'\*\s+\*\*(?:Method Used)\*\*:\s*(.*?)(?=\n\*|\Z)', result["summary"], re.IGNORECASE | re.DOTALL)
+        if method_match:
+            result["method_used"] = method_match.group(1).strip()
+    
+    # Fallback to older pattern if not found in summary
+    if not result["method_used"]:
+        method_match = re.search(r"(?:\*\*)?(?:Method Used)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", accounting_guidance, re.IGNORECASE)
+        if method_match:
+            result["method_used"] = method_match.group(1).strip()
     
     # If no standards found, look for FAS mentions
     if not result["applicable_standards"]:
@@ -184,6 +213,29 @@ def format_content_for_display(accounting_guidance):
         background-color: #f8fafc;
         border-left: 3px solid #94a3b8;
     }
+    
+    /* References styling */
+    .reference-list {
+        margin-top: 10px;
+        margin-bottom: 20px;
+    }
+    .reference-item {
+        display: flex;
+        margin-bottom: 10px;
+        padding: 8px;
+        background-color: #f8fafc;
+        border-radius: 5px;
+        border-left: 3px solid #3b82f6;
+    }
+    .reference-standard {
+        font-weight: bold;
+        color: #1e3a8a;
+        margin-right: 10px;
+        min-width: 120px;
+    }
+    .reference-description {
+        flex: 1;
+    }
     </style>
     """
     
@@ -205,6 +257,70 @@ def format_content_for_display(accounting_guidance):
     
     # Format notes
     formatted_content = re.sub(r'\*Note: (.*?)\*', r'<div class="note-text">Note: \1</div>', formatted_content)
+    
+    # Format references section
+    references_section = re.search(r'<div class="section-header">References</div>(.*?)(?=<div class="section-header">|$)', formatted_content, re.DOTALL)
+    if references_section:
+        ref_content = references_section.group(1)
+        # Try multiple patterns to match references
+        ref_items = re.findall(r'<div class="calculation-item">•\s+\*\*(.*?):\*\*\s+(.*?)</div>', ref_content, re.DOTALL)
+        
+        # If no matches with the first pattern, try alternative patterns
+        if not ref_items:
+            # Try to match pattern with bullet points but without bold markers
+            ref_items = re.findall(r'<div class="calculation-item">•\s+(.*?):\s+(.*?)</div>', ref_content, re.DOTALL)
+            
+        # If still no matches, try parsing numbered references
+        if not ref_items:
+            # Try to match numbered list format
+            numbered_items = re.findall(r'<div class="calculation-item">(\d+)\.\s+(.*?)</div>', ref_content, re.DOTALL)
+            if numbered_items:
+                ref_items = [(f"Reference {num}", desc) for num, desc in numbered_items]
+        
+        # Process raw bullet points if still no matches
+        if not ref_items:
+            # Try to match raw bullet points (not formatted yet)
+            raw_items = re.findall(r'•\s+\*\*(.*?):\*\*\s+(.*?)(?=\n•|\Z)', ref_content, re.DOTALL)
+            if raw_items:
+                ref_items = raw_items
+                
+        # Handle the specific format in the example (FAS X, Para Y: Description)
+        if not ref_items:
+            fas_refs = re.findall(r'<div class="calculation-item">•\s+\*\*(FAS\s+\d+.*?):\*\*\s+(.*?)</div>', ref_content, re.DOTALL)
+            if fas_refs:
+                ref_items = fas_refs
+                
+        # Last fallback for any bullet points with content
+        if not ref_items:
+            basic_items = re.findall(r'<div class="calculation-item">•\s+(.*?)</div>', ref_content, re.DOTALL)
+            if basic_items:
+                # Try to split each item into a standard reference and description
+                processed_items = []
+                for item in basic_items:
+                    # Check if the item contains a colon
+                    if ":" in item:
+                        parts = item.split(":", 1)
+                        ref = parts[0].strip()
+                        desc = parts[1].strip() if len(parts) > 1 else ""
+                        processed_items.append((ref, desc))
+                    else:
+                        # Just use the whole item as the description
+                        processed_items.append(("Reference", item.strip()))
+                
+                if processed_items:
+                    ref_items = processed_items
+        
+        if ref_items:
+            formatted_refs = '<div class="reference-list">'
+            for ref, desc in ref_items:
+                # Clean the text
+                clean_ref = re.sub(r'<[^>]+>', '', ref).strip()
+                clean_desc = re.sub(r'<[^>]+>', '', desc).strip()
+                formatted_refs += f'<div class="reference-item"><div class="reference-standard">{clean_ref}</div><div class="reference-description">{clean_desc}</div></div>'
+            formatted_refs += '</div>'
+            
+            # Replace the references section with our formatted version
+            formatted_content = formatted_content.replace(ref_content, formatted_refs)
     
     # Add the CSS
     formatted_content = css + formatted_content
@@ -295,15 +411,25 @@ def render_summary_card(summary_data):
     
     # Add standard summary items
     if summary_data.get("product_type"):
+        # Clean the product type value to ensure it doesn't contain HTML tags
+        product_type = summary_data["product_type"]
+        # Remove any HTML tags that might be present
+        product_type = re.sub(r'<[^>]+>', '', product_type)
+        # Strip any extra whitespace
+        product_type = product_type.strip()
+        
         html += f"""
         <div class='summary-item'>
             <div class='summary-label'>Product Type:</div>
-            <div class='summary-value'>{summary_data["product_type"]}</div>
+            <div class='summary-value'>{product_type}</div>
         </div>
         """
     
     if summary_data.get("applicable_standards"):
-        standards_str = ", ".join(summary_data["applicable_standards"])
+        # Clean and join the standards list
+        standards = summary_data["applicable_standards"]
+        standards_str = ", ".join([re.sub(r'<[^>]+>', '', std).strip() for std in standards])
+        
         html += f"""
         <div class='summary-item'>
             <div class='summary-label'>Applicable Standards:</div>
@@ -312,29 +438,40 @@ def render_summary_card(summary_data):
         """
     
     if summary_data.get("method_used"):
+        # Clean the method used value
+        method_used = re.sub(r'<[^>]+>', '', summary_data["method_used"]).strip()
+        
         html += f"""
         <div class='summary-item'>
             <div class='summary-label'>Method Used:</div>
-            <div class='summary-value'>{summary_data["method_used"]}</div>
+            <div class='summary-value'>{method_used}</div>
         </div>
         """
     
-    # Look for additional summary items - using a more precise pattern
+    # Look for additional summary items from the summary section
     if summary_data.get("summary"):
         # Get the raw summary text and process it
         summary_text = summary_data["summary"]
         
-        # Find bullet points with labels in the summary
+        # First try the bullet point format with * and ** markers
         bullet_points = re.findall(r'\*\s+\*\*(.*?):\*\*\s*(.*?)(?=\n\*|\Z)', summary_text, re.DOTALL)
         
+        # If no bullet points found, try alternative pattern
+        if not bullet_points:
+            bullet_points = re.findall(r'\*\s+(.*?):\s*(.*?)(?=\n\*|\Z)', summary_text, re.DOTALL)
+        
         for label, value in bullet_points:
+            # Clean the label and value
+            clean_label = re.sub(r'<[^>]+>', '', label).strip()
+            clean_value = re.sub(r'<[^>]+>', '', value).strip()
+            
             # Skip items already included
-            if label.lower() not in ["islamic financial product type", "product type", "applicable aaoifi standard(s)", "applicable standards", "method used"]:
-                cleaned_value = value.strip().replace('\n', '<br>')
+            if clean_label.lower() not in ["islamic financial product type", "product type", "applicable aaoifi standard(s)", "applicable standards", "method used"]:
+                clean_value = clean_value.replace('\n', '<br>')
                 html += f"""
                 <div class='summary-item'>
-                    <div class='summary-label'>{label}:</div>
-                    <div class='summary-value'>{cleaned_value}</div>
+                    <div class='summary-label'>{clean_label}:</div>
+                    <div class='summary-value'>{clean_value}</div>
                 </div>
                 """
     
@@ -580,11 +717,15 @@ def render_use_case_processor_page():
             
             with col1:
                 st.markdown(f"**Product Type:**")
-                st.markdown(f"<div class='diff-stat-item'><div class='diff-stat-value'>{results['identified_product']}</div></div>", unsafe_allow_html=True)
+                # Ensure the product type is clean of HTML tags
+                product_type = re.sub(r'<[^>]+>', '', results['identified_product']).strip()
+                st.markdown(f"<div class='diff-stat-item'><div class='diff-stat-value'>{product_type}</div></div>", unsafe_allow_html=True)
                 
                 st.markdown(f"**Applicable Standards:**")
                 for standard in results["applicable_standards"]:
-                    st.markdown(f"<div class='diff-stat-item'>{standard}</div>", unsafe_allow_html=True)
+                    # Clean each standard of HTML tags
+                    clean_standard = re.sub(r'<[^>]+>', '', standard).strip()
+                    st.markdown(f"<div class='diff-stat-item'>{clean_standard}</div>", unsafe_allow_html=True)
             
             with col2:
                 st.markdown(f"<div class='diff-container'>{results['scenario'][:300]}...</div>", unsafe_allow_html=True)
