@@ -5,6 +5,10 @@ Use Case Processor page for the Streamlit application (Challenge 1).
 import streamlit as st
 import sys
 from pathlib import Path
+import time
+import traceback
+import re
+import json
 
 # Add the parent directory to the path so we can import from the main project
 parent_dir = str(Path(__file__).parent.parent.parent)
@@ -14,6 +18,62 @@ if parent_dir not in sys.path:
 # Local imports
 from ui.styles.main import load_css
 from ui.states.session_state import init_use_case_state, set_use_case_results, get_use_case_results
+from ui.utils.progress_display import display_progress_bar
+from retreiver import retriever
+
+def extract_structured_guidance(accounting_guidance):
+    """
+    Extract structured information from the accounting guidance text.
+    
+    Args:
+        accounting_guidance: The accounting guidance text from the agent
+        
+    Returns:
+        dict: Structured information including product type, standards, etc.
+    """
+    result = {
+        "product_type": "Islamic Financial Product",
+        "applicable_standards": [],
+        "calculation_methodology": "",
+        "journal_entries": "",
+        "references": "",
+    }
+    
+    # Try to extract product type
+    product_match = re.search(r"(?:\*\*)?(?:Islamic Financial Product Type|Product Type|Product|Type)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", accounting_guidance, re.IGNORECASE)
+    if product_match:
+        result["product_type"] = product_match.group(1).strip()
+    
+    # Try to extract standards
+    standards_match = re.search(r"(?:\*\*)?(?:Applicable AAOIFI Standard\(s\)|Applicable Standards|Standards)(?:\*\*)?:?\s*(?:\*\*)?([^\n]+?)(?:\*\*)?(?:\n|$)", accounting_guidance, re.IGNORECASE)
+    if standards_match:
+        standards_text = standards_match.group(1).strip()
+        result["applicable_standards"] = [s.strip() for s in standards_text.split(',')]
+    
+    # If no standards found, look for FAS mentions
+    if not result["applicable_standards"]:
+        fas_matches = re.findall(r"FAS\s+(\d+)", accounting_guidance)
+        if fas_matches:
+            # Remove duplicates and convert to set for uniqueness
+            unique_fas = set(fas_matches)
+            result["applicable_standards"] = [f"FAS {fas}" for fas in unique_fas]
+    
+    # Try to extract calculation methodology
+    calc_section = re.search(r"(?:\*\*)?(?:Calculation Methodology|Step-by-step calculation methodology)(?:\*\*)?:?\s*(.*?)(?=(?:\*\*)?(?:Journal Entries|References|$))", accounting_guidance, re.DOTALL | re.IGNORECASE)
+    if calc_section:
+        result["calculation_methodology"] = calc_section.group(1).strip()
+    
+    # Try to extract journal entries
+    journal_section = re.search(r"(?:\*\*)?(?:Journal Entries)(?:\*\*)?:?\s*(.*?)(?=(?:\*\*)?(?:References|$))", accounting_guidance, re.DOTALL | re.IGNORECASE)
+    if journal_section:
+        result["journal_entries"] = journal_section.group(1).strip()
+    
+    # Try to extract references
+    references_section = re.search(r"(?:\*\*)?(?:References)(?:\*\*)?:?\s*(.*?)(?=$)", accounting_guidance, re.DOTALL | re.IGNORECASE)
+    if references_section:
+        result["references"] = references_section.group(1).strip()
+    
+    return result
 
 def render_use_case_processor_page():
     """Render the Use Case Processor page."""
@@ -46,7 +106,7 @@ def render_use_case_processor_page():
     
     if input_method == "Sample Scenarios":
         st.sidebar.markdown("### Sample Scenarios")
-        # In a real implementation, these would be loaded from a file or database
+        # Sample scenarios
         sample_scenarios = [
             {
                 "name": "Ijarah MBT Accounting",
@@ -68,7 +128,40 @@ def render_use_case_processor_page():
                 According to the agreement, profits are to be distributed 70:30 (bank:partner), while losses are to be shared according to capital contribution ratio (80:20).
                 At the end of the first year, the partnership generates a profit of $120,000.
                 """
-            }
+            },
+            {
+                "name": "Sukuk Issuance Accounting",
+                "description": "Accounting treatment for Sukuk issuance",
+                "scenario": """
+                An Islamic financial institution issues Sukuk Al-Ijarah worth $10 million with a 5-year tenure.
+                The Sukuk are issued to finance the purchase of a commercial property worth $9.5 million.
+                The rental yield is 5% per annum, payable semi-annually.
+                The institution acts as the originator and also the servicing agent for the Sukuk.
+                Transaction costs for the issuance amount to $200,000.
+                At maturity, the institution has committed to repurchase the property at its original value.
+                """
+            },
+            {
+                "name": "Murabaha Financing",
+                "description": "Accounting for Murabaha financing arrangement",
+                "scenario": """
+                An Islamic bank enters into a Murabaha financing arrangement with a client for the purchase of industrial equipment.
+                The bank purchases the equipment for $750,000 and sells it to the client at a marked-up price of $825,000.
+                The client will pay the amount in 3 equal annual instalments of $275,000.
+                The bank incurs additional costs of $10,000 for transportation and installation.
+                """
+            },
+            {
+                "name": "Istisna'a Contract Accounting",
+                "description": "Accounting for an Istisna'a contract from the manufacturer's perspective",
+                "scenario": """
+                Amanah Construction Co. enters into an Istisna'a contract with Gulf Islamic Bank on 1 January 2021
+                to construct a specialized industrial facility for USD 1,000,000, to be completed by 30 June 2022.
+                The estimated total cost to complete the project is USD 800,000.
+                By 31 December 2021, Amanah has incurred costs of USD 320,000 on the project.
+                Determine the appropriate accounting treatment for Amanah Construction Co. (Al-Sani') for the year ended 31 December 2021.
+                """
+            },
         ]
         
         # Create a dropdown for sample scenarios
@@ -108,181 +201,182 @@ def render_use_case_processor_page():
             help="Describe the scenario in detail, including amounts, terms, and relevant conditions."
         )
     
-    # Process button
+    # Process button with additional configuration options
+    with st.sidebar.expander("Advanced Settings"):
+        show_retrieval = st.checkbox("Show Retrieved Context", value=False, 
+                                    help="Display the context retrieved from standards")
+        show_raw_guidance = st.checkbox("Show Raw Guidance Output", value=False,
+                                       help="Display the raw output from the agent")
+    
     process_btn = st.button("Generate Accounting Guidance", type="primary")
     
     if process_btn:
         if not scenario_text:
             st.error("Please provide a scenario description.")
         else:
+            # Create placeholder containers for progress display
+            progress_container = st.empty()
+            status_container = st.empty()
+            
             with st.spinner("Generating accounting guidance..."):
-                # In a real implementation, this would call an API or backend function
-                # For now, we'll just create a mock response
-                
-                # Import here to avoid circular imports
                 try:
-                    # Try to import the actual processor if available
+                    # Display initial progress
+                    display_progress_bar(progress_container, 0.1, "Initializing processing...")
+                    status_container.info("Starting scenario analysis...")
+                    
+                    # Import the use case processor agent directly
                     from components.agents import use_case_processor
+                    
+                    # Step 1: Retrieve relevant standards information
+                    display_progress_bar(progress_container, 0.3, "Retrieving relevant standards...")
+                    status_container.info("Searching for applicable AAOIFI standards...")
+                    
+                    # Use the retriever to get relevant standards information
+                    retrieved_nodes = retriever.retrieve(scenario_text)
+                    
+                    # Optional: Display retrieved chunks if user enabled it
+                    if show_retrieval and retrieved_nodes:
+                        retrieved_container = st.expander("Retrieved Context from Standards", expanded=False)
+                        with retrieved_container:
+                            st.markdown("#### Relevant Sections from Standards")
+                            for i, node in enumerate(retrieved_nodes[:5]):  # Show only first 5 chunks
+                                st.markdown(f"**Chunk {i+1}:**")
+                                st.markdown(f"<div class='diff-container'>{node.text[:300]}...</div>", unsafe_allow_html=True)
+                    
+                    # Step 2: Process the use case
+                    display_progress_bar(progress_container, 0.6, "Processing scenario...")
+                    status_container.info("Analyzing scenario and applying standards...")
+                    
+                    # Process the use case directly with the agent
                     results = use_case_processor.process_use_case(scenario_text)
-                except ImportError:
-                    # Mock response for placeholder
-                    if "Ijarah" in scenario_text:
-                        results = {
-                            "identified_product": "Ijarah Muntahia Bittamleek (IMB)",
-                            "applicable_standards": ["FAS 28 - Ijarah"],
-                            "accounting_guidance": """
-                            ## Accounting Treatment for Ijarah Muntahia Bittamleek (IMB)
-                            
-                            Based on the scenario described and according to FAS 28 (Ijarah), the following accounting treatment should be applied:
-                            
-                            ### Initial Recognition
-                            
-                            1. The cost of the generator includes the purchase price plus import tax and freight charges:
-                               - Purchase price: $450,000
-                               - Import tax: $12,000
-                               - Freight charges: $30,000
-                               - Total cost: $492,000
-                            
-                            2. Since this is an Ijarah Muntahia Bittamleek arrangement:
-                               - The asset should be recognized at cost minus the nominal transfer amount
-                               - Right-of-Use (ROU) asset value: $492,000 - $3,000 = $489,000
-                               - Deferred Ijarah Cost (representing future rentals): $600,000 - $489,000 = $111,000
-                            
-                            ### Journal Entries
-                            
-                            **Initial Recognition:**
-                            ```
-                            Dr. Right of Use Asset (ROU)    $489,000
-                            Dr. Deferred Ijarah Cost        $111,000
-                               Cr. Ijarah Liability         $600,000
-                            ```
-                            
-                            **First Year Annual Rental Payment:**
-                            ```
-                            Dr. Ijarah Liability            $300,000
-                               Cr. Cash                      $300,000
-                            ```
-                            
-                            **First Year Amortization of ROU Asset:**
-                            Amortizable amount: $489,000 - $5,000 (residual) = $484,000
-                            Annual amortization: $484,000 ÷ 2 years = $242,000
-                            
-                            ```
-                            Dr. Amortization Expense        $242,000
-                               Cr. Accumulated Amortization  $242,000
-                            ```
-                            
-                            ### Notes
-                            
-                            - The deferred Ijarah cost represents the difference between the total Ijarah payments and the cost of the asset (minus nominal transfer amount).
-                            - The asset is amortized over the Ijarah term, considering the residual value.
-                            - According to FAS 28, the entity should assess the ROU asset for impairment at each reporting date.
-                            """
-                        }
-                    elif "Musharakah" in scenario_text:
-                        results = {
-                            "identified_product": "Musharakah (Partnership)",
-                            "applicable_standards": ["FAS 4 - Musharakah"],
-                            "accounting_guidance": """
-                            ## Accounting Treatment for Musharakah Profit Distribution
-                            
-                            Based on the scenario described and according to FAS 4 (Musharakah), the following accounting treatment should be applied:
-                            
-                            ### Profit Distribution Calculation
-                            
-                            1. Total profit generated: $120,000
-                            2. Profit distribution ratio per agreement: 70:30 (bank:partner)
-                            3. Bank's share of profit: $120,000 × 70% = $84,000
-                            4. Partner's share of profit: $120,000 × 30% = $36,000
-                            
-                            ### Journal Entries
-                            
-                            **Initial Investment:**
-                            ```
-                            Dr. Musharakah Investment      $800,000
-                               Cr. Cash                     $800,000
-                            ```
-                            
-                            **Profit Recognition:**
-                            ```
-                            Dr. Musharakah Profit Receivable  $84,000
-                               Cr. Income from Musharakah      $84,000
-                            ```
-                            
-                            **Profit Collection (assuming profit is distributed):**
-                            ```
-                            Dr. Cash                        $84,000
-                               Cr. Musharakah Profit Receivable $84,000
-                            ```
-                            
-                            ### Notes
-                            
-                            - According to FAS 4, the Islamic bank's share in the Musharakah capital is recognized when it is paid to the partner or made available for use in the Musharakah venture.
-                            - The bank's share of profits is recognized in the period in which they are earned.
-                            - The bank's share of losses is recognized in the period in which they occur.
-                            - If the Musharakah continues for more than one financial period, the bank's share of profits for each period is recognized to the extent that profits are distributed.
-                            """
-                        }
-                    else:
-                        results = {
-                            "identified_product": "Generic Islamic Financial Product",
-                            "applicable_standards": ["To be determined based on specific details"],
-                            "accounting_guidance": """
-                            ## Accounting Guidance
-                            
-                            To provide specific accounting guidance for this scenario, more details would be needed about:
-                            
-                            1. The specific Islamic financial product involved
-                            2. Terms and conditions of the arrangement
-                            3. Amounts and payment schedules
-                            4. Duration of the arrangement
-                            
-                            Generally, the accounting treatment would involve:
-                            
-                            1. Initial recognition of the financial instrument
-                            2. Subsequent measurement
-                            3. Profit/loss recognition
-                            4. Disclosure requirements
-                            
-                            Please provide additional details for more specific guidance.
-                            """
-                        }
-                
-                # Save results to session state
-                set_use_case_results(results)
-                
-                # Success message
-                st.success("Accounting guidance generated successfully!")
+                    
+                    # Step 3: Format the results
+                    display_progress_bar(progress_container, 0.9, "Preparing results...")
+                    status_container.info("Finalizing accounting guidance...")
+                    
+                    # Extract information from the results
+                    accounting_guidance = results["accounting_guidance"]
+                    
+                    # Parse structured information from the guidance
+                    structured_guidance = extract_structured_guidance(accounting_guidance)
+                    
+                    # Format final results
+                    formatted_results = {
+                        "scenario": scenario_text,
+                        "identified_product": structured_guidance["product_type"],
+                        "applicable_standards": structured_guidance["applicable_standards"],
+                        "calculation_methodology": structured_guidance["calculation_methodology"],
+                        "journal_entries": structured_guidance["journal_entries"],
+                        "references": structured_guidance["references"],
+                        "accounting_guidance": accounting_guidance,  # Keep the full guidance too
+                        "raw_guidance": accounting_guidance if show_raw_guidance else None
+                    }
+                    
+                    # Save results to session state
+                    set_use_case_results(formatted_results)
+                    
+                    # Mark as complete
+                    display_progress_bar(progress_container, 1.0, "Completed!")
+                    status_container.success("Accounting guidance generated successfully!")
+                    
+                except Exception as e:
+                    # Clear progress indicators
+                    progress_container.empty()
+                    status_container.error(f"Error generating accounting guidance: {str(e)}")
+                    st.error("An error occurred during processing. Please try again.")
+                    # Print the full traceback for debugging
+                    st.exception(e)
     
     # Display results if available
     results = get_use_case_results()
     if results:
         st.header("Accounting Guidance")
         
-        st.subheader("Identified Product")
-        st.markdown(f"**{results['identified_product']}**")
+        # Organize results in tabs for better navigation
+        tabs = st.tabs(["Summary", "Calculation Methodology", "Journal Entries", "References"])
         
-        st.subheader("Applicable Standards")
-        for standard in results["applicable_standards"]:
-            st.markdown(f"- {standard}")
+        with tabs[0]:  # Summary tab
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
+                st.subheader("Product Information")
+                st.markdown(f"**Identified Product:**")
+                st.markdown(f"<div class='diff-stat-item'><div class='diff-stat-value'>{results['identified_product']}</div></div>", unsafe_allow_html=True)
+                
+                st.markdown(f"**Applicable Standards:**")
+                for standard in results["applicable_standards"]:
+                    st.markdown(f"<div class='diff-stat-item'>{standard}</div>", unsafe_allow_html=True)
+            
+            with col2:
+                st.subheader("Scenario Summary")
+                st.markdown(f'<div class="diff-container">{results["scenario"][:300]}...</div>', unsafe_allow_html=True)
         
-        st.subheader("Accounting Treatment")
-        st.markdown(f'<div class="proposal-container">{results["accounting_guidance"]}</div>', unsafe_allow_html=True)
+        with tabs[1]:  # Calculation Methodology tab
+            st.subheader("Calculation Methodology")
+            if results.get("calculation_methodology"):
+                st.markdown(f'<div class="proposal-container">{results["calculation_methodology"]}</div>', unsafe_allow_html=True)
+            else:
+                st.markdown(f'<div class="proposal-container">{results["accounting_guidance"]}</div>', unsafe_allow_html=True)
         
-        # Export option
-        st.download_button(
-            label="Export as Markdown",
-            data=f"""# Accounting Guidance for {results['identified_product']}
+        with tabs[2]:  # Journal Entries tab
+            st.subheader("Journal Entries")
+            if results.get("journal_entries"):
+                st.markdown(f'<div class="proposal-container">{results["journal_entries"]}</div>', unsafe_allow_html=True)
+            else:
+                st.info("No specific journal entries were identified in the guidance.")
+        
+        with tabs[3]:  # References tab
+            st.subheader("References to Standards")
+            if results.get("references"):
+                st.markdown(f'<div class="proposal-container">{results["references"]}</div>', unsafe_allow_html=True)
+            else:
+                st.info("No specific references were identified in the guidance.")
+        
+        # Show raw output if enabled
+        if results.get("raw_guidance") and show_raw_guidance:
+            with st.expander("Raw Guidance Output", expanded=False):
+                st.markdown(f'<div class="diff-container">{results["raw_guidance"]}</div>', unsafe_allow_html=True)
+        
+        # Export options
+        col1, col2 = st.columns(2)
+        with col1:
+            st.download_button(
+                label="Export as Markdown",
+                data=f"""# Accounting Guidance for {results['identified_product']}
 
 ## Applicable Standards
 {chr(10).join(['- ' + std for std in results['applicable_standards']])}
 
-## Accounting Treatment
-{results['accounting_guidance']}
+## Calculation Methodology
+{results.get('calculation_methodology', '')}
+
+## Journal Entries
+{results.get('journal_entries', '')}
+
+## References
+{results.get('references', '')}
 """,
-            file_name="accounting_guidance.md",
-            mime="text/markdown"
-        )
+                file_name="accounting_guidance.md",
+                mime="text/markdown"
+            )
+        
+        with col2:
+            # Convert results to JSON for export
+            json_data = {
+                "product_type": results['identified_product'],
+                "applicable_standards": results['applicable_standards'],
+                "scenario": results['scenario'],
+                "calculation_methodology": results.get('calculation_methodology', ''),
+                "journal_entries": results.get('journal_entries', ''),
+                "references": results.get('references', '')
+            }
+            
+            st.download_button(
+                label="Export as JSON",
+                data=json.dumps(json_data, indent=2),
+                file_name="accounting_guidance.json",
+                mime="application/json"
+            )
 
 if __name__ == "__main__":
     render_use_case_processor_page() 
