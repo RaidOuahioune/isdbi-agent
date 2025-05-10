@@ -19,10 +19,10 @@ if parent_dir not in sys.path:
 from ui.styles.main import load_css
 from ui.states.session_state import init_transaction_analysis_state, set_transaction_analysis_results, get_transaction_analysis_results
 
-# Import our helper utils instead of the agent directly
+# Import our improved utils for transaction analysis
 from ui.utils.transaction_utils import analyze_transaction, DIRECT_IMPORT_AVAILABLE
 
-# API endpoint as fallback
+# API endpoint as fallback - but we'll try to use local methods first
 API_ENDPOINT = "http://localhost:8000/api/agent"
 
 def render_transaction_analysis_page():
@@ -46,7 +46,7 @@ def render_transaction_analysis_page():
     # Input method selection
     input_method = st.sidebar.radio(
         "Input Method",
-        ["Free-text Input", "Sample Transactions", "Structured Input"]
+        ["Sample Transactions", "Structured Input", "Free-text Input"]
     )
     
     if input_method == "Sample Transactions":
@@ -85,9 +85,9 @@ def render_transaction_analysis_page():
     # Method selection for analysis (hidden in sidebar)
     analysis_method = st.sidebar.radio(
         "Analysis Method",
-        ["Direct (Faster)", "API (More Stable)"],
-        help="Direct method calls the agent directly. API method uses the server endpoint."
-    ) if DIRECT_IMPORT_AVAILABLE else "API (More Stable)"
+        ["File-Based (Fastest)", "Direct (Fast)", "API (Fallback)"],
+        help="File-Based reads from pre-analyzed results. Direct calls the agent directly. API uses the server endpoint."
+    )
     
     # Handle analysis button click
     if analyze_btn:
@@ -111,7 +111,17 @@ def process_analysis(transaction_details, analysis_method):
     """Process the transaction analysis based on the selected method."""
     try:
         # Process based on selected method using our helper
-        use_api = analysis_method != "Direct (Faster)"
+        use_api = False
+        if analysis_method == "API (Fallback)":
+            use_api = True
+        elif analysis_method == "Direct (Fast)":
+            # Force direct method by removing name to skip file-based method
+            if isinstance(transaction_details, dict) and "name" in transaction_details:
+                transaction_copy = transaction_details.copy()
+                transaction_copy.pop("name", None)
+                transaction_details = transaction_copy
+        
+        # Call the analyzer with the appropriate method
         results = analyze_transaction(transaction_details, use_api=use_api)
         
         # Check if results are valid
@@ -155,23 +165,6 @@ def load_sample_transactions():
             """
         },
         {
-            "name": "Partner Equity Buyout",
-            "description": "GreenTech exits in Year 3, and Al Baraka Bank buys out its stake",
-            "journal_entries": [
-                {"account": "GreenTech Equity", "debit": 1750000, "credit": 0},
-                {"account": "Cash", "debit": 0, "credit": 1750000}
-            ],
-            "context": """
-            Context: GreenTech exits in Year 3, and Al Baraka Bank buys out its stake.
-            Adjustments:
-            - Buyout Price: $1,750,000
-            - Bank Ownership: 100%
-            - Accounting Treatment:
-              - Derecognition of GreenTech's equity
-              - Recognition of acquisition expense
-            """
-        },
-        {
             "name": "Contract Change Order Reversal",
             "description": "The client cancels the change order, reverting to the original contract terms",
             "journal_entries": [
@@ -187,6 +180,23 @@ def load_sample_transactions():
               - Adjustment of revenue and cost projections
               - Reversal of additional cost accruals
             This restores the original contract cost.
+            """
+        },
+        {
+            "name": "Partner Equity Buyout",
+            "description": "GreenTech exits in Year 3, and Al Baraka Bank buys out its stake",
+            "journal_entries": [
+                {"account": "GreenTech Equity", "debit": 1750000, "credit": 0},
+                {"account": "Cash", "debit": 0, "credit": 1750000}
+            ],
+            "context": """
+            Context: GreenTech exits in Year 3, and Al Baraka Bank buys out its stake.
+            Adjustments:
+            - Buyout Price: $1,750,000
+            - Bank Ownership: 100%
+            - Accounting Treatment:
+              - Derecognition of GreenTech's equity
+              - Recognition of acquisition expense
             """
         }
     ]
@@ -449,7 +459,7 @@ def display_analysis_results(results):
         # Add complete analysis in expander for reference
         if results.get("analysis"):
             with st.expander("Show Complete Analysis", expanded=False):
-                st.markdown("```\n" + results["analysis"] + "\n```")
+                st.markdown("```\n" + results["analysis"][:10000] + "\n... [truncated if longer than 10000 chars]```")
         
         # Add retrieval stats for transparency
         if results.get("retrieval_stats"):
@@ -461,4 +471,4 @@ def display_analysis_results(results):
                         st.markdown(f"{i+1}. {chunk}")
 
 if __name__ == "__main__":
-    render_transaction_analysis_page() 
+    render_transaction_analysis_page()

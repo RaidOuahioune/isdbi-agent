@@ -103,3 +103,36 @@ While the provided text snippets of FAS 7 do not detail the specific accounting 
 **High.**
 
 **Justification:** The transaction's fundamental structure—advance payment for the future delivery of a specified commodity—is the defining characteristic of a Salam contract. FAS 7 is explicitly titled "Salam and Parallel Salam" and its scope paragraph (Para 1) directly states that it addresses these types of transactions. Furthermore, the description of the subject matter (wheat, specified amount, deferred delivery date) aligns perfectly with the requirements for *Al-Muslam Fihi* outlined in FAS 7 (Paras 4/1, 4/2, 4/3/1). No other provided standard (FAS 4, 10, 28, 32) covers this specific type of financing/transaction structure. The parallel agreement mentioned further reinforces the applicability of FAS 7, as it explicitly includes parallel Salam transactions in its scope. The cancellation is an event within a contract governed by FAS 7.  
+
+
+
+THE CORRECT STANDARD IS: FAS 10
+
+**1. Transaction Summary:**
+
+This transaction involves the cancellation of a previously agreed-upon change order within a contract. This cancellation reverts the contract terms (value, timeline) to their original state. The accounting treatment involves reversing the additional costs that were accrued due to the change order, specifically recorded by debiting Accounts Payable and crediting Work-in-Progress to restore the original contract cost balance.
+
+**2. Applicable Standards:**
+
+1.  FAS 10: Istisna’a and Parallel Istisna’a (100%)
+2.  FAS 4: Musharaka Financing (0%)
+3.  FAS 7: Salam and Parallel Salam (0%)
+4.  FAS 28: Investments in Associates, Joint Ventures, and Islamic Financial Institutions (0%)
+5.  FAS 32: Ijarah (0%)
+
+**3. Detailed Reasoning:**
+
+*   **FAS 10: Istisna’a and Parallel Istisna’a (100%)**
+    *   **Reasoning:** This standard is highly applicable because the transaction explicitly refers to a "contract," a "change order," and involves adjusting "revenue and cost projections" and "Work-in-Progress." FAS 10 governs accounting for Istisna'a contracts, which are manufacturing or construction contracts. The provided text for FAS 10 includes a definition for "Change Orders" as "Approved modifications in the specifications... defined in the original Istisna’a contract the implementation of which affects the contract costs." This directly matches the scenario described. The journal entry involves "Work-in-Progress," an account typically used to accumulate costs in progress for manufacturing or construction activities, which is characteristic of Istisna'a accounting (as seen in the provided examples of FAS 10). Reversing a change order requires unwinding the accounting effects of the original modification, including reversing accrued costs. FAS 10 provides the framework for accounting for Istisna'a contracts, including initial costs, revenue recognition, and subsequent changes like change orders. The reversal of a change order falls under the overall accounting treatment required by FAS 10 for managing the financial aspects of such contracts.
+
+*   **FAS 4: Musharaka Financing (0%)**
+    *   **Reasoning:** FAS 4 deals with Musharaka financing, which is a partnership arrangement. The transaction described involves a contract for goods or construction with change orders and work-in-progress, not a partnership financing structure. Therefore, FAS 4 is not applicable.
+
+*   **FAS 7: Salam and Parallel Salam (0%)**
+    *   **Reasoning:** FAS 7 deals with Salam contracts, which are forward sales of specific goods. The transaction involves a contract with change orders and work-in-progress, characteristic of manufacturing or construction, not a forward sale of commodities or goods under a Salam arrangement. Therefore, FAS 7 is not applicable.
+
+*   **FAS 28: Investments in Associates, Joint Ventures, and Islamic Financial Institutions (0%)**
+    *   **Reasoning:** FAS 28 provides guidance on accounting for investments in associates, joint ventures, and Islamic financial institutions. The transaction is related to a specific contract modification and cost reversal, not an investment in another entity. Therefore, FAS 28 is not applicable.
+
+*   **FAS 32: Ijarah (0%)**
+    *   **Reasoning:** FAS 32 deals with Ijarah (leasing) contracts, covering the accounting treatment for both lessees and lessors regarding right-of-use assets, lease liabilities, and rental income/expenses. The transaction involves a contract for goods or construction with change orders and work-in-progress, not a leasing arrangement. Therefore, FAS 32 is not applicable.
