@@ -83,9 +83,38 @@ def get_saved_designs() -> List[Dict[str, Any]]:
         st.session_state.saved_designs = []
     return st.session_state.saved_designs
 
+# Add compliance verifier state functions
+def init_compliance_verifier_state():
+    """Initialize the session state for compliance verification."""
+    if 'compliance_verifier_results' not in st.session_state:
+        st.session_state.compliance_verifier_results = None
+    if 'saved_verifications' not in st.session_state:
+        st.session_state.saved_verifications = []
+
+def set_compliance_verifier_results(results: Dict[str, Any]):
+    """Set the compliance verification results in the session state."""
+    st.session_state.compliance_verifier_results = results
+
+def get_compliance_verifier_results() -> Optional[Dict[str, Any]]:
+    """Get the compliance verification results from the session state."""
+    return st.session_state.compliance_verifier_results
+
+def add_saved_verification(verification: Dict[str, Any]):
+    """Add a verification to the saved verifications list."""
+    if 'saved_verifications' not in st.session_state:
+        st.session_state.saved_verifications = []
+    st.session_state.saved_verifications.append(verification)
+
+def get_saved_verifications() -> List[Dict[str, Any]]:
+    """Get the list of saved verifications."""
+    if 'saved_verifications' not in st.session_state:
+        st.session_state.saved_verifications = []
+    return st.session_state.saved_verifications
+
 def init_all_states():
     """Initialize all session states."""
     init_enhancement_state()
     init_transaction_analysis_state()
     init_use_case_state()
-    init_product_design_state() 
+    init_product_design_state()
+    init_compliance_verifier_state() 

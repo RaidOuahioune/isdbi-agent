@@ -22,6 +22,8 @@ from pages.transaction_analysis import render_transaction_analysis_page
 from pages.use_case_processor import render_use_case_processor_page
 # Import the new product design page
 from pages.product_design import render_product_design_page
+# Import the new compliance verifier page
+from pages.compliance_verifier import render_compliance_verifier_page
 
 def main():
     """Main function for the Streamlit application."""
@@ -50,7 +52,8 @@ def main():
         "use_case_processor": "📒 Use Case Processor (Challenge 1)",
         "transaction_analysis": "📝 Transaction Analysis (Challenge 2)",
         "standards_enhancement": "📊 Standards Enhancement (Challenge 3)",
-        "product_design": "💼 Product Design Advisor (Challenge 4)"
+        "product_design": "💼 Product Design Advisor (Challenge 4)",
+        "compliance_verifier": "📋 Compliance Verifier (Challenge 5)"
     }
     
     selected_page = st.sidebar.radio("Select a Page", list(pages.values()))
@@ -73,6 +76,8 @@ def main():
         render_use_case_processor_page()
     elif current_page == "product_design":
         render_product_design_page(standalone=False)
+    elif current_page == "compliance_verifier":
+        render_compliance_verifier_page(standalone=False)
 
 def render_home_page():
     """Render the home page of the application."""
@@ -80,7 +85,7 @@ def render_home_page():
     Welcome to the Islamic Finance Standards Multi-Agent System, a comprehensive solution for 
     working with AAOIFI Financial Accounting Standards (FAS).
     
-    This system addresses four key challenges in Islamic finance:
+    This system addresses five key challenges in Islamic finance:
     """)
     
     # Create columns for the challenge cards
@@ -120,6 +125,25 @@ def render_home_page():
                 <a href="#" onclick="parent.document.getElementsByClassName('st-bk')[2].click(); return false;" 
                    style="background-color: #22c55e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                    Launch Transaction Analysis
+                </a>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+        st.markdown("""
+        <div style="border-radius: 10px; border: 1px solid #e0e0e0; padding: 20px; margin: 10px; text-align: center; height: 350px; background-color: #fef2f2;">
+            <h3>📋 Challenge 5: Compliance Verifier</h3>
+            <p style="text-align: left;">Verify compliance with AAOIFI standards:</p>
+            <ul style="text-align: left;">
+                <li>Analyze financial reports and documents</li>
+                <li>Verify compliance with AAOIFI standards</li>
+                <li>Identify gaps and provide recommendations</li>
+                <li>Generate detailed compliance reports</li>
+            </ul>
+            <div style="position: absolute; bottom: 20px; left: 0; right: 0; text-align: center;">
+                <a href="#" onclick="parent.document.getElementsByClassName('st-bk')[5].click(); return false;" 
+                   style="background-color: #ef4444; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                   Launch Compliance Verifier
                 </a>
             </div>
         </div>
@@ -178,6 +202,7 @@ def render_home_page():
     4. **Transaction Analyzer Agent** - Identifies applicable standards from journal entries
     5. **Standards Enhancement Agent** - Proposes improvements to existing standards
     6. **Product Design Advisor Agent** - Designs Shariah-compliant financial products
+    7. **Compliance Verifier Agent** - Verifies compliance with AAOIFI standards
     
     The system is integrated with a vector database containing AAOIFI standards for accurate referencing
     and uses retrieval-augmented generation (RAG) to ensure compliance with Shariah principles.
