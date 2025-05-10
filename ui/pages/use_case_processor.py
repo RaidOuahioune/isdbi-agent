@@ -395,7 +395,8 @@ def display_export_options(results):
 {results['accounting_guidance']}
 """,
             file_name="accounting_guidance.md",
-            mime="text/markdown"
+            mime="text/markdown",
+            key=f"markdown_download_{id(results)}"  # Added unique key using id of results object
         )
     
     with col2:
@@ -412,7 +413,8 @@ def display_export_options(results):
             label="Export as JSON",
             data=json.dumps(json_data, indent=2),
             file_name="accounting_guidance.json",
-            mime="application/json"
+            mime="application/json",
+            key=f"json_download_{id(results)}"  # Added unique key using id of results object
         )
 
 def display_single_results(results, show_raw_guidance, use_streamlit_formatting):

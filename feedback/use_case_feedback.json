@@ -1,1 +1,25 @@
-[]
+[
+  {
+    "scenario": "\n                An Islamic bank purchases a generator costing $450,000 and pays import tax of $12,0...",
+    "product_type": "| Ijarah Muntahia Bittamleek (IMB)             |             | Lessor perspective                                                    |",
+    "guidance_option": 2,
+    "feedback_type": "helpful",
+    "rating": "negative",
+    "timestamp": "2025-05-10T22:01:50.238053"
+  },
+  {
+    "scenario": "\n                An Islamic bank purchases a generator costing $450,000 and pays import tax of $12,0...",
+    "product_type": "Murabaha",
+    "selected_guidance": 1,
+    "feedback_type": "selection",
+    "timestamp": "2025-05-10T22:01:55.758050"
+  },
+  {
+    "scenario": "\n                An Islamic bank purchases a generator costing $450,000 and pays import tax of $12,0...",
+    "product_type": "Murabaha",
+    "guidance_option": 1,
+    "feedback_type": "helpful",
+    "rating": "positive",
+    "timestamp": "2025-05-10T22:02:05.989334"
+  }
+]

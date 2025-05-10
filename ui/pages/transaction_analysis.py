@@ -474,7 +474,7 @@ def display_dual_analysis_results(results_1, results_2):
         # Add selection and feedback buttons
         col1, col2, col3 = st.columns([1, 1, 1])
         with col1:
-            if st.button("Select as Preferred", key="select_1"):
+            if st.button("Select as Preferred", key=f"select_1_{id(results_1)}"):
                 set_selected_transaction_answer(1)
                 
                 # Save feedback
@@ -488,7 +488,7 @@ def display_dual_analysis_results(results_1, results_2):
                 st.rerun()
         
         with col2:
-            if st.button("👍 Helpful", key="thumbs_up_1"):
+            if st.button("👍 Helpful", key=f"thumbs_up_1_{id(results_1)}"):
                 # Save positive feedback
                 feedback_data = {
                     "transaction": results_1.get("transaction_summary", ""),
@@ -500,7 +500,7 @@ def display_dual_analysis_results(results_1, results_2):
                 st.success("Thank you for your feedback!")
         
         with col3:
-            if st.button("👎 Not Helpful", key="thumbs_down_1"):
+            if st.button("👎 Not Helpful", key=f"thumbs_down_1_{id(results_1)}"):
                 # Save negative feedback
                 feedback_data = {
                     "transaction": results_1.get("transaction_summary", ""),
@@ -522,7 +522,7 @@ def display_dual_analysis_results(results_1, results_2):
         # Add selection and feedback buttons
         col1, col2, col3 = st.columns([1, 1, 1])
         with col1:
-            if st.button("Select as Preferred", key="select_2"):
+            if st.button("Select as Preferred", key=f"select_2_{id(results_2)}"):
                 set_selected_transaction_answer(2)
                 
                 # Save feedback
@@ -536,7 +536,7 @@ def display_dual_analysis_results(results_1, results_2):
                 st.rerun()
         
         with col2:
-            if st.button("👍 Helpful", key="thumbs_up_2"):
+            if st.button("👍 Helpful", key=f"thumbs_up_2_{id(results_2)}"):
                 # Save positive feedback
                 feedback_data = {
                     "transaction": results_2.get("transaction_summary", ""),
@@ -548,7 +548,7 @@ def display_dual_analysis_results(results_1, results_2):
                 st.success("Thank you for your feedback!")
         
         with col3:
-            if st.button("👎 Not Helpful", key="thumbs_down_2"):
+            if st.button("👎 Not Helpful", key=f"thumbs_down_2_{id(results_2)}"):
                 # Save negative feedback
                 feedback_data = {
                     "transaction": results_2.get("transaction_summary", ""),
