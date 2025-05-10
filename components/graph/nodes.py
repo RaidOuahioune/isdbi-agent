@@ -17,6 +17,9 @@ from components.agents.validator_agent import validator_agent
 from components.agents.transaction_analyzer import transaction_analyzer
 from components.agents.transaction_rationale import transaction_rationale
 from components.agents.knowledge_integration import knowledge_integration
+# Import product design agents
+from components.agents.product_design import product_design_advisor
+from components.agents.compliance_check import product_compliance_checker
 
 
 def extract_standard_ids(state: State) -> Dict[str, Any]:
@@ -340,3 +343,158 @@ def integrate_transaction_knowledge(state):
     new_state["messages"] = state["messages"] + [response_msg]
 
     return "final_response", new_state
+
+
+# Product Design Agent workflow functions
+def process_product_design(state: State) -> Dict[str, Any]:
+    """
+    Process a product design request using the ProductDesignAdvisorAgent.
+    
+    Args:
+        state: The current state
+        
+    Returns:
+        Updated state with product design information
+    """
+    messages = state.get("messages", [])
+    if not messages:
+        return state
+    
+    # Get the last message content
+    query = messages[-1].content if hasattr(messages[-1], "content") else ""
+    
+    # Extract product requirements from the query
+    product_requirements = product_design_advisor.extract_requirements_from_query(query)
+    
+    # Generate product design
+    product_design = product_design_advisor.design_product(product_requirements)
+    
+    # Create a new state with product design included
+    new_state = state.copy()
+    new_state["product_design"] = product_design
+    new_state["product_requirements"] = product_requirements
+    
+    return new_state
+
+
+def check_product_compliance(state: State) -> Dict[str, Any]:
+    """
+    Check the Shariah compliance of a product design using the ProductComplianceCheckAgent.
+    
+    Args:
+        state: The current state with product design
+        
+    Returns:
+        Updated state with compliance assessment
+    """
+    product_design = state.get("product_design", {})
+    
+    if not product_design:
+        return state
+    
+    # Create a product concept from the design
+    product_concept = {
+        "name": product_design.get("suggested_product_concept_name", ""),
+        "contracts": product_design.get("recommended_islamic_contracts", []),
+        "structure": product_design.get("proposed_product_structure_overview", ""),
+        "requirements": product_design.get("original_requirements", {})
+    }
+    
+    # Check compliance
+    compliance_assessment = product_compliance_checker.check_compliance(product_concept)
+    
+    # Create a new state with compliance assessment included
+    new_state = state.copy()
+    new_state["compliance_assessment"] = compliance_assessment
+    
+    return new_state
+
+
+def format_product_design_results(state: State) -> Dict[str, Any]:
+    """
+    Format the product design and compliance results for display to the user.
+    
+    Args:
+        state: The current state with product design and compliance assessment
+        
+    Returns:
+        Updated state with formatted results as a message
+    """
+    messages = state.get("messages", [])
+    product_design = state.get("product_design", {})
+    compliance_assessment = state.get("compliance_assessment", {})
+    
+    if not product_design:
+        return state
+    
+    # Extract key information
+    product_name = product_design.get("suggested_product_concept_name", "")
+    contracts = product_design.get("recommended_islamic_contracts", [])
+    rationale = product_design.get("rationale_for_contract_selection", "")
+    structure = product_design.get("proposed_product_structure_overview", "")
+    standards_info = product_design.get("key_aaoifi_fas_considerations", {})
+    checkpoints = compliance_assessment.get("compliance_checkpoints", 
+                                           product_design.get("shariah_compliance_checkpoints", []))
+    concerns = compliance_assessment.get("potential_concerns", 
+                                       product_design.get("potential_areas_of_concern", []))
+    risk_mitigation = compliance_assessment.get("risk_mitigation", 
+                                              product_design.get("potential_risks_and_mitigation_notes", ""))
+    next_steps = compliance_assessment.get("next_steps", 
+                                         product_design.get("next_steps_for_detailed_design", []))
+    
+    # Create a formatted message
+    formatted_message = f"""# Financial Product Design: {product_name}
+
+## Recommended Islamic Contract Structure
+**Contracts:** {', '.join(contracts)}
+
+**Rationale:**
+{rationale}
+
+## Product Structure
+{structure}
+
+## Key AAOIFI Standards Considerations
+"""
+    
+    # Add standards information
+    for std_id, info in standards_info.items():
+        formatted_message += f"""
+### FAS {std_id}
+{info}
+"""
+    
+    # Add compliance information
+    formatted_message += """
+## Shariah Compliance Assessment
+
+### Compliance Checkpoints
+"""
+    
+    for checkpoint in checkpoints:
+        formatted_message += f"- {checkpoint}\n"
+    
+    formatted_message += """
+### Potential Areas of Concern
+"""
+    
+    for concern in concerns:
+        formatted_message += f"- {concern}\n"
+    
+    formatted_message += f"""
+### Risk Mitigation
+{risk_mitigation}
+
+## Next Steps for Implementation
+"""
+    
+    for step in next_steps:
+        formatted_message += f"- {step}\n"
+    
+    new_message = AIMessage(content=formatted_message)
+    
+    # Create a new state with the formatted results
+    new_state = state.copy()
+    new_state["messages"] = messages + [new_message]
+    
+    return new_state

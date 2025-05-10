@@ -20,6 +20,8 @@ from states.session_state import init_all_states, set_current_page, get_current_
 # Imp page rendering functions
 from pages.transaction_analysis import render_transaction_analysis_page
 from pages.use_case_processor import render_use_case_processor_page
+# Import the new product design page
+from pages.product_design import render_product_design_page
 
 def main():
     """Main function for the Streamlit application."""
@@ -47,7 +49,8 @@ def main():
         "home": "🏠 Home",
         "use_case_processor": "📒 Use Case Processor (Challenge 1)",
         "transaction_analysis": "📝 Transaction Analysis (Challenge 2)",
-        "standards_enhancement": "📊 Standards Enhancement (Challenge 3)"
+        "standards_enhancement": "📊 Standards Enhancement (Challenge 3)",
+        "product_design": "💼 Product Design Advisor (Challenge 4)"
     }
     
     selected_page = st.sidebar.radio("Select a Page", list(pages.values()))
@@ -68,6 +71,8 @@ def main():
         render_transaction_analysis_page()
     elif current_page == "use_case_processor":
         render_use_case_processor_page()
+    elif current_page == "product_design":
+        render_product_design_page()
 
 def render_home_page():
     """Render the home page of the application."""
@@ -75,11 +80,11 @@ def render_home_page():
     Welcome to the Islamic Finance Standards Multi-Agent System, a comprehensive solution for 
     working with AAOIFI Financial Accounting Standards (FAS).
     
-    This system addresses three key challenges in Islamic finance:
+    This system addresses four key challenges in Islamic finance:
     """)
     
     # Create columns for the challenge cards
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     
     with col1:
         st.markdown("""
@@ -101,7 +106,6 @@ def render_home_page():
         </div>
         """, unsafe_allow_html=True)
     
-    with col2:
         st.markdown("""
         <div style="border-radius: 10px; border: 1px solid #e0e0e0; padding: 20px; margin: 10px; text-align: center; height: 350px; background-color: #f0fdf4;">
             <h3>📝 Challenge 2: Transaction Analysis</h3>
@@ -121,7 +125,7 @@ def render_home_page():
         </div>
         """, unsafe_allow_html=True)
     
-    with col3:
+    with col2:
         st.markdown("""
         <div style="border-radius: 10px; border: 1px solid #e0e0e0; padding: 20px; margin: 10px; text-align: center; height: 350px; background-color: #fff7ed;">
             <h3>📊 Challenge 3: Standards Enhancement</h3>
@@ -140,6 +144,25 @@ def render_home_page():
             </div>
         </div>
         """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div style="border-radius: 10px; border: 1px solid #e0e0e0; padding: 20px; margin: 10px; text-align: center; height: 350px; background-color: #faf5ff;">
+            <h3>💼 Challenge 4: Product Design Advisor</h3>
+            <p style="text-align: left;">Design Shariah-compliant financial products:</p>
+            <ul style="text-align: left;">
+                <li>Conceptualize new Islamic financial products</li>
+                <li>Suggest suitable Islamic contract structures</li>
+                <li>Highlight relevant AAOIFI FAS implications</li>
+                <li>Provide initial Shariah compliance considerations</li>
+            </ul>
+            <div style="position: absolute; bottom: 20px; left: 0; right: 0; text-align: center;">
+                <a href="#" onclick="parent.document.getElementsByClassName('st-bk')[4].click(); return false;" 
+                   style="background-color: #a855f7; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                   Launch Product Design Advisor
+                </a>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -154,6 +177,7 @@ def render_home_page():
     3. **Use Case Processor Agent** - Analyzes financial scenarios and provides accounting guidance
     4. **Transaction Analyzer Agent** - Identifies applicable standards from journal entries
     5. **Standards Enhancement Agent** - Proposes improvements to existing standards
+    6. **Product Design Advisor Agent** - Designs Shariah-compliant financial products
     
     The system is integrated with a vector database containing AAOIFI standards for accurate referencing
     and uses retrieval-augmented generation (RAG) to ensure compliance with Shariah principles.

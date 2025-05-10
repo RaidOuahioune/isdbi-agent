@@ -29,6 +29,17 @@ def route_query(state: State) -> str:
     if hasattr(latest_message, "content") and latest_message.content:
         query = latest_message.content.lower()
 
+        # Check if this is a product design request
+        if (
+            "design product" in query
+            or "financial product" in query
+            or "product design" in query
+            or "create product" in query
+            or "design a new" in query
+            or "design an islamic" in query
+        ):
+            return "product_design"
+
         # Check if this is a reverse transaction analysis request
         if (
             "journal entries" in query
