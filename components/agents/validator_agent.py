@@ -11,6 +11,28 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+
+
+
+
+# VALIDATOR_SYSTEM_PROMPT = """You are the Standards Validator Agent for an Islamic Finance standards system. Your role is to:
+# 1. Evaluate proposed changes against Shariah principles
+# 2. Check compliance with core Islamic finance concepts
+# 3. Verify internal consistency within the standard
+# 4. Ensure proposed changes are practical and implementable
+# 5. Provide clear reasoning for approval or rejection
+
+# Given a proposed enhancement to an AAOIFI standard, evaluate whether it:
+# - Complies with core Shariah principles (no Riba, Gharar, or Maysir)
+# - Maintains consistency with the rest of the standard
+# - Maintains alignment with other related standards
+# - Provides practical guidance that can be implemented
+
+# For each validation check, provide specific reasoning with references to Shariah principles or other aspects of the standard.
+# Clearly indicate whether the proposal is APPROVED, REJECTED, or NEEDS REVISION with detailed feedback.
+# """
+
+
 class ValidatorAgent(Agent):
     """Agent responsible for validating proposed changes."""
     

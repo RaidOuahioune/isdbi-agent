@@ -4,6 +4,9 @@ Session state management for the Streamlit application.
 
 import streamlit as st
 from typing import Dict, Any, List, Optional
+import json
+import os
+from datetime import datetime
 
 def init_enhancement_state():
     """Initialize the session state for standards enhancement."""
@@ -33,6 +36,13 @@ def init_transaction_analysis_state():
     """Initialize the session state for transaction analysis."""
     if 'transaction_analysis_results' not in st.session_state:
         st.session_state.transaction_analysis_results = None
+    # Add dual answer support
+    if 'transaction_analysis_results_1' not in st.session_state:
+        st.session_state.transaction_analysis_results_1 = None
+    if 'transaction_analysis_results_2' not in st.session_state:
+        st.session_state.transaction_analysis_results_2 = None
+    if 'selected_transaction_answer' not in st.session_state:
+        st.session_state.selected_transaction_answer = None
 
 def set_transaction_analysis_results(results: Dict[str, Any]):
     """Set the transaction analysis results in the session state."""
@@ -42,10 +52,37 @@ def get_transaction_analysis_results() -> Optional[Dict[str, Any]]:
     """Get the transaction analysis results from the session state."""
     return st.session_state.transaction_analysis_results
 
+# Add dual answer support for transaction analysis
+def set_transaction_analysis_results_dual(results_1: Dict[str, Any], results_2: Dict[str, Any]):
+    """Set both sets of transaction analysis results in the session state."""
+    st.session_state.transaction_analysis_results_1 = results_1
+    st.session_state.transaction_analysis_results_2 = results_2
+    # For backward compatibility
+    st.session_state.transaction_analysis_results = results_1
+
+def get_transaction_analysis_results_dual() -> tuple:
+    """Get both sets of transaction analysis results from the session state."""
+    return (st.session_state.transaction_analysis_results_1, st.session_state.transaction_analysis_results_2)
+
+def set_selected_transaction_answer(answer_num: int):
+    """Set which transaction analysis answer was selected as best."""
+    st.session_state.selected_transaction_answer = answer_num
+
+def get_selected_transaction_answer() -> Optional[int]:
+    """Get which transaction analysis answer was selected as best."""
+    return st.session_state.selected_transaction_answer
+
 def init_use_case_state():
     """Initialize the session state for use case processing."""
     if 'use_case_results' not in st.session_state:
         st.session_state.use_case_results = None
+    # Add dual answer support
+    if 'use_case_results_1' not in st.session_state:
+        st.session_state.use_case_results_1 = None
+    if 'use_case_results_2' not in st.session_state:
+        st.session_state.use_case_results_2 = None
+    if 'selected_use_case_answer' not in st.session_state:
+        st.session_state.selected_use_case_answer = None
 
 def set_use_case_results(results: Dict[str, Any]):
     """Set the use case results in the session state."""
@@ -54,6 +91,61 @@ def set_use_case_results(results: Dict[str, Any]):
 def get_use_case_results() -> Optional[Dict[str, Any]]:
     """Get the use case results from the session state."""
     return st.session_state.use_case_results
+
+# Add dual answer support for use case processing
+def set_use_case_results_dual(results_1: Dict[str, Any], results_2: Dict[str, Any]):
+    """Set both sets of use case results in the session state."""
+    st.session_state.use_case_results_1 = results_1
+    st.session_state.use_case_results_2 = results_2
+    # For backward compatibility
+    st.session_state.use_case_results = results_1
+
+def get_use_case_results_dual() -> tuple:
+    """Get both sets of use case results from the session state."""
+    return (st.session_state.use_case_results_1, st.session_state.use_case_results_2)
+
+def set_selected_use_case_answer(answer_num: int):
+    """Set which use case answer was selected as best."""
+    st.session_state.selected_use_case_answer = answer_num
+
+def get_selected_use_case_answer() -> Optional[int]:
+    """Get which use case answer was selected as best."""
+    return st.session_state.selected_use_case_answer
+
+# Add feedback collection functions
+def save_feedback(module_type: str, feedback: Dict[str, Any]):
+    """Save user feedback to a JSON file.
+    
+    Args:
+        module_type: Type of module ('use_case' or 'transaction_analysis')
+        feedback: The feedback data to save
+    """
+    # Add timestamp
+    feedback['timestamp'] = datetime.now().isoformat()
+    
+    # Create feedback directory if it doesn't exist
+    os.makedirs('feedback', exist_ok=True)
+    
+    # Append to the appropriate feedback file
+    filename = f"feedback/{module_type}_feedback.json"
+    
+    # Read existing data
+    existing_data = []
+    if os.path.exists(filename):
+        try:
+            with open(filename, 'r') as f:
+                existing_data = json.load(f)
+                if not isinstance(existing_data, list):
+                    existing_data = []
+        except:
+            existing_data = []
+    
+    # Append new feedback
+    existing_data.append(feedback)
+    
+    # Write updated data
+    with open(filename, 'w') as f:
+        json.dump(existing_data, f, indent=2)
 
 # Add product design state functions
 def init_product_design_state():

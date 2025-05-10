@@ -9,6 +9,7 @@ from pathlib import Path
 import traceback
 import requests
 import time
+import threading
 
 # Add the parent directory to the path so we can import from the main project
 parent_dir = str(Path(__file__).parent.parent.parent)
@@ -17,7 +18,16 @@ if parent_dir not in sys.path:
 
 # Local imports
 from ui.styles.main import load_css
-from ui.states.session_state import init_transaction_analysis_state, set_transaction_analysis_results, get_transaction_analysis_results
+from ui.states.session_state import (
+    init_transaction_analysis_state, 
+    set_transaction_analysis_results, 
+    get_transaction_analysis_results,
+    set_transaction_analysis_results_dual,
+    get_transaction_analysis_results_dual,
+    set_selected_transaction_answer,
+    get_selected_transaction_answer,
+    save_feedback
+)
 
 # Import our improved utils for transaction analysis
 from ui.utils.transaction_utils import analyze_transaction, DIRECT_IMPORT_AVAILABLE
@@ -83,10 +93,18 @@ def render_transaction_analysis_page():
         """, unsafe_allow_html=True)
     
     # Method selection for analysis (hidden in sidebar)
+    st.sidebar.markdown("### Advanced Settings")
     analysis_method = st.sidebar.radio(
         "Analysis Method",
         ["File-Based (Fastest)", "Direct (Fast)", "API (Fallback)"],
         help="File-Based reads from pre-analyzed results. Direct calls the agent directly. API uses the server endpoint."
+    )
+    
+    # Add new options for dual answers
+    generate_dual_answers = st.sidebar.checkbox(
+        "Generate Dual Answers", 
+        value=True,
+        help="Generate two different analysis versions for comparison"
     )
     
     # Handle analysis button click
@@ -97,17 +115,22 @@ def render_transaction_analysis_page():
             st.warning("Journal entries are not balanced. Analysis may be less accurate.")
             # Continue anyway - don't enforce balance for jury testing
             with st.spinner("Analyzing transaction..."):
-                process_analysis(transaction_details, analysis_method)
+                process_analysis(transaction_details, analysis_method, generate_dual=generate_dual_answers)
         else:
             with st.spinner("Analyzing transaction..."):
-                process_analysis(transaction_details, analysis_method)
+                process_analysis(transaction_details, analysis_method, generate_dual=generate_dual_answers)
     
     # Display results if available
-    results = get_transaction_analysis_results()
-    if results:
-        display_analysis_results(results)
+    if generate_dual_answers:
+        results_1, results_2 = get_transaction_analysis_results_dual()
+        if results_1 and results_2:
+            display_dual_analysis_results(results_1, results_2)
+    else:
+        results = get_transaction_analysis_results()
+        if results:
+            display_analysis_results(results)
 
-def process_analysis(transaction_details, analysis_method):
+def process_analysis(transaction_details, analysis_method, generate_dual=False):
     """Process the transaction analysis based on the selected method."""
     try:
         # Process based on selected method using our helper
@@ -121,19 +144,72 @@ def process_analysis(transaction_details, analysis_method):
                 transaction_copy.pop("name", None)
                 transaction_details = transaction_copy
         
-        # Call the analyzer with the appropriate method
-        results = analyze_transaction(transaction_details, use_api=use_api)
-        
-        # Check if results are valid
-        if not results or (isinstance(results, dict) and "error" in results):
-            error_msg = results.get("error", "Unknown error") if isinstance(results, dict) else "Failed to analyze transaction"
-            st.error(f"Analysis failed: {error_msg}")
-        else:
-            # Save results to session state
-            set_transaction_analysis_results(results)
+        if generate_dual:
+            # Create two slightly different analyses
+            results_ready = {"is_ready": False, "results_1": None, "results_2": None}
+            
+            # Run analyses in parallel threads
+            def process_analysis_1():
+                results = analyze_transaction(transaction_details, use_api=use_api)
+                results_ready["results_1"] = results
+                check_if_both_ready()
+                
+            def process_analysis_2():
+                # Add a slight variation for the second analysis to get different results
+                modified_details = transaction_details.copy() if isinstance(transaction_details, dict) else {"context": transaction_details}
+                
+                # Add a hint to generate a different perspective
+                if isinstance(modified_details, dict):
+                    if "context" in modified_details:
+                        modified_details["context"] = modified_details["context"] + "\n\nPlease provide an alternative analysis with more emphasis on practical implications."
+                    else:
+                        modified_details["analysis_perspective"] = "alternative_perspective"
+                
+                results = analyze_transaction(modified_details, use_api=use_api)
+                results_ready["results_2"] = results
+                check_if_both_ready()
+                
+            def check_if_both_ready():
+                if results_ready["results_1"] and results_ready["results_2"]:
+                    results_ready["is_ready"] = True
+            
+            # Start threads
+            thread1 = threading.Thread(target=process_analysis_1)
+            thread2 = threading.Thread(target=process_analysis_2)
+            
+            thread1.start()
+            thread2.start()
+            
+            # Wait for both threads to complete with progress indicator
+            progress_placeholder = st.empty()
+            while not results_ready["is_ready"]:
+                for i in range(10):
+                    progress_placeholder.progress((i+1)/10)
+                    time.sleep(0.1)
+                    if results_ready["is_ready"]:
+                        break
+            
+            progress_placeholder.empty()
+            
+            # Store results
+            set_transaction_analysis_results_dual(results_ready["results_1"], results_ready["results_2"])
             
             # Success message
-            st.success("Transaction analysis completed!")
+            st.success("Transaction analysis completed with dual perspectives!")
+        else:
+            # Call the analyzer with the appropriate method
+            results = analyze_transaction(transaction_details, use_api=use_api)
+            
+            # Check if results are valid
+            if not results or (isinstance(results, dict) and "error" in results):
+                error_msg = results.get("error", "Unknown error") if isinstance(results, dict) else "Failed to analyze transaction"
+                st.error(f"Analysis failed: {error_msg}")
+            else:
+                # Save results to session state
+                set_transaction_analysis_results(results)
+                
+                # Success message
+                st.success("Transaction analysis completed!")
     except Exception as e:
         st.error(f"Error analyzing transaction: {str(e)}")
         st.error(traceback.format_exc())
@@ -378,10 +454,113 @@ def is_balanced(entries):
     total_credits = sum(entry["credit"] for entry in entries)
     return abs(total_debits - total_credits) <= 0.01
 
-def display_analysis_results(results):
-    """Display the transaction analysis results in a structured format."""
+def display_dual_analysis_results(results_1, results_2):
+    """Display two sets of transaction analysis results with tabs and feedback collection."""
     st.header("Analysis Results")
     
+    # Create tabs for the two different answers
+    answer_tabs = st.tabs(["Analysis Option 1", "Analysis Option 2"])
+    
+    selected_answer = get_selected_transaction_answer()
+    
+    # Display first analysis
+    with answer_tabs[0]:
+        if selected_answer == 1:
+            st.success("✓ You selected this analysis as preferred")
+        
+        # Display the content
+        display_analysis_content(results_1)
+        
+        # Add selection and feedback buttons
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col1:
+            if st.button("Select as Preferred", key="select_1"):
+                set_selected_transaction_answer(1)
+                
+                # Save feedback
+                feedback_data = {
+                    "transaction": results_1.get("transaction_summary", ""),
+                    "selected_analysis": 1,
+                    "feedback_type": "selection"
+                }
+                save_feedback("transaction_analysis", feedback_data)
+                
+                st.rerun()
+        
+        with col2:
+            if st.button("👍 Helpful", key="thumbs_up_1"):
+                # Save positive feedback
+                feedback_data = {
+                    "transaction": results_1.get("transaction_summary", ""),
+                    "analysis_option": 1,
+                    "feedback_type": "helpful",
+                    "rating": "positive"
+                }
+                save_feedback("transaction_analysis", feedback_data)
+                st.success("Thank you for your feedback!")
+        
+        with col3:
+            if st.button("👎 Not Helpful", key="thumbs_down_1"):
+                # Save negative feedback
+                feedback_data = {
+                    "transaction": results_1.get("transaction_summary", ""),
+                    "analysis_option": 1,
+                    "feedback_type": "helpful",
+                    "rating": "negative"
+                }
+                save_feedback("transaction_analysis", feedback_data)
+                st.error("Thank you for your feedback!")
+    
+    # Display second analysis
+    with answer_tabs[1]:
+        if selected_answer == 2:
+            st.success("✓ You selected this analysis as preferred")
+            
+        # Display the content
+        display_analysis_content(results_2)
+        
+        # Add selection and feedback buttons
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col1:
+            if st.button("Select as Preferred", key="select_2"):
+                set_selected_transaction_answer(2)
+                
+                # Save feedback
+                feedback_data = {
+                    "transaction": results_2.get("transaction_summary", ""),
+                    "selected_analysis": 2,
+                    "feedback_type": "selection"
+                }
+                save_feedback("transaction_analysis", feedback_data)
+                
+                st.rerun()
+        
+        with col2:
+            if st.button("👍 Helpful", key="thumbs_up_2"):
+                # Save positive feedback
+                feedback_data = {
+                    "transaction": results_2.get("transaction_summary", ""),
+                    "analysis_option": 2,
+                    "feedback_type": "helpful",
+                    "rating": "positive"
+                }
+                save_feedback("transaction_analysis", feedback_data)
+                st.success("Thank you for your feedback!")
+        
+        with col3:
+            if st.button("👎 Not Helpful", key="thumbs_down_2"):
+                # Save negative feedback
+                feedback_data = {
+                    "transaction": results_2.get("transaction_summary", ""),
+                    "analysis_option": 2,
+                    "feedback_type": "helpful",
+                    "rating": "negative"
+                }
+                save_feedback("transaction_analysis", feedback_data)
+                st.error("Thank you for your feedback!")
+
+def display_analysis_content(results):
+    """Display the analysis content (used by both single and dual display)."""
     # Create tabs for different sections of the analysis
     tab1, tab2, tab3 = st.tabs(["Transaction Analysis", "Applicable Standards", "Detailed Rationale"])
     
@@ -469,6 +648,38 @@ def display_analysis_results(results):
                     st.markdown("**Sample chunks:**")
                     for i, chunk in enumerate(results['retrieval_stats']['chunks_summary'][:3]):
                         st.markdown(f"{i+1}. {chunk}")
+
+def display_analysis_results(results):
+    """Display single transaction analysis results with feedback collection."""
+    st.header("Analysis Results")
+    
+    # Display the analysis content
+    display_analysis_content(results)
+    
+    # Add feedback buttons at the bottom
+    st.markdown("### Was this analysis helpful?")
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("👍 Helpful", key="single_thumbs_up"):
+            # Save positive feedback
+            feedback_data = {
+                "transaction": results.get("transaction_summary", ""),
+                "feedback_type": "helpful",
+                "rating": "positive"
+            }
+            save_feedback("transaction_analysis", feedback_data)
+            st.success("Thank you for your feedback!")
+    
+    with col2:
+        if st.button("👎 Not Helpful", key="single_thumbs_down"):
+            # Save negative feedback
+            feedback_data = {
+                "transaction": results.get("transaction_summary", ""),
+                "feedback_type": "helpful",
+                "rating": "negative"
+            }
+            save_feedback("transaction_analysis", feedback_data)
+            st.error("Thank you for your feedback!")
 
 if __name__ == "__main__":
     render_transaction_analysis_page()
