@@ -19,7 +19,7 @@ from enhancement import run_standards_enhancement, ENHANCEMENT_TEST_CASES, find_
 
 # Local imports
 from ui.components.enhancement_results import display_results, display_cross_standard_tab, display_past_enhancement
-from ui.state.session_state import init_enhancement_state, set_enhancement_results, get_enhancement_results
+from ui.states.session_state import init_enhancement_state, set_enhancement_results, get_enhancement_results
 from ui.utils.enhancement_utils import save_enhancement, load_past_enhancements, create_export_markdown, create_export_html
 from ui.styles.main import load_css
 

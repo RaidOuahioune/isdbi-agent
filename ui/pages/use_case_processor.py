@@ -13,7 +13,7 @@ if parent_dir not in sys.path:
 
 # Local imports
 from ui.styles.main import load_css
-from ui.state.session_state import init_use_case_state, set_use_case_results, get_use_case_results
+from ui.states.session_state import init_use_case_state, set_use_case_results, get_use_case_results
 
 def render_use_case_processor_page():
     """Render the Use Case Processor page."""

@@ -14,13 +14,12 @@ if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
 # Local imports
-from ui.styles.main import load_css
-from ui.state.session_state import init_all_states, set_current_page, get_current_page
-
-# Import page rendering functions
-from ui.pages.standards_enhancement import render_standards_enhancement_page
-from ui.pages.transaction_analysis import render_transaction_analysis_page
-from ui.pages.use_case_processor import render_use_case_processor_page
+from styles.main import load_css
+from pages.standards_enhancement import render_standards_enhancement_page
+from states.session_state import init_all_states, set_current_page, get_current_page
+# Imp page rendering functions
+from pages.transaction_analysis import render_transaction_analysis_page
+from pages.use_case_processor import render_use_case_processor_page
 
 def main():
     """Main function for the Streamlit application."""

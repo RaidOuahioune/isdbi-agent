@@ -14,7 +14,7 @@ if parent_dir not in sys.path:
 
 # Local imports
 from ui.styles.main import load_css
-from ui.state.session_state import init_transaction_analysis_state, set_transaction_analysis_results, get_transaction_analysis_results
+from ui.states.session_state import init_transaction_analysis_state, set_transaction_analysis_results, get_transaction_analysis_results
 
 def render_transaction_analysis_page():
     """Render the Transaction Analysis page."""
