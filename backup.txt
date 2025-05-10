@@ -1,0 +1,15 @@
+langchain
+langchain-google-genai
+langchain-community
+langchain-core
+python-dotenv
+langgraph
+llama-index-core
+llama-index-embeddings-huggingface
+transformers
+requests
+pandas
+numpy
+
+uuid
+psycopg2-binary
