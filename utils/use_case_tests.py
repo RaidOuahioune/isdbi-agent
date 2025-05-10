@@ -23,7 +23,7 @@ except ImportError:
     print("Evaluation components not available. Skipping evaluation functionality.")
 
 
-def run_use_case_tests(verbose=True, evaluate=True):
+def run_use_case_tests(verbose=False, evaluate=False):
     """
     Run tests for Category 3 (Use Case Processing)
     Tests accounting guidance generation for Islamic finance use cases
