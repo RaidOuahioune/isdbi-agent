@@ -6,6 +6,9 @@ These specialized agents assess different aspects of the system's outputs.
 from typing import Dict, Any, List, Optional
 from langchain_core.messages import SystemMessage, HumanMessage
 import logging
+from keybert import KeyBERT
+from sklearn.feature_extraction.text import TfidfVectorizer
+
 
 # Import base agent class
 from components.agents.base_agent import Agent
@@ -32,84 +35,65 @@ class ExpertEvaluatorAgent(Agent):
 
     def __init__(self, system_prompt: str):
         # Define the tools that will be available to the agent
-        tools = [self._extract_keywords_tool, self._search_standards_tool]
+        tools = [self._extract_keywords_tool_using_tfidf, self._search_standards_tool]
         # Initialize with tools
         super().__init__(system_prompt=system_prompt, tools=tools)
 
-    def _extract_keywords_tool(self, prompt: str) -> List[str]:
+    def _extract_keywords_tool_using_tfidf(self, prompt: str) -> List[str]:
         """
-        Tool to extract relevant keywords from a prompt for better retrieval.
-
-        Args:
-            prompt: The text to extract keywords from
-
-        Returns:
-            List of extracted keywords
+        Tool to extract keywords using TF-IDF from scikit-learn.
         """
-        # Log the tool invocation
-        logger.info(f"[TOOL CALL] Extracting keywords from text ({len(prompt)} chars)")
+        logger.info(
+            f"[TOOL CALL] Extracting keywords with TF-IDF ({len(prompt)} chars)"
+        )
 
-        # Use the LLM to extract keywords
-        keyword_prompt = f"""
-        Extract 10-15 important keywords or key phrases from the following text.
-        Focus on domain-specific terminology, financial concepts, and Islamic finance terms.
-        Return ONLY the keywords as a comma-separated list without any other text.
-        
-        TEXT:
-        {prompt}
-        """
-
-        messages = [
-            SystemMessage(
-                content="You are a keyword extraction assistant that identifies the most relevant terms in financial and Islamic finance text."
-            ),
-            HumanMessage(content=keyword_prompt),
-        ]  # Get keywords from the model
         try:
-            result = self.llm.invoke(messages)
+            # Initialize vectorizer
+            vectorizer = TfidfVectorizer(
+                max_df=0.85,
+                min_df=2,
+                stop_words="english",
+                use_idf=True,
+                ngram_range=(1, 2),
+            )
 
-            # Debug the result object and its content
-            logger.info(f"[TOOL RESULT] Result type: {type(result)}")
+            # Create a corpus with the prompt and some dummy documents
+            # (TF-IDF works better with multiple documents)
+            corpus = [prompt] + [
+                prompt[i : i + 100]
+                for i in range(0, len(prompt), 100)
+                if i + 100 < len(prompt)
+            ]
 
-            if hasattr(result, "content"):
-                logger.info(f"[TOOL RESULT] Content: {result.content}")
-                keywords_text = result.content.strip()
-            else:
-                logger.error("[TOOL RESULT] Result has no 'content' attribute")
-                logger.info(f"[TOOL RESULT] Result attributes: {dir(result)}")
-                # Try to get content from different attribute or convert to string
-                if hasattr(result, "text"):
-                    keywords_text = result.text.strip()
-                elif hasattr(result, "message"):
-                    keywords_text = result.message.content.strip()
-                else:
-                    keywords_text = str(result).strip()
+            # Fit and transform the corpus
+            tfidf_matrix = vectorizer.fit_transform(corpus)
 
-            print(f"\n===== LLM RESULT =====")
-            print(f"Raw result: {keywords_text}")
-            print("======================\n")
+            # Get feature names
+            feature_names = vectorizer.get_feature_names_out()
 
-            # Split by commas and clean up each keyword
-            keywords = [k.strip() for k in keywords_text.split(",")]
-            # Filter out any empty keywords
-            keywords = [k for k in keywords if k]
+            # Get scores for the first document (our prompt)
+            doc_scores = dict(zip(feature_names, tfidf_matrix[0].toarray()[0]))
 
-            # Debug log the extracted keywords
-            logger.info(f"[TOOL RESULT] Extracted keywords: {keywords}")
-            print(f"\n===== EXTRACTED KEYWORDS =====")
+            # Sort by score and take top 15
+            sorted_keywords = sorted(
+                doc_scores.items(), key=lambda x: x[1], reverse=True
+            )
+            keywords = [keyword for keyword, _ in sorted_keywords[:15]]
+
+            # Debug log
+            logger.info(f"[TOOL RESULT] Extracted keywords (TF-IDF): {keywords}")
+            print(f"\n===== EXTRACTED KEYWORDS (TF-IDF) =====")
             print(f"Number of keywords: {len(keywords)}")
             print(f"Keywords: {', '.join(keywords)}")
-            print("==============================\n")
+            print("=====================================\n")
 
             return keywords
+
         except Exception as e:
-            logging.error(f"Error extracting keywords: {e}")
-            # Return a minimal set of keywords from the original prompt
-            fallback_keywords = prompt.split()[:10]
-            logger.warning(
-                f"[TOOL FALLBACK] Using simple word splitting: {fallback_keywords}"
-            )
-            return fallback_keywords
+            logging.error(f"Error extracting keywords with TF-IDF: {e}")
+            # Fallback to word frequency approach
+            words = prompt.lower().split()
+            return list(set([w for w in words if len(w) > 3]))[:15]
 
     def _search_standards_tool(self, query: str) -> List[Dict[str, str]]:
         """
@@ -147,9 +131,9 @@ class ExpertEvaluatorAgent(Agent):
             # Print snippets of each document
             for i, doc in enumerate(docs):
                 text = doc.get("text", "")
-                snippet = text[:100] + "..." if len(text) > 100 else text
+                # snippet = text[:100] + "..." if len(text) > 100 else text
                 print(f"\nDocument {i + 1}:")
-                print(f"  {snippet}")
+                print(f"  {text}")
 
                 # Print metadata if available
                 if doc.get("metadata"):
@@ -193,8 +177,8 @@ class ExpertEvaluatorAgent(Agent):
         if fetch_additional_context:
             try:
                 # Extract keywords from both prompt and response
-                prompt_keywords = self._extract_keywords_tool(prompt)
-                response_keywords = self._extract_keywords_tool(response)
+                prompt_keywords = self._extract_keywords_tool_using_tfidf(prompt)
+                response_keywords = self._extract_keywords_tool_using_tfidf(response)
 
                 # Combine keywords but avoid duplicates
                 all_keywords = list(set(prompt_keywords + response_keywords))

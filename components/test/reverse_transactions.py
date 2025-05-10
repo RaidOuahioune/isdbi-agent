@@ -1,5 +1,20 @@
 test_cases = [
     {
+        "name": "GreenTech Buyout",
+        "transaction": """
+TRANSACTION SUMMARY: GreenTech exits in Year 3, and Al Baraka Bank buys out its stake.
+
+FINANCIAL ENTRIES:
+Dr. GreenTech Equity $1,750,000
+Cr. Cash $1,750,000
+
+KEY FACTS:
+- Buyout Price: $1,750,000
+- Bank Ownership: 100%
+- Accounting Treatment: Derecognition of GreenTech's equity, Recognition of acquisition expense
+            """,
+    },
+    {
         "name": "Agricultural Commodity Advance Purchase Cancellation",
         "transaction": """Advance Purchase Agreement Cancellation Notice
 
@@ -66,21 +81,6 @@ MODIFICATION DETAILS:
 * Accounting Treatment: Remeasurement of lease liability and right-of-use asset
 
 The lease modification was agreed upon due to changing market conditions, with reduced payment amounts but extended duration.
-            """,
-    },
-    {
-        "name": "GreenTech Buyout",
-        "transaction": """
-TRANSACTION SUMMARY: GreenTech exits in Year 3, and Al Baraka Bank buys out its stake.
-
-FINANCIAL ENTRIES:
-Dr. GreenTech Equity $1,750,000
-Cr. Cash $1,750,000
-
-KEY FACTS:
-- Buyout Price: $1,750,000
-- Bank Ownership: 100%
-- Accounting Treatment: Derecognition of GreenTech's equity, Recognition of acquisition expense
             """,
     },
     {

@@ -64,7 +64,7 @@ class EvaluationManager(Agent):
         Returns:
             Comprehensive evaluation report with scores and feedback
         """
-        logger.info(f"Starting evaluation of response to prompt: {prompt[:50]}...")
+        logger.info(f"Starting evaluation of response to prompt: {prompt}")
 
         # Collect evaluations from each expert agent
         expert_evaluations = {}
@@ -195,9 +195,7 @@ class EvaluationManager(Agent):
         for expertise, evaluation in expert_evaluations.items():
             # Extract the first 300 characters of each evaluation as a summary
             eval_text = evaluation.get("evaluation", "")
-            expert_summaries[expertise] = (
-                eval_text[:300] + "..." if len(eval_text) > 300 else eval_text
-            )
+            expert_summaries[expertise] = eval_text
 
         # Format aggregated scores
         scores_str = json.dumps(aggregated_scores, indent=2)
@@ -212,7 +210,7 @@ Original Prompt:
 {original_prompt}
 
 Response Evaluated:
-{original_response[:500]}... (truncated for brevity)
+{original_response}
 
 Expert Evaluations:
 {json.dumps(expert_summaries, indent=2)}

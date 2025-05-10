@@ -23,7 +23,7 @@ except ImportError:
     print("Evaluation components not available. Skipping evaluation functionality.")
 
 
-def run_use_case_tests(verbose=False, evaluate=True):
+def run_use_case_tests(verbose=True, evaluate=True):
     """
     Run tests for Category 3 (Use Case Processing)
     Tests accounting guidance generation for Islamic finance use cases
@@ -33,7 +33,7 @@ def run_use_case_tests(verbose=False, evaluate=True):
         evaluate: If True, run evaluation on the results using expert agents
     """
     print("\n" + "=" * 80)
-    print("CATEGORY 3: USE CASE PROCESSING TESTS")
+    print("CATEGORY 1: USE CASE PROCESSING TESTS")
     print("=" * 80)
 
     # Initialize evaluation components if requested
@@ -70,12 +70,17 @@ def run_use_case_tests(verbose=False, evaluate=True):
                     # Use the accounting guidance as the response to evaluate
                     response = result["accounting_guidance"]
 
+                    # Log the scenario and response
+                    print("\n--- Logging Scenario and Response ---")
+                    print(f"Scenario: {scenario}")
+                    print(f"Response: {response}")
+
                     # Run evaluation
                     eval_result = evaluator.evaluate(
                         prompt=scenario,
                         response=response,
                         retrieve_context=True,
-                        output_format="text",
+                        output_format="markdown",
                     )
 
                     # Print evaluation results
@@ -103,7 +108,7 @@ def run_use_case_tests(verbose=False, evaluate=True):
                     print("\nSample chunks:")
                     # Display a limited number of chunks to avoid overwhelming output
                     for j, node in enumerate(retrieved_nodes[:3]):
-                        print(f"\nChunk {j + 1} (excerpt):")
+                        print(f"\nChunk {j + 1}:")
                         # Show a shortened version of the chunk
                         text = node.text
                         print(text[:200] + "..." if len(text) > 200 else text)
@@ -118,7 +123,7 @@ def run_use_case_tests(verbose=False, evaluate=True):
     # Save evaluation results if we have any
     if evaluate and evaluation_results:
         try:
-            results_file = "dump_eval/use_case_evaluation_results.json"
+            results_file = "evaluation_results/use_case_evaluation_results.json"
             with open(results_file, "w") as f:
                 json.dump(evaluation_results, f, indent=2)
             print(f"\nEvaluation results saved to {results_file}")

@@ -113,7 +113,7 @@ def run_category2_tests(verbose=False, evaluate=False):
                             prompt=transaction,
                             response=full_response,
                             retrieve_context=True,
-                            output_format="text",
+                            output_format="markdown",
                         )
 
                         # Print and store evaluation results
@@ -134,16 +134,6 @@ def run_category2_tests(verbose=False, evaluate=False):
 
         except Exception as e:
             print(f"Error analyzing transaction: {e}")
-
-        # Save evaluation results if we have any
-        if evaluate and evaluation_results:
-            try:
-                results_file = "transaction_evaluation_results.json"
-                with open(results_file, "w") as f:
-                    json.dump(evaluation_results, f, indent=2)
-                print(f"\nEvaluation results saved to {results_file}")
-            except Exception as e:
-                print(f"Error saving evaluation results: {e}")
 
         if i < len(test_cases):
             cont = input("\nContinue to next test case? (y/n): ")
