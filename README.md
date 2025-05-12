@@ -58,10 +58,6 @@ There are two ways to set up and run this project:
    docker pull ellzo/isdbi-agent
    ```
 
-2. **Run the container**:
-   ```bash
-   docker run -p 8501:8501 -e GEMINI_API_KEY=your-gemini-api-key -e ISLAMIC_FINANCE_API_URL=your-api-url ellzo/isdbi-agent
-   ```
 
 3. **Access the application**:
    Open your browser and navigate to `http://localhost:8501`
