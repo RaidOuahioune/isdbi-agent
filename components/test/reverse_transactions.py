@@ -1,5 +1,44 @@
 test_cases = [
     {
+        "name": "Test case 2",
+        "transaction": """
+        Context: The client pays all outstanding amounts on time, reducing expected losses.
+      
+         Adjustments:
+            Loss provision reversed.
+            Recognized revenue adjusted.
+         
+         Accounting Treatment:
+            Reduction in impairment expense.
+            Recognition of full contract revenue.
+         
+         Journal Entry for Loss Provision Reversal:
+            Dr. Allowance for Impairment $500,000
+            Cr. Provision for Losses $500,000
+         This restores revenue after full payment. 
+
+       """,
+    },
+    {
+        "name": "Test case 1",
+        "transaction": """
+       Context: Buyer defaults, stopping project completion.
+      Adjustments:
+      Recognized Revenue: $6,500,000
+      Impairment of Receivables: $500,000
+      
+      Accounting Treatment:
+      Recognition of bad debt
+      Adjustment of work-in-progress valuation
+      
+      Journal Entry for Default Adjustment:
+      Dr. Bad Debt Expense $500,000
+      Cr. Accounts Receivable $500,000
+
+      This writes off uncollectible amounts.
+       """,
+    },
+    {
         "name": "GreenTech Buyout",
         "transaction": """
 TRANSACTION SUMMARY: GreenTech exits in Year 3, and Al Baraka Bank buys out its stake.

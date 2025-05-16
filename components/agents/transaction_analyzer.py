@@ -62,6 +62,7 @@ Provide your analysis with:
 
 Please clearly indicate the correct standard by stating 'THE CORRECT STANDARD IS: [standard]' at the beginning of your analysis.
 
+Please do not focus on the examples having the same journal entries as the transaction. Instead, focus on the context and key information provided to build your analysis.
 IMPORTANT: If you determine that the transaction does not match any of the AAOIFI standards (FAS 4, FAS 7, FAS 10, FAS 28, FAS 32), clearly state "THE CORRECT STANDARD IS: NOT AN AAOIFI STANDARD" at the beginning of your analysis. Then explain why the transaction doesn't fall under any of the specified standards.
             """
             ),
