@@ -64,149 +64,96 @@ class EnhancementProgressMonitor:
         """Add an update to the queue."""
         self.progress_queue.put(update)
 
-def create_progress_components():
-    """Create the progress components for the UI."""
-    # Create containers for each phase
-    review_container = st.empty()
-    proposal_container = st.empty()
-    validation_container = st.empty()
+def create_progress_components() -> Dict[str, Any]:
+    """Create progress monitoring components"""
     
-    # Create a progress bar
-    progress_bar = st.progress(0)
-    progress_status = st.empty()
-    
-    return {
-        'review': review_container,
-        'proposal': proposal_container,
-        'validation': validation_container,
-        'progress_bar': progress_bar,
-        'progress_status': progress_status
+    components = {
+        "progress_bar": st.progress(0),
+        "progress_status": st.empty(),
+        "review": st.empty(),
+        "proposal": st.empty(),
+        "validation": st.empty()
     }
+    
+    # Initialize status messages
+    components["review"].info("🔄 Initializing review phase...")
+    components["proposal"].info("⏳ Waiting for review to complete...")
+    components["validation"].info("⏳ Waiting for proposal generation...")
+    
+    return components
 
-def run_enhancement_with_monitoring(standard_id: str, trigger_scenario: str, 
-                                   run_func: Callable, components: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Run the enhancement process with real-time progress monitoring.
+def run_enhancement_with_monitoring(
+    standard_id: str,
+    trigger_scenario: str,
+    run_func: Callable,
+    components: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Run enhancement process with visual progress monitoring"""
     
-    Args:
-        standard_id: The ID of the standard to enhance
-        trigger_scenario: The trigger scenario
-        run_func: Function to run for enhancement (run_standards_enhancement)
-        components: UI components dict from create_progress_components()
-        
-    Returns:
-        Enhancement results
-    """
-    # Initialize progress monitor
-    monitor = EnhancementProgressMonitor()
-    
-    # Phase indicators
-    components['review'].info("⏳ Initializing review phase...")
-    components['proposal'].info("🔄 Waiting for review to complete...")
-    components['validation'].info("🔄 Waiting for proposal generation...")
-    
-    # Progress bar initialization
-    components['progress_bar'].progress(0)
-    components['progress_status'].text("Starting enhancement process...")
-    
-    # Start monitoring thread
-    monitor.start_monitoring()
-    
-    # Define the detailed phase steps for a more realistic progress simulation
+    # Define progress phases and steps
     phase_steps = {
-        'review': [
-            "Loading standard FAS {standard_id}...",
-            "Analyzing standard structure...",
-            "Identifying relevant sections...",
-            "Analyzing definitions and scope...",
-            "Examining recognition criteria...",
-            "Reviewing measurement guidelines...",
-            "Checking disclosure requirements...",
-            "Evaluating standard in context of trigger scenario...",
-            "Identifying potential enhancement areas...",
-            "Summarizing review findings..."
+        "review": [
+            "Loading standard...",
+            "Analyzing content...",
+            "Identifying gaps...",
+            "Summarizing findings..."
         ],
-        'proposal': [
-            "Analyzing review findings...",
-            "Identifying key sections to enhance...",
-            "Researching best practices...",
-            "Drafting text changes...",
-            "Refining proposal language...",
-            "Ensuring terminology consistency...",
-            "Checking clarity of enhanced text...",
-            "Adding rationale for changes...",
-            "Final proposal formatting..."
+        "proposal": [
+            "Reviewing analysis...",
+            "Generating proposals...",
+            "Refining text...",
+            "Finalizing changes..."
         ],
-        'validation': [
-            "Retrieving Shariah principles...",
-            "Checking alignment with core principles...",
-            "Verifying absence of Riba elements...",
-            "Evaluating Gharar considerations...",
-            "Checking compliance with Maysir prohibitions...",
-            "Verifying internal consistency...",
-            "Checking alignment with other standards...",
-            "Evaluating practical implementability...",
-            "Formulating final validation decision..."
+        "validation": [
+            "Checking Shariah compliance...",
+            "Verifying consistency...",
+            "Evaluating practicality...",
+            "Making final decision..."
         ]
     }
     
     try:
-        # Function to update progress with realistic steps
-        def update_progress_with_steps(phase, steps, start_pct, end_pct):
-            # Get the phase name without '_start' or '_complete'
-            phase_name = phase.split('_')[0] if '_' in phase else phase
-            
-            # Only proceed if we have steps for this phase
-            if phase_name not in phase_steps:
-                return
+        # Progress callback function
+        def progress_callback(phase: str, detail: str = None):
+            if phase == "review_start":
+                components["review"].info("🔍 Reviewing standard...")
+                update_phase_progress("review", components, 0.0, 0.33)
+            elif phase == "review_complete":
+                components["review"].success("✅ Review complete")
+                components["proposal"].info("✏️ Generating proposals...")
+                update_phase_progress("proposal", components, 0.33, 0.66)
+            elif phase == "proposal_complete":
+                components["proposal"].success("✅ Proposals generated")
+                components["validation"].info("⚖️ Validating changes...")
+                update_phase_progress("validation", components, 0.66, 1.0)
+            elif phase == "validation_complete":
+                components["validation"].success("✅ Validation complete")
+                components["progress_bar"].progress(1.0)
+                components["progress_status"].success("Enhancement process completed!")
                 
-            steps_count = len(steps)
-            for i, step in enumerate(steps):
-                # Calculate progress percentage
-                progress = start_pct + (i / steps_count) * (end_pct - start_pct)
-                
-                # Format step text with any placeholders
-                step_text = step.format(standard_id=standard_id)
-                
-                # Update progress
-                components['progress_bar'].progress(progress)
-                components['progress_status'].text(step_text)
-                
-                # Add a small random delay to simulate processing time (between 0.3 and 0.9 seconds)
-                time.sleep(0.3 + random.random() * 0.6)
-        
-        # Function to capture progress updates - this will be passed to run_standards_enhancement
-        def progress_callback(phase, detail=None):
-            update = {'phase': phase}
             if detail:
-                update[f'{phase}_detail'] = detail
-            monitor.add_update(update)
-            
-            # Update UI based on phase
-            if phase == 'review_start':
-                components['review'].info("🔍 Reviewing standard and identifying enhancement areas...")
-                update_progress_with_steps('review', phase_steps['review'], 0.0, 0.33)
-            elif phase == 'review_complete':
-                components['review'].success("✅ Review complete!")
-                components['proposal'].info("✏️ Generating enhancement proposals...")
-                update_progress_with_steps('proposal', phase_steps['proposal'], 0.33, 0.66)
-            elif phase == 'proposal_complete':
-                components['proposal'].success("✅ Proposals generated!")
-                components['validation'].info("⚖️ Validating proposals against Shariah principles...")
-                update_progress_with_steps('validation', phase_steps['validation'], 0.66, 1.0)
-            elif phase == 'validation_complete':
-                components['validation'].success("✅ Validation complete!")
-                components['progress_bar'].progress(1.0)
-                components['progress_status'].text("Enhancement process completed!")
+                components["progress_status"].info(detail)
         
-        # Run the enhancement process with the progress callback
+        # Run the enhancement process
         results = run_func(standard_id, trigger_scenario, progress_callback)
-        
         return results
         
-    finally:
-        # Stop monitoring thread
-        monitor.stop_monitoring()
+    except Exception as e:
+        components["progress_status"].error(f"Error: {str(e)}")
+        raise
+
+def update_phase_progress(
+    phase: str,
+    components: Dict[str, Any],
+    start_pct: float,
+    end_pct: float
+):
+    """Update progress bar through a phase's steps"""
+    steps = 5
+    for i in range(steps):
+        progress = start_pct + (i / steps) * (end_pct - start_pct)
+        components["progress_bar"].progress(progress)
+        time.sleep(0.1)  # Small delay for visual feedback
 
 def create_fancy_progress_bar():
     """Create a fancy animated progress bar."""
@@ -221,4 +168,35 @@ def create_fancy_progress_bar():
         progress_bar.progress(progress)
         status_text.text(f"{phases[phase_idx]}: {int(progress * 100)}%")
     
-    return update_progress 
+    return update_progress
+
+def update_progress_with_steps(phase: str, progress: float, status: str):
+    """Update progress bar with current status."""
+    progress_container = st.empty()
+    status_text = st.empty()
+    
+    progress_mapping = {
+        "review": {
+            "icon": "🔍",
+            "color": "blue",
+            "steps": ["Loading standard", "Analyzing requirements", "Identifying gaps"]
+        },
+        "proposal": {
+            "icon": "✏️",
+            "color": "green",
+            "steps": ["Drafting changes", "Refining language", "Validating consistency"]
+        },
+        "validation": {
+            "icon": "⚖️",
+            "color": "orange",
+            "steps": ["Checking Shariah compliance", "Verifying consistency", "Final assessment"]
+        }
+    }
+    
+    phase_info = progress_mapping.get(phase, {})
+    progress_container.progress(progress)
+    status_text.markdown(
+        f"<div style='color: {phase_info.get('color', 'gray')}'>"
+        f"{phase_info.get('icon', '')} {status}</div>",
+        unsafe_allow_html=True
+    )

@@ -1,8 +1,16 @@
 from typing import Dict, Any, List, Optional, Callable
+import asyncio
+from components.orchestration.enhancement_orchestrator import EnhancementOrchestrator
+from components.monitoring.discussion_monitor import DiscussionMonitor
 from langchain_core.messages import AIMessage
+import time
 
-from agents import reviewer_agent, proposer_agent, validator_agent, cross_standard_analyzer
+import logging
 
+from agents import cross_standard_analyzer
+
+# Initialize orchestrator
+orchestrator = EnhancementOrchestrator()
 
 # Define test cases for standards enhancement
 ENHANCEMENT_TEST_CASES = [
@@ -47,182 +55,265 @@ ENHANCEMENT_TEST_CASES = [
 ]
 
 
+async def run_standards_enhancement_async(
+    standard_id: str, 
+    trigger_scenario: str,
+    progress_callback: Optional[Callable[[str, str], None]] = None,
+    include_cross_standard_analysis: bool = True
+) -> Dict[str, Any]:
+    """
+    Async version of the standards enhancement process.
+    """
+    results = await orchestrator.run_enhancement_workflow(
+        standard_id,
+        trigger_scenario,
+        progress_callback,
+        include_cross_standard_analysis
+    )
+    
+    # # Post-process results
+    # from ui.output_parser import OutputParser
+    # processed_results = OutputParser.parse_results_from_agents(results)
+    
+    return results
+
 def run_standards_enhancement(
     standard_id: str, 
     trigger_scenario: str,
     progress_callback: Optional[Callable[[str, str], None]] = None,
-    include_cross_standard_analysis: bool = True  # New parameter to control cross-standard analysis
+    include_cross_standard_analysis: bool = True
 ) -> Dict[str, Any]:
     """
-    Run the standards enhancement process with the three specialized agents.
-    
-    Args:
-        standard_id: The ID of the standard to enhance (e.g., "10" for FAS 10)
-        trigger_scenario: The scenario that triggers the need for enhancement
-        progress_callback: Optional callback function to report progress
-        include_cross_standard_analysis: Whether to include cross-standard impact analysis
-        
-    Returns:
-        Dict with the enhancement results including:
-        - Original standard excerpt
-        - Identified issues
-        - Proposed enhancements
-        - Validation results
-        - Cross-standard impact analysis (if enabled)
+    Synchronous wrapper for the standards enhancement process.
     """
-    print(f"Starting enhancement process for FAS {standard_id}...")
-    print(f"Trigger scenario: {trigger_scenario}")
+    # Create event loop if it doesn't exist
     
-    # Report progress: starting review
-    if progress_callback:
-        progress_callback("review_start", "Starting review phase")
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
     
-    # Step 1: Reviewer Agent - Extract and analyze standard
-    print("\nStep 1: Reviewing standard and identifying enhancement areas...")
-    review_result = reviewer_agent.extract_standard_elements(standard_id, trigger_scenario)
+    # Run enhancement process
+    results = loop.run_until_complete(
+        run_standards_enhancement_async(
+            standard_id,
+            trigger_scenario,
+            progress_callback,
+            include_cross_standard_analysis
+        )
+    )
     
-    # Report progress: review complete, starting proposal
-    if progress_callback:
-        progress_callback("review_complete", "Review phase completed")
-    
-    # Step 2: Proposer Agent - Generate enhancement proposals
-    print("\nStep 2: Generating enhancement proposals...")
-    proposal_result = proposer_agent.generate_enhancement_proposal(review_result)
-    
-    # Report progress: proposal complete, starting validation
-    if progress_callback:
-        progress_callback("proposal_complete", "Proposal phase completed")
-    
-    # Step 3: Validator Agent - Validate proposals
-    print("\nStep 3: Validating enhancement proposals...")
-    validation_result = validator_agent.validate_proposal(proposal_result)
-    
-    # Report progress: validation complete
-    if progress_callback:
-        progress_callback("validation_complete", "Validation phase completed")
-    
-    # First try to extract original and proposed text from the proposal
-    from ui.output_parser import OutputParser
-    proposal_text = proposal_result["enhancement_proposal"]
-    original_text, proposed_text = OutputParser.extract_original_and_proposed(proposal_text)
-    
-    # Compile initial results
-    results = {
-        "standard_id": standard_id,
-        "trigger_scenario": trigger_scenario,
-        "review": review_result["review_analysis"],
-        "proposal": proposal_result["enhancement_proposal"],
-        "validation": validation_result["validation_result"],
-        "original_text": original_text,
-        "proposed_text": proposed_text,
-        "full_results": {
-            "review_result": review_result,
-            "proposal_result": proposal_result,
-            "validation_result": validation_result
-        }
-    }
-    
-    # Step 4 (Optional): Cross-Standard Impact Analyzer
-    if include_cross_standard_analysis:
-        if progress_callback:
-            progress_callback("cross_analysis_start", "Starting cross-standard impact analysis")
-            
-        print("\nStep 4: Analyzing cross-standard impacts...")
-        cross_analysis_result = cross_standard_analyzer.analyze_cross_standard_impact(results)
-        
-        if progress_callback:
-            progress_callback("cross_analysis_complete", "Cross-standard analysis completed")
-            
-        # Add cross-standard analysis to the results
-        results["cross_standard_analysis"] = cross_analysis_result["cross_standard_analysis"]
-        results["compatibility_matrix"] = cross_analysis_result["compatibility_matrix"]
-        results["full_results"]["cross_analysis_result"] = cross_analysis_result
-    
-    # Pre-process the results to ensure diffs are generated 
-    processed_results = OutputParser.parse_results_from_agents(results)
-    
-    return processed_results
+    return results
 
 
 def format_results_for_display(results: Dict[str, Any]) -> str:
-    """
-    Format the enhancement results for display to users.
-    
-    Args:
-        results: The dictionary returned by run_standards_enhancement()
-        
-    Returns:
-        Formatted string with results
-    """
+    """Format enhancement results for display in console."""
     output = []
     
-    # Header information
-    output.append(f"# Standards Enhancement Results for FAS {results['standard_id']}")
-    output.append("\n## Trigger Scenario")
-    output.append(results['trigger_scenario'])
-    
-    # Review findings
-    output.append("\n## Review Findings")
-    output.append(results['review'])
-    
-    # Proposed enhancements
-    output.append("\n## Proposed Enhancements")
-    output.append(results['proposal'])
-    
-    # Validation results
-    output.append("\n## Validation Results")
-    output.append(results['validation'])
-    
-    # Add cross-standard analysis if available
-    if "cross_standard_analysis" in results:
-        output.append("\n## Cross-Standard Impact Analysis")
-        output.append(results['cross_standard_analysis'])
-    
-    return "\n".join(output)
-
-
-def find_test_case_by_keyword(keyword: str) -> Dict[str, Any]:
-    """
-    Find a test case by matching a keyword in the name or scenario.
-    
-    Args:
-        keyword: The keyword to search for
+    try:
+        # Add header
+        output.append("="*50)
+        output.append(f"Enhancement Results - FAS {results['standard_id']}")
+        output.append("="*50)
         
-    Returns:
-        The matching test case or the first test case if no match
-    """
+        # Add trigger scenario (truncated)
+        output.append("\nScenario:")
+        output.append("-"*30)
+        scenario = results.get("trigger_scenario", "")
+        output.append(scenario[:200] + "..." if len(scenario) > 200 else scenario)
+        
+        # Add key findings from analysis
+        output.append("\nKey Findings:")
+        output.append("-"*30)
+        if isinstance(results.get("review"), dict):
+            analysis = results["review"].get("review_analysis", "")
+            # Extract first paragraph or limit length
+            if "\n\n" in analysis:
+                analysis = analysis.split("\n\n")[0]
+            output.append(analysis[:300] + "..." if len(analysis) > 300 else analysis)
+        
+        # Add core proposal
+        output.append("\nProposed Changes:")
+        output.append("-"*30)
+        proposal = results.get("proposal", "")
+        if isinstance(proposal, dict):
+            proposal = proposal.get("proposal", "")
+        output.append(str(proposal)[:500] + "..." if len(str(proposal)) > 500 else str(proposal))
+        
+        # Add only critical concerns from discussion
+        if results.get("discussion_history"):
+            output.append("\nKey Concerns:")
+            output.append("-"*30)
+            critical_concerns = []
+            for entry in results["discussion_history"]:
+                if isinstance(entry.get("content"), dict):
+                    concerns = entry['content'].get('concerns', [])
+                    critical_concerns.extend([
+                        c.get('description', str(c)) for c in concerns
+                        if isinstance(c, dict) and 
+                        c.get('severity', '').lower() in ['high', 'critical']
+                    ][:2])  # Only take top 2 concerns per expert
+            output.append("\n".join(f"- {c}" for c in critical_concerns[:4]))  # Show max 4 total
+        
+        # Add only final validation decision
+        if results.get("validation"):
+            output.append("\nValidation:")
+            output.append("-"*30)
+            validation = str(results["validation"])
+            if "APPROVED" in validation:
+                output.append("APPROVED - " + validation.split("APPROVED")[1].split(".")[0])
+            elif "REJECTED" in validation:
+                output.append("REJECTED - " + validation.split("REJECTED")[1].split(".")[0])
+            elif "NEEDS REVISION" in validation:
+                output.append("NEEDS REVISION - " + validation.split("NEEDS REVISION")[1].split(".")[0])
+        
+        return "\n".join(output)
+        
+    except Exception as e:
+        logging.error(f"Error formatting results: {str(e)}")
+        return "Error formatting results for display"
+
+
+def find_test_case_by_keyword(keyword: str) -> Optional[Dict[str, Any]]:
+    """Find a test case by keyword in name or scenario."""
     keyword = keyword.lower()
-    
     for case in ENHANCEMENT_TEST_CASES:
         if (keyword in case["name"].lower() or 
             keyword in case["trigger_scenario"].lower()):
             return case
-    
-    # If no match found, return the first test case
-    return ENHANCEMENT_TEST_CASES[0]
-
-
-def get_test_case_by_standard_id(standard_id: str) -> Dict[str, Any]:
-    """
-    Find a test case that matches the given standard ID.
-    
-    Args:
-        standard_id: The standard ID to search for (e.g., "10")
-        
-    Returns:
-        The matching test case or None if no match
-    """
-    for case in ENHANCEMENT_TEST_CASES:
-        if case["standard_id"] == standard_id:
-            return case
-    
     return None
 
 
+def get_test_case_by_standard_id(standard_id: str) -> Optional[Dict[str, Any]]:
+    """Get the first test case for a given standard ID."""
+    for case in ENHANCEMENT_TEST_CASES:
+        if case["standard_id"] == standard_id:
+            return case
+    return None
+
+
+def write_results_to_file(results, standard_id):
+    """Write enhancement results to a markdown file."""
+    # filepath is the FAS+standard_id + timestamp 
+    filepath = f"enhancement_results_FAS_{standard_id}_{int(time.time())}.md"
+    try:
+        with open(filepath, 'w', encoding='utf-8') as f:
+            # Write header
+            f.write(f"# Standards Enhancement Results - FAS {standard_id}\n\n")
+            
+            # Write scenario
+            f.write("## Trigger Scenario\n\n")
+            f.write(str(results.get("trigger_scenario", "")) + "\n\n")
+            
+            # Write initial analysis
+            f.write("## Initial Analysis\n\n")
+            f.write(str(results.get("review_analysis_summary", "")) + "\n\n")
+            f.write("## Key Findings\n\n")
+            
+            # Handle reviewer_enhancement_areas - this is likely a list causing the error
+            enhancement_areas = results.get('reviewer_enhancement_areas', "")
+            if isinstance(enhancement_areas, list):
+                # Convert list to formatted string
+                enhancement_text = "\n".join(f"- {item}" for item in enhancement_areas)
+                f.write(enhancement_text + "\n\n")
+            else:
+                f.write(str(enhancement_areas) + "\n\n")
+
+            # Write full proposal
+            f.write("## Enhancement Proposal\n\n")
+            proposal = results.get("initial_proposal_structured", "")
+            initial_proposal = ""
+            final_proposal = ""
+            if isinstance(proposal, dict):
+                initial_proposal = proposal.get("initial_proposal_structured", "")
+                final_proposal = proposal.get("final_proposal_structured", "")
+            # Handle potential non-string types
+            f.write(str(initial_proposal) + "\n\n")
+            f.write(str(final_proposal) + "\n\n")
+
+            # Write discussion history
+            f.write("## Expert Discussion\n\n")
+            if results.get("discussion_history"):
+                for round_num, entries in _group_discussion_by_round(results["discussion_history"]):
+                    f.write(f"### Round {round_num}\n\n")
+                    for entry in entries:
+                        expert = entry.get("agent", "Unknown Expert")
+                        content = entry.get("content", {})
+                        
+                        f.write(f"#### {expert.title()} Expert\n\n")
+                        
+                        # Write analysis
+                        if isinstance(content.get("analysis"), dict):
+                            f.write("**Analysis:**\n\n")
+                            f.write(str(content["analysis"].get("text", "")) + "\n\n")
+                        
+                        # Write concerns
+                        if content.get("concerns"):
+                            f.write("**Concerns:**\n\n")
+                            for concern in content["concerns"]:
+                                if isinstance(concern, dict):
+                                    f.write(f"- {concern.get('description', str(concern))}\n")
+                                else:
+                                    f.write(f"- {str(concern)}\n")
+                            f.write("\n")
+                        
+                        # Write recommendations
+                        if content.get("recommendations"):
+                            f.write("**Recommendations:**\n\n")
+                            for rec in content["recommendations"]:
+                                if isinstance(rec, dict):
+                                    f.write(f"- {rec.get('description', str(rec))}\n")
+                                else:
+                                    f.write(f"- {str(rec)}\n")
+                            f.write("\n")
+            
+            # Write validation result
+            f.write("## Validation Result\n\n")
+            if results.get("validation_summary"):
+                f.write(str(results["validation_summary"]) + "\n\n")
+            
+            # Write cross-standard analysis if available
+            if results.get("cross_standard_analysis_summary"):
+                f.write("## Cross-Standard Impact Analysis\n\n")
+                f.write(str(results["cross_standard_analysis_summary"]) + "\n\n")
+
+        return filepath
+    except Exception as e:
+        logging.error(f"Error writing results to file: {str(e)}")
+        # Return the error or handle it as appropriate for your application
+        return None
+
+
+def _group_discussion_by_round(discussion_history):
+    """
+    Group discussion entries by round number.
+    Returns: List of tuples (round_num, [entries])
+    """
+    # Create dict to group entries by round
+    rounds = {}
+    for entry in discussion_history:
+        round_num = entry.get("round", 0)
+        if round_num not in rounds:
+            rounds[round_num] = []
+        rounds[round_num].append(entry)
+    
+    # Sort by round number and return
+    return sorted(rounds.items())
+def _group_discussion_by_round(history: List[Dict]) -> List[tuple]:
+    """Group discussion entries by round number."""
+    rounds = {}
+    for entry in history:
+        round_num = entry.get("round", 0)
+        if round_num not in rounds:
+            rounds[round_num] = []
+        rounds[round_num].append(entry)
+    
+    return sorted(rounds.items())
+
+
 def run_enhancement_demo():
-    """
-    Run an interactive demo of the Standards Enhancement feature.
-    """
+    """Run an interactive demo of the Standards Enhancement feature."""
     print("Standards Enhancement Demo")
     print("=========================")
     print("Select a test case or enter your own:")
@@ -257,10 +348,13 @@ def run_enhancement_demo():
     # Run enhancement
     result = run_standards_enhancement(standard_id, trigger, include_cross_standard_analysis=include_cross_analysis)
     
-    # Display formatted results
-    formatted_results = format_results_for_display(result)
-    print("\n")
-    print(formatted_results)
+    # Write results to file
+    output_file = write_results_to_file(result, standard_id)
+    
+    if output_file:
+        print(f"\nEnhancement results have been written to: {output_file}")
+    else:
+        print("\nError: Could not write results to file")
 
 
 def validate_committee_edits(

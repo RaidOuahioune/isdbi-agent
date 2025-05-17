@@ -114,12 +114,8 @@ Validate the proposal and provide:
                 # Fallback to the original validation if API fails
                 validation_result = response.content
         
-        return {
-            "standard_id": standard_id,
-            "trigger_scenario": trigger_scenario,
-            "enhancement_proposal": enhancement_proposal,
-            "validation_result": validation_result
-        }
+        return validation_result
+        
     
     def check_shariah_compliance(self, standard_id: str, enhancement_proposal: str) -> str:
         """
