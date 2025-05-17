@@ -32,13 +32,7 @@ if parent_dir not in sys.path:
 CHALLENGE2_OUTPUT_PATH = Path(parent_dir) / "documentation" / "agent_outputs_text_files" / "challenge2_output.txt"
 
 # Try to import the transaction analyzer for direct method (fallback only)
-try:
-    from components.agents.transaction_analyzer import analyze_transaction as agent_analyze_transaction
-    logger.info("Successfully imported transaction analyzer for direct use.")
-except ImportError as e:
-    logger.warning(f"Could not import transaction analyzer directly: {e}")
-    logger.warning("Will use file-based method or API as fallback.")
-
+from components.agents.transaction_analyzer import transaction_analyzer  as agent_analyze_transaction
 def analyze_transaction(
     transaction_details: Union[str, Dict[str, Any]], 
     use_api: bool = False

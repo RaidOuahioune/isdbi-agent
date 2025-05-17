@@ -120,4 +120,4 @@ IMPORTANT: If you determine that the transaction does not match any of the AAOIF
 
 
 # Initialize the agent
-transaction_analyzer = TransactionAnalyzerAgent()
+transaction_analyzer = TransactionAnalyzerAgent().analyze_transaction

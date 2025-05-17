@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 import time
 
 # Import routers
-from .routers import use_case, transaction,  enhancement
+from .routers import use_case, transaction, enhancement, product_design, compliance
 
 # Set up logging
 logging.basicConfig(
@@ -68,6 +68,8 @@ async def global_exception_handler(request: Request, exc: Exception):
 app.include_router(use_case.router)
 app.include_router(transaction.router)
 app.include_router(enhancement.router)
+app.include_router(product_design.router)
+app.include_router(compliance.router)
 
 
 # Root endpoint

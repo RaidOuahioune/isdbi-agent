@@ -13,7 +13,7 @@ from ..services.transaction_analyzer_service import transaction_analyzer
 router = APIRouter(prefix="/transaction", tags=["Transactions"])
 
 
-@router.post("/analyze", response_model=TransactionResponse)
+@router.post("/analyze")
 async def analyze_transaction_handler(request: TransactionRequest) -> Dict[str, Any]:
     """Analyze a financial transaction and determine compliance."""
     try:
@@ -22,6 +22,7 @@ async def analyze_transaction_handler(request: TransactionRequest) -> Dict[str, 
             use_api=False
           
         )
+        print(result.keys())
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
