@@ -263,5 +263,58 @@ def run_enhancement_demo():
     print(formatted_results)
 
 
+def validate_committee_edits(
+    standard_id: str,
+    original_text: str,
+    ai_proposed_text: str,
+    committee_edited_text: str,
+    previous_results: Dict[str, Any],
+    progress_callback: Optional[Callable[[str, str], None]] = None
+) -> Dict[str, Any]:
+    """
+    Validate committee-edited text against the original enhancement proposal.
+    
+    Args:
+        standard_id: The ID of the standard (e.g., "10" for FAS 10)
+        original_text: The original text from the standard
+        ai_proposed_text: The text proposed by the AI enhancement process
+        committee_edited_text: The edited text from the committee
+        previous_results: The results from the previous enhancement process
+        progress_callback: Optional callback function to report progress
+        
+    Returns:
+        Dict with validation results
+    """
+    print(f"Validating committee edits for FAS {standard_id}...")
+    
+    # Report progress if callback provided
+    if progress_callback:
+        progress_callback("committee_validation_start", "Starting committee edit validation")
+    
+    # Extract trigger scenario from previous results
+    trigger_scenario = previous_results.get("trigger_scenario", "")
+    
+    # Run validation using the committee validation agent
+    from agents import committee_validator_agent
+    
+    validation_result = committee_validator_agent.validate_committee_edit(
+        original_text=original_text,
+        ai_proposed_text=ai_proposed_text,
+        committee_edited_text=committee_edited_text,
+        standard_id=standard_id,
+        trigger_scenario=trigger_scenario,
+        previous_analysis=previous_results
+    )
+    
+    # Report progress if callback provided
+    if progress_callback:
+        progress_callback("committee_validation_complete", "Committee edit validation completed")
+    
+    # Add some additional context to the results
+    validation_result["original_enhancement_results"] = previous_results
+    
+    return validation_result
+
+
 if __name__ == "__main__":
     run_enhancement_demo()

@@ -15,6 +15,9 @@ def init_enhancement_state():
     
     if 'current_page' not in st.session_state:
         st.session_state.current_page = "home"
+        
+    # Initialize committee edit state
+    init_committee_edit_state()
 
 def set_enhancement_results(results: Dict[str, Any]):
     """Set the enhancement results in the session state."""
@@ -203,10 +206,51 @@ def get_saved_verifications() -> List[Dict[str, Any]]:
         st.session_state.saved_verifications = []
     return st.session_state.saved_verifications
 
+# Add committee edit state functions
+def init_committee_edit_state():
+    """Initialize committee edit state variables if they don't exist."""
+    if "committee_edited_text" not in st.session_state:
+        st.session_state.committee_edited_text = None
+    if "committee_validation_result" not in st.session_state:
+        st.session_state.committee_validation_result = None
+    if "show_committee_editor" not in st.session_state:
+        st.session_state.show_committee_editor = False
+    if "editing_in_progress" not in st.session_state:
+        st.session_state.editing_in_progress = False
+    if "active_committee_tab" not in st.session_state:
+        st.session_state.active_committee_tab = "committee_editor"
+        
+def set_committee_edit_text(text):
+    """Set the committee edited text."""
+    st.session_state.committee_edited_text = text
+    
+def get_committee_edit_text():
+    """Get the committee edited text."""
+    return st.session_state.committee_edited_text
+    
+def set_committee_validation_result(result):
+    """Set the committee validation result."""
+    st.session_state.committee_validation_result = result
+    
+def get_committee_validation_result():
+    """Get the committee validation result."""
+    return st.session_state.committee_validation_result
+
+def set_active_committee_tab(tab_name):
+    """Set the active committee tab."""
+    st.session_state.active_committee_tab = tab_name
+    
+def get_active_committee_tab():
+    """Get the active committee tab."""
+    if "active_committee_tab" not in st.session_state:
+        st.session_state.active_committee_tab = "committee_editor"
+    return st.session_state.active_committee_tab
+
 def init_all_states():
     """Initialize all session states."""
     init_enhancement_state()
     init_transaction_analysis_state()
     init_use_case_state()
     init_product_design_state()
-    init_compliance_verifier_state() 
+    init_compliance_verifier_state()
+    init_committee_edit_state()

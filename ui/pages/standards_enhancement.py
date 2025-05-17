@@ -16,11 +16,16 @@ if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
 # Project imports - from main directory
-from enhancement import run_standards_enhancement, ENHANCEMENT_TEST_CASES, find_test_case_by_keyword
+from enhancement import run_standards_enhancement, ENHANCEMENT_TEST_CASES, validate_committee_edits  # noqa: E402
 
 # Local imports
 from ui.components.enhancement_results import display_results, display_cross_standard_tab, display_past_enhancement
-from ui.states.session_state import init_enhancement_state, set_enhancement_results, get_enhancement_results
+from ui.states.session_state import (
+    init_enhancement_state, set_enhancement_results, get_enhancement_results,
+    get_committee_edit_text, set_committee_edit_text,
+    get_committee_validation_result, set_committee_validation_result, 
+    set_active_committee_tab, get_active_committee_tab
+)
 from ui.utils.enhancement_utils import save_enhancement, load_past_enhancements, create_export_markdown, create_export_html
 from ui.styles.main import load_css
 
@@ -68,16 +73,39 @@ def get_enhanced_css():
             overflow-x: auto;
         }
         
-        .deletion {
-            background-color: #fee2e2;
-            text-decoration: line-through;
-            color: #991b1b;
+        /* Committee Editor styles */
+        .committee-editor {
+            border: 2px solid #3b82f6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
         }
         
-        .addition {
+        .committee-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .validation-result {
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .validation-approved {
             background-color: #dcfce7;
-            color: #166534;
-            font-weight: 500;
+            border-left: 4px solid #166534;
+        }
+        
+        .validation-rejected {
+            background-color: #fee2e2;
+            border-left: 4px solid #991b1b;
+        }
+        
+        .validation-revision {
+            background-color: #ffedd5;
+            border-left: 4px solid #9a3412;
         }
         
         /* Stats boxes */
@@ -105,6 +133,24 @@ def get_enhanced_css():
         .diff-stat-label {
             font-size: 0.8rem;
             color: #4b5563;
+        }
+        
+        /* Committee tab styling */
+        .stRadio > div {
+            flex-direction: row;
+            gap: 10px;
+        }
+        
+        .stRadio label {
+            background-color: #f3f4f6;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+        }
+        
+        .stRadio label:hover {
+            background-color: #e5e7eb;
         }
     </style>
     """
@@ -379,61 +425,68 @@ def render_standards_enhancement_page():
                         with col2:
                             st.markdown("**Proposed Text:**")
                             st.text_area("", proposed_text or "No proposed text extracted", height=300, key="proposed_text_nodiff")
-                        
-                        # Provide a reason why diff might not be available
-                        if original_text and proposed_text:
-                            if original_text == proposed_text:
-                                st.info("The original and proposed texts are identical, so no differences to display.")
-                            else:
-                                st.info("Diff generation failed but original and proposed texts are available for comparison.")
-                        elif not original_text and not proposed_text:
-                            st.error("Both original and proposed texts are missing. Cannot generate diff.")
-                        else:
-                            st.warning("One of the texts is missing, making diff generation incomplete.")
-                else:
+                
+                # Add Committee Review section
+                st.markdown("---")
+                st.subheader("Committee Review")
+                
+                # Create tabs using radio buttons to maintain state better than st.tabs()
+                selected_tab = st.radio(
+                    "Committee Review Tabs",
+                    options=["View Diff", "Committee Editor"],
+                    index=1 if get_active_committee_tab() == "committee_editor" else 0,
+                    key="committee_tabs_radio",
+                    horizontal=True,
+                )
+                
+                # Update session state with current tab
+                set_active_committee_tab("committee_editor" if selected_tab == "Committee Editor" else "view_diff")
+                
+                # View Diff tab content
+                if selected_tab == "View Diff":
+                    # Show enhanced diff if available
                     if has_enhanced_diff:
-                        # Create tabs for different diff views
-                        diff_tabs = st.tabs(["Word-by-Word", "Inline View", "Sentence Level", "Standard Diff"])
+                        # Word-by-Word Diff View
+                        st.markdown("### Word-by-Word Comparison")
+                        st.markdown("This view shows each word-level change with additions in green and deletions in red.")
                         
-                        # Word-by-Word Diff Tab
-                        with diff_tabs[0]:
-                            st.markdown("### Word-by-Word Comparison")
-                            st.markdown("This view shows each word-level change with additions in green and deletions in red.")
-                            
-                            # Display diff stats if available
-                            if "stats" in results["enhanced_diff"]:
-                                stats = results["enhanced_diff"]["stats"]
-                                st.markdown(
-                                    f'<div class="diff-stats">'
-                                    f'<div class="diff-stat-item">'
-                                    f'<div class="diff-stat-value">{stats.get("words_added", 0)}</div>'
-                                    f'<div class="diff-stat-label">Words Added</div>'
-                                    f'</div>'
-                                    f'<div class="diff-stat-item">'
-                                    f'<div class="diff-stat-value">{stats.get("words_deleted", 0)}</div>'
-                                    f'<div class="diff-stat-label">Words Deleted</div>'
-                                    f'</div>'
-                                    f'<div class="diff-stat-item">'
-                                    f'<div class="diff-stat-value">{stats.get("words_unchanged", 0)}</div>'
-                                    f'<div class="diff-stat-label">Words Unchanged</div>'
-                                    f'</div>'
-                                    f'<div class="diff-stat-item">'
-                                    f'<div class="diff-stat-value">{round(stats.get("percent_changed", 0), 1)}%</div>'
-                                    f'<div class="diff-stat-label">Changed</div>'
-                                    f'</div>'
-                                    f'</div>',
-                                    unsafe_allow_html=True
-                                )
-                            
-                            # Display word diff
-                            word_diff_html = results["enhanced_diff"].get("word_diff_html", "<div>Word-by-word diff not available</div>")
-                            if word_diff_html and len(word_diff_html) > 10:  # Simple check to avoid empty diffs
-                                st.markdown(f'<div class="diff-container">{word_diff_html}</div>', unsafe_allow_html=True)
-                            else:
-                                st.warning("Word-by-word diff visualization could not be generated.")
+                        # Display diff stats if available
+                        if "stats" in results["enhanced_diff"]:
+                            stats = results["enhanced_diff"]["stats"]
+                            st.markdown(
+                                f'<div class="diff-stats">'
+                                f'<div class="diff-stat-item">'
+                                f'<div class="diff-stat-value">{stats.get("words_added", 0)}</div>'
+                                f'<div class="diff-stat-label">Words Added</div>'
+                                f'</div>'
+                                f'<div class="diff-stat-item">'
+                                f'<div class="diff-stat-value">{stats.get("words_deleted", 0)}</div>'
+                                f'<div class="diff-stat-label">Words Deleted</div>'
+                                f'</div>'
+                                f'<div class="diff-stat-item">'
+                                f'<div class="diff-stat-value">{stats.get("words_unchanged", 0)}</div>'
+                                f'<div class="diff-stat-label">Words Unchanged</div>'
+                                f'</div>'
+                                f'<div class="diff-stat-item">'
+                                f'<div class="diff-stat-value">{round(stats.get("percent_changed", 0), 1)}%</div>'
+                                f'<div class="diff-stat-label">Changed</div>'
+                                f'</div>'
+                                f'</div>',
+                                unsafe_allow_html=True
+                            )
+                        
+                        # Display word diff
+                        word_diff_html = results["enhanced_diff"].get("word_diff_html", "<div>Word-by-word diff not available</div>")
+                        if word_diff_html and len(word_diff_html) > 10:  # Simple check to avoid empty diffs
+                            st.markdown(f'<div class="diff-container">{word_diff_html}</div>', unsafe_allow_html=True)
+                        else:
+                            st.warning("Word-by-word diff visualization could not be generated.")
+                        
+                        # Create tabs for different diff views
+                        diff_view_tabs = st.tabs(["Inline View", "Sentence Level", "Standard Diff"])
                         
                         # Inline View Tab
-                        with diff_tabs[1]:
+                        with diff_view_tabs[0]:
                             st.markdown("### Inline Diff")
                             st.markdown("This view shows changes inline with character-level precision.")
                             
@@ -445,7 +498,7 @@ def render_standards_enhancement_page():
                                 st.warning("Inline diff visualization could not be generated.")
                         
                         # Sentence Level Tab
-                        with diff_tabs[2]:
+                        with diff_view_tabs[1]:
                             st.markdown("### Sentence-Level Comparison")
                             st.markdown("This view compares entire sentences to show changes at a higher level.")
                             
@@ -457,7 +510,7 @@ def render_standards_enhancement_page():
                                 st.warning("Sentence-level diff visualization could not be generated.")
                         
                         # Standard Diff Tab
-                        with diff_tabs[3]:
+                        with diff_view_tabs[2]:
                             st.markdown("### Standard Diff")
                             st.markdown("This is a traditional line-by-line diff format.")
                             
@@ -467,13 +520,108 @@ def render_standards_enhancement_page():
                             else:
                                 st.warning("Standard diff visualization could not be generated.")
                     
-                    else:
-                        # Fallback to simple diff if enhanced diff is not available
-                        if has_simple_diff:
-                            st.markdown("### Text Differences")
-                            st.markdown(f'<div class="diff-container">{results["simple_diff_html"]}</div>', unsafe_allow_html=True)
-                        else:
-                            st.warning("No diff visualization available.")
+                    # Show simple diff if enhanced diff is not available
+                    elif has_simple_diff:
+                        st.markdown("### Diff View")
+                        simple_diff_html = results.get("simple_diff_html", "")
+                        st.markdown(f'<div class="diff-container">{simple_diff_html}</div>', unsafe_allow_html=True)
+                
+                # Committee Editor tab content
+                elif selected_tab == "Committee Editor":
+                    # Get the initial text for the editor
+                    original_text = results.get("original_text", "")
+                    proposed_text = results.get("proposed_text", "")
+                    committee_text = get_committee_edit_text()
+                    
+                    # If committee text is None, initialize it with the AI-proposed text
+                    if committee_text is None:
+                        committee_text = proposed_text
+                        set_committee_edit_text(committee_text)
+                    
+                    # Show the original text
+                    st.markdown("### Original Standard Text")
+                    st.markdown(f"<div class='diff-container'>{original_text}</div>", unsafe_allow_html=True)
+                    
+                    # Show the AI-proposed text
+                    st.markdown("### AI-Proposed Enhancement")
+                    st.markdown(f"<div class='diff-container'>{proposed_text}</div>", unsafe_allow_html=True)
+                    
+                    # Show the committee editor
+                    st.markdown("### Committee Edit")
+                    st.markdown("Edit the text below to improve or refine the AI-proposed enhancement:")
+                    
+                    # Create the editor
+                    committee_edited_text = st.text_area(
+                        "Committee Edited Text",
+                        value=committee_text,
+                        height=300,
+                        key="committee_editor"
+                    )
+                    
+                    # If the text has changed, update the session state
+                    if committee_edited_text != committee_text:
+                        set_committee_edit_text(committee_edited_text)
+                        # Reset any previous validation
+                        set_committee_validation_result(None)
+                    
+                    # Add a button to validate the committee edits
+                    col1, col2, col3 = st.columns([1, 1, 2])
+                    with col1:
+                        if st.button("Reset to AI Proposal", key="reset_committee_edit"):
+                            set_committee_edit_text(proposed_text)
+                            set_committee_validation_result(None)
+                            st.rerun()
+                    
+                    with col2:
+                        validate_edit_button = st.button("Validate Edit", type="primary", key="validate_committee_edit")
+                    
+                    # Handle validation button click
+                    if validate_edit_button:
+                        with st.spinner("Validating committee edits..."):
+                            # Run the committee validation
+                            standard_id = results["standard_id"]
+                            validation_result = validate_committee_edits(
+                                standard_id=standard_id,
+                                original_text=original_text,
+                                ai_proposed_text=proposed_text,
+                                committee_edited_text=committee_edited_text,
+                                previous_results=results,
+                                progress_callback=None  # No progress callback for now
+                            )
+                            
+                            # Store the result
+                            set_committee_validation_result(validation_result)
+                            # Keep the current tab active
+                            set_active_committee_tab("committee_editor")
+                    
+                    # Display validation results if available
+                    validation_result = get_committee_validation_result()
+                    if validation_result:
+                        st.markdown("---")
+                        st.markdown("### Validation Result")
+                        
+                        validation_text = validation_result.get("committee_validation_result", "")
+                        
+                        # Extract decision for highlighting
+                        decision = ""
+                        if "APPROVED" in validation_text:
+                            decision = "APPROVED"
+                            decision_class = "validation-approved"
+                            decision_color = "green"
+                        elif "REJECTED" in validation_text:
+                            decision = "REJECTED"
+                            decision_class = "validation-rejected"
+                            decision_color = "red"
+                        elif "NEEDS REVISION" in validation_text:
+                            decision = "NEEDS REVISION"
+                            decision_class = "validation-revision"
+                            decision_color = "orange"
+                        
+                        if decision:
+                            st.markdown(f"**Decision:** <span style='color:{decision_color};font-weight:bold;'>{decision}</span>", unsafe_allow_html=True)
+                        
+                        # Display the validation result with appropriate styling
+                        st.markdown(f'<div class="{decision_class if decision else "validation-result"}">{validation_text}</div>', unsafe_allow_html=True)
             
             # Validation Tab
             with tabs[4]:
@@ -589,4 +737,4 @@ def render_standards_enhancement_page():
             display_past_enhancement(enhancements[selected_idx])
 
 if __name__ == "__main__":
-    render_standards_enhancement_page() 
+    render_standards_enhancement_page()
