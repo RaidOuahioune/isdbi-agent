@@ -3,8 +3,10 @@ langchain_core==0.3.59
 langchain_google_genai==2.1.4
 langgraph==0.4.3
 llama_index==0.12.35
+markdown2
 pandas==2.2.3
 pydantic==2.11.4
+pydub
 python-dotenv==1.1.0
 python_magic==0.4.27
 Requests==2.32.3

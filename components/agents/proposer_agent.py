@@ -1,82 +1,72 @@
 from langchain_core.messages import SystemMessage, HumanMessage
-from typing import Dict, Any
+from typing import Dict, Any, List
 from components.agents.base_agent import Agent
 from components.agents.prompts import PROPOSER_SYSTEM_PROMPT
+import logging
 
 class ProposerAgent(Agent):
-    """Agent responsible for proposing enhancements to standards."""
+    """Agent responsible for generating enhancement proposals"""
     
     def __init__(self):
         super().__init__(system_prompt=PROPOSER_SYSTEM_PROMPT)
     
-    def generate_enhancement_proposal(self, review_result: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Generate proposed enhancements based on reviewer findings.
-        
-        Args:
-            review_result: The dictionary returned by ReviewerAgent.extract_standard_elements()
-            
-        Returns:
-            Dict with the proposal details
-        """
-        # Extract necessary information from review results
-        standard_id = review_result["standard_id"]
-        trigger_scenario = review_result["trigger_scenario"]
-        review_content = review_result["review_content"]
-        review_analysis = review_result["review_analysis"]
-        
-        # Prepare message for generating proposals
-        messages = [
-            SystemMessage(content=self.system_prompt),
-            HumanMessage(content=f"""Please propose enhancements to AAOIFI FAS {standard_id} based on this review:
-            
+    async def __call__(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate an enhancement proposal based on analysis"""
+        try:
+            messages = [
+                SystemMessage(content=self.system_prompt),
+                HumanMessage(content=f"""
+Based on the following analysis of AAOIFI FAS {context['standard_id']},
+propose specific enhancements to address the identified issues:
+
 Trigger Scenario:
-{trigger_scenario}
+{context['trigger_scenario']}
 
-Relevant Standard Content:
-{review_content}
+Original Text:
+{context['original_text']}
 
-Reviewer Analysis:
-{review_analysis}
+Analysis:
+{context['analysis'].get('review_analysis', '')}
 
-IMPORTANT: Your response must follow this EXACT format for each proposed enhancement:
+Enhancement Areas:
+{self._format_enhancement_areas(context['analysis'].get('enhancement_areas', []))}
 
-```
-# Proposal 1: [Brief name of enhancement]
-
-## Issue Identified
-[Brief description of the issue this enhancement addresses]
-
-## Original Text
-**Original Text:** [Exact text from the standard that needs enhancement]
-
-## Proposed Modified Text
-**Proposed Modified Text:** [Clear suggested text to replace the original]
-
-## Rationale
-[Clear explanation of why this change is needed and how it addresses the issue]
-```
-
-If multiple enhancements are needed, use Proposal 2, Proposal 3, etc. with the EXACT same format for each.
-
-Ensure that each proposal clearly identifies:
-1. The exact original text from the standard that needs enhancement
-2. The exact recommended replacement text
-3. A clear rationale for the change
-
-This precise formatting is critical for downstream processes that will parse your response.
-            """)
-        ]
-        
-        # Get proposal result
-        response = self.llm.invoke(messages)
-        
-        return {
-            "standard_id": standard_id,
-            "trigger_scenario": trigger_scenario,
-            "review_analysis": review_analysis,
-            "enhancement_proposal": response.content
-        }
+Provide a detailed proposal for enhancing the standard to better address the scenario.
+""")
+            ]
+            
+            response = self._invoke_with_retry(messages)
+            
+            return {
+                "proposal": response.content,
+                "rationale": self._extract_rationale(response.content)
+            }
+            
+        except Exception as e:
+            logging.error(f"Error generating proposal: {str(e)}")
+            return {
+                "proposal": "Proposal generation failed due to technical error",
+                "rationale": ""
+            }
+    
+    def _format_enhancement_areas(self, areas: List[str]) -> str:
+        """Format enhancement areas for prompt"""
+        return "\n".join(f"- {area}" for area in areas)
+    
+    def _extract_rationale(self, proposal: str) -> str:
+        """Extract the rationale from the proposal text"""
+        try:
+            messages = [
+                SystemMessage(content="Extract the rationale/justification for the proposed changes. Return as a concise summary."),
+                HumanMessage(content=proposal)
+            ]
+            
+            response = self._invoke_with_retry(messages)
+            return response.content
+            
+        except Exception as e:
+            logging.error(f"Error extracting rationale: {str(e)}")
+            return ""
 
 # Initialize the agent
 proposer_agent = ProposerAgent()

@@ -8,33 +8,37 @@ with the multi-agent architecture of Reviewer, Proposer, and Validator.
 import argparse
 import sys
 import time
+import logging
+import asyncio
 from typing import Optional
 
-from enhancement import run_standards_enhancement, ENHANCEMENT_TEST_CASES, format_results_for_display
+from enhancement import (
+    run_standards_enhancement, 
+    ENHANCEMENT_TEST_CASES, 
+    format_results_for_display,
+    write_results_to_file
+)
+from components.orchestration.enhancement_orchestrator import EnhancementOrchestrator
+from components.agents.expert_agents import (
+    shariah_expert,
+    finance_expert,
+    standards_expert,
+    practical_expert,
+    risk_expert
+)
 
 
 def progress_callback(phase: str, detail: Optional[str] = None):
     """Simple callback function to show progress in the terminal."""
-    if phase == "review_start":
-        print("\n[PROGRESS] Starting review phase...")
-    elif phase == "review_complete":
-        print("[PROGRESS] Review phase completed")
-        print("[PROGRESS] Starting proposal phase...")
-    elif phase == "proposal_complete":
-        print("[PROGRESS] Proposal phase completed")
-        print("[PROGRESS] Starting validation phase...")
-    elif phase == "validation_complete":
-        print("[PROGRESS] Validation phase completed")
-    elif phase == "cross_analysis_start":
-        print("[PROGRESS] Starting cross-standard impact analysis...")
-    elif phase == "cross_analysis_complete":
-        print("[PROGRESS] Cross-standard impact analysis completed")
-    
+    # Only show progress indicators and details
     if detail:
         print(f"[DETAIL] {detail}")
+    elif phase in ["review_start", "review_complete", "proposal_complete", 
+                  "validation_complete", "cross_analysis_start", "cross_analysis_complete"]:
+        print(f"[PROGRESS] {phase.replace('_', ' ').title()}")
 
 
-def run_demo_with_test_case(test_case_index, include_cross_standard=True):
+def run_demo_with_test_case(test_case_index, include_cross_standard=True, orchestrator=None):
     """Run a demo with a specific test case."""
     try:
         case = ENHANCEMENT_TEST_CASES[test_case_index]
@@ -43,25 +47,34 @@ def run_demo_with_test_case(test_case_index, include_cross_standard=True):
         print(f"Available test cases: 0-{len(ENHANCEMENT_TEST_CASES)-1}")
         sys.exit(1)
     
-    print("\n" + "="*80)
-    print(f"Running Standards Enhancement for: {case['name']} (FAS {case['standard_id']})")
-    if include_cross_standard:
-        print("Including cross-standard impact analysis")
-    else:
-        print("Without cross-standard impact analysis")
-    print("="*80)
+    print("\n" + "="*50)
+    print(f"Running enhancement for FAS {case['standard_id']}")
+    print("="*50)
     
-    # Run the enhancement process with progress callback
-    results = run_standards_enhancement(
-        case['standard_id'], 
-        case['trigger_scenario'],
-        progress_callback,
-        include_cross_standard_analysis=include_cross_standard
+    # Create event loop
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    
+    # Run the enhancement process
+    results = loop.run_until_complete(
+        orchestrator.run_enhancement(
+            case['standard_id'],
+            case['trigger_scenario'],
+            progress_callback,
+            include_cross_standard_analysis=include_cross_standard
+        )
     )
     
-    # Display the results
-    formatted_results = format_results_for_display(results)
-    print("\n" + formatted_results)
+    # Write results to file
+    output_file = write_results_to_file(results, case['standard_id'])
+    
+    if output_file:
+        print(f"\nResults written to: {output_file}")
+    else:
+        print("\nError: Could not write results to file")
     
     return results
 
@@ -71,8 +84,18 @@ def run_interactive_demo():
     print("\nStandards Enhancement Demo")
     print("=========================")
     print("This demo shows how AI agents can help enhance AAOIFI Financial Accounting Standards.")
-    print("\nSelect a test case:")
     
+    # Expert selection
+    print("\nSelect experts to participate in the discussion:")
+    selected_experts = {
+        "shariah": True,    # Required
+        "finance": True,    # Required
+        "standards": True,  # Required
+        "practical": input("Include Practical Expert? (y/n, default: y): ").lower() != 'n',
+        "risk": input("Include Risk Expert? (y/n, default: n): ").lower() == 'y'
+    }
+    
+    print("\nSelect a test case:")
     # Display available test cases
     for i, case in enumerate(ENHANCEMENT_TEST_CASES):
         print(f"{i}. {case['name']} (FAS {case['standard_id']})")
@@ -91,7 +114,10 @@ def run_interactive_demo():
             cross_analysis = input("Include cross-standard impact analysis? (y/n, default: y): ").lower()
             include_cross = False if cross_analysis == 'n' else True
             
-            results = run_demo_with_test_case(test_case_index, include_cross)
+            # Create orchestrator with selected experts
+            orchestrator = EnhancementOrchestrator(selected_experts=selected_experts)
+            
+            results = run_demo_with_test_case(test_case_index, include_cross, orchestrator)
             
             # Ask if user wants to try another case
             another = input("\nTry another case? (y/n): ")
@@ -176,4 +202,4 @@ if __name__ == "__main__":
             if i < len(ENHANCEMENT_TEST_CASES) - 1:
                 input("\nPress Enter to continue to the next test case...")
     else:
-        run_interactive_demo() 
+        run_interactive_demo()
