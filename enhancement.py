@@ -4,8 +4,12 @@ from components.orchestration.enhancement_orchestrator import EnhancementOrchest
 from components.monitoring.discussion_monitor import DiscussionMonitor
 from langchain_core.messages import AIMessage
 import time
-
+import requests
+import io
+import os
+import re
 import logging
+import json
 
 from agents import cross_standard_analyzer
 
@@ -54,6 +58,44 @@ ENHANCEMENT_TEST_CASES = [
     }
 ]
 
+# Map standard IDs to their names for PDF generation
+STANDARD_ID_TO_NAME = {
+    "4": "mudarabah",
+    "7": "musharaka",
+    "10": "istisna",
+    "28": "murabahah",
+    "32": "ijarah"
+}
+
+# PDF generation API endpoint
+PDF_API_ENDPOINT = "https://fba4-105-235-131-8.ngrok-free.app/api/generate-enhanced-pdf"
+
+# PDF generation configuration
+PDF_CONFIG = {
+    "enabled": True,  # Global switch to enable/disable PDF generation
+    "auto_disable_on_failure": True,  # Automatically disable if API is unreachable
+    "max_retries": 3,  # Maximum number of retry attempts
+    "timeout": 60,  # Request timeout in seconds
+}
+
+# Try to load configuration from file
+try:
+    config_path = "pdf_config.json"
+    if os.path.exists(config_path):
+        with open(config_path, "r") as f:
+            loaded_config = json.load(f)
+            PDF_CONFIG.update(loaded_config)
+except Exception as e:
+    logging.warning(f"Could not load PDF configuration: {str(e)}")
+
+# Function to save configuration
+def save_pdf_config():
+    try:
+        with open("pdf_config.json", "w") as f:
+            json.dump(PDF_CONFIG, f, indent=2)
+    except Exception as e:
+        logging.warning(f"Could not save PDF configuration: {str(e)}")
+
 
 async def run_standards_enhancement_async(
     standard_id: str, 
@@ -77,11 +119,36 @@ async def run_standards_enhancement_async(
     
     return results
 
+def check_pdf_api_availability() -> bool:
+    """
+    Check if the PDF generation API is available.
+    
+    Returns:
+        bool: True if the API is available, False otherwise
+    """
+    try:
+        # Send a simple HEAD request to check if the API is up
+        response = requests.head(PDF_API_ENDPOINT, timeout=5)
+        
+        # Consider any response as available (even errors, as long as the server responds)
+        available = response.status_code < 500
+        
+        if available:
+            logging.info("PDF generation API is available")
+        else:
+            logging.warning(f"PDF generation API returned status code {response.status_code}")
+            
+        return available
+    except requests.RequestException as e:
+        logging.warning(f"PDF generation API is not available: {str(e)}")
+        return False
+
 def run_standards_enhancement(
     standard_id: str, 
     trigger_scenario: str,
     progress_callback: Optional[Callable[[str, str], None]] = None,
-    include_cross_standard_analysis: bool = True
+    include_cross_standard_analysis: bool = True,
+    generate_pdf: bool = True
 ) -> Dict[str, Any]:
     """
     Synchronous wrapper for the standards enhancement process.
@@ -104,7 +171,138 @@ def run_standards_enhancement(
         )
     )
     
+    # Generate enhanced PDF if requested and enabled
+    if generate_pdf and PDF_CONFIG["enabled"]:
+        try:
+            if progress_callback:
+                progress_callback("pdf_generation_start", "Starting PDF generation")
+                
+            # Check if the API is available before attempting to generate a PDF
+            if not check_pdf_api_availability():
+                if progress_callback:
+                    progress_callback("pdf_generation_error", "PDF generation API is not available")
+                
+                # Auto-disable PDF generation if configured to do so
+                if PDF_CONFIG["auto_disable_on_failure"]:
+                    logging.warning("Automatically disabling PDF generation due to API unavailability")
+                    PDF_CONFIG["enabled"] = False
+                    save_pdf_config()
+                    if progress_callback:
+                        progress_callback("pdf_generation_disabled", "PDF generation has been disabled due to API unavailability")
+                        
+                return results
+                
+            pdf_path = generate_enhanced_pdf(results, standard_id)
+            if pdf_path and progress_callback:
+                progress_callback("pdf_generation_complete", f"PDF generated successfully: {pdf_path}")
+        except Exception as e:
+            logging.error(f"PDF generation failed: {str(e)}")
+            if progress_callback:
+                progress_callback("pdf_generation_error", f"PDF generation failed: {str(e)}")
+            
+            # Auto-disable PDF generation if configured to do so
+            if PDF_CONFIG["auto_disable_on_failure"]:
+                logging.warning("Automatically disabling PDF generation due to failure")
+                PDF_CONFIG["enabled"] = False
+                save_pdf_config()
+                if progress_callback:
+                    progress_callback("pdf_generation_disabled", "PDF generation has been disabled due to API failure")
+    
     return results
+
+
+def generate_enhanced_pdf(results: Dict[str, Any], standard_id: str) -> Optional[str]:
+    """
+    Generate an enhanced PDF with proposed changes using the external API.
+    
+    Args:
+        results: The enhancement results from the enhancement process
+        standard_id: The ID of the standard (e.g., "10" for FAS 10)
+        
+    Returns:
+        Optional[str]: Path to the generated PDF file if successful, None otherwise
+    """
+    if not PDF_CONFIG["enabled"]:
+        logging.info("PDF generation is disabled in configuration")
+        return None
+        
+    try:
+        # Map standard_id to standard_name required by the API
+        standard_name = STANDARD_ID_TO_NAME.get(standard_id)
+        if not standard_name:
+            logging.warning(f"Cannot generate PDF: Unknown standard ID mapping for FAS {standard_id}")
+            return None
+        
+        # Extract proposed changes from results using the clause extractor agent
+        from components.agents import clause_extractor_agent
+        
+        # Extract clauses from the enhancement results
+        logging.info("Extracting clauses from enhancement results...")
+        enhancements = clause_extractor_agent.extract_clauses(results)
+        
+        if not enhancements:
+            logging.warning("Cannot generate PDF: No clauses extracted from results")
+            return None
+        
+        # Log the extracted clauses
+        logging.info(f"Extracted {len(enhancements)} clause(s) for PDF generation:")
+        for i, enhancement in enumerate(enhancements):
+            logging.info(f"  Clause {i+1}: ID={enhancement['clause_id']}, Text length={len(enhancement['proposed_text'])}")
+        
+        # Prepare the request payload
+        payload = {
+            "standard_name": standard_name,
+            "enhancements": enhancements
+        }
+        
+        # Make the API request with retries
+        max_retries = PDF_CONFIG["max_retries"]
+        retry_delay = 2  # seconds
+        
+        for attempt in range(max_retries):
+            try:
+                logging.info(f"Sending PDF generation request for FAS {standard_id} with {len(enhancements)} enhancements (attempt {attempt+1}/{max_retries})")
+                response = requests.post(PDF_API_ENDPOINT, json=payload, timeout=PDF_CONFIG["timeout"])
+                
+                # Check if request was successful
+                if response.status_code == 200:
+                    # Create directory for PDFs if it doesn't exist
+                    os.makedirs("enhancement_results", exist_ok=True)
+                    
+                    # Save the PDF file
+                    pdf_path = f"enhancement_results/Enhanced_FAS_{standard_id}_{int(time.time())}.pdf"
+                    with open(pdf_path, "wb") as pdf_file:
+                        pdf_file.write(response.content)
+                    
+                    logging.info(f"Enhanced PDF generated successfully: {pdf_path}")
+                    return pdf_path
+                else:
+                    logging.warning(f"PDF generation API request failed (attempt {attempt+1}/{max_retries}): {response.status_code} - {response.text}")
+                    if attempt < max_retries - 1:
+                        logging.info(f"Retrying in {retry_delay} seconds...")
+                        time.sleep(retry_delay)
+                        retry_delay *= 2  # Exponential backoff
+            except requests.RequestException as e:
+                logging.warning(f"Request error (attempt {attempt+1}/{max_retries}): {str(e)}")
+                if attempt < max_retries - 1:
+                    logging.info(f"Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+        
+        # If we've reached here, all attempts failed
+        logging.error(f"PDF generation failed after {max_retries} attempts")
+        
+        # Auto-disable PDF generation if configured to do so
+        if PDF_CONFIG["auto_disable_on_failure"]:
+            logging.warning("Automatically disabling PDF generation due to API failure")
+            PDF_CONFIG["enabled"] = False
+            save_pdf_config()
+            
+        return None
+            
+    except Exception as e:
+        logging.error(f"Error generating enhanced PDF: {str(e)}")
+        return None
 
 
 def format_results_for_display(results: Dict[str, Any]) -> str:
@@ -345,8 +543,22 @@ def run_enhancement_demo():
     include_cross = input("Include cross-standard impact analysis? (y/n, default: y): ").lower()
     include_cross_analysis = False if include_cross == 'n' else True
     
+    # Ask if PDF generation should be included
+    include_pdf = input("Generate enhanced PDF? (y/n, default: y): ").lower()
+    generate_pdf = False if include_pdf == 'n' else True
+    
+    # Define a simple progress callback function
+    def progress_callback(phase, detail):
+        print(f"[{phase}] {detail}")
+    
     # Run enhancement
-    result = run_standards_enhancement(standard_id, trigger, include_cross_standard_analysis=include_cross_analysis)
+    result = run_standards_enhancement(
+        standard_id, 
+        trigger, 
+        progress_callback=progress_callback,
+        include_cross_standard_analysis=include_cross_analysis,
+        generate_pdf=generate_pdf
+    )
     
     # Write results to file
     output_file = write_results_to_file(result, standard_id)

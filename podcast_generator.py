@@ -31,10 +31,23 @@ class PodcastGenerator:
         
         segments = []
         
+        # Extract FAS standard number from the content
+        standard_match = re.search(r"Standards Enhancement Results for FAS (\d+)", text)
+        standard_id = standard_match.group(1) if standard_match else "10"
+        
         # Intro
+        intro_text = f"Welcome to the AAOIFI Standards Enhancement Podcast. Today we'll discuss proposed changes to FAS {standard_id}"
+        
+        # Try to extract more specific information about the enhancement
+        enhancement_topic_match = re.search(r"regarding (.+?)(?:\.|$)", text[:500])
+        if enhancement_topic_match:
+            intro_text += f" regarding {enhancement_topic_match.group(1)}."
+        else:
+            intro_text += "."
+            
         segments.append({
             "voice": "narrator",
-            "text": "Welcome to the AAOIFI Standards Enhancement Podcast. Today we'll discuss proposed changes to FAS 10 regarding Istisna'a contracts for intangible assets."
+            "text": intro_text
         })
         
         # Trigger scenario
@@ -47,19 +60,76 @@ class PodcastGenerator:
             
         # Expert discussions
         for expert in ["Shariah Expert", "Finance Expert", "Standards Expert"]:
-            expert_match = re.search(f"{expert}\n\n.*?Analysis:(.*?)Concerns:", text, re.DOTALL)
-            if expert_match:
+            # Try different patterns to extract expert analysis
+            expert_match = None
+            
+            # Pattern 1: Look for Analysis: followed by Concerns:
+            pattern1 = re.search(f"{expert}.*?Analysis:(.*?)Concerns:", text, re.DOTALL)
+            if pattern1:
+                expert_match = pattern1
+                analysis_text = pattern1.group(1).strip()
+                
+                # Also extract concerns if available
+                concerns_match = re.search(f"Concerns:(.*?)Recommendations:", text, re.DOTALL)
+                if concerns_match:
+                    concerns_text = concerns_match.group(1).strip()
+                    analysis_text += f". My concerns include: {concerns_text}"
+                
+                # Extract recommendations if available
+                recommendations_match = re.search(f"Recommendations:(.*?)(?:\n\n|$)", text, re.DOTALL)
+                if recommendations_match:
+                    recommendations_text = recommendations_match.group(1).strip()
+                    analysis_text += f". I recommend: {recommendations_text}"
+            
+            # Pattern 2: Look for sections that might contain expert name
+            if not expert_match:
+                expert_section_match = re.search(f"## {expert}.*?\n(.*?)(?:\n##|\Z)", text, re.DOTALL)
+                if expert_section_match:
+                    analysis_text = expert_section_match.group(1).strip()
+            
+            # Pattern 3: Look for accumulated expert concerns/recommendations
+            if not expert_match:
+                expert_name_simple = expert.split()[0].lower()  # e.g., "shariah" from "Shariah Expert"
+                concerns_pattern = re.search(f"{expert_name_simple}.*?concerns:(.*?)(?:\n\n|$)", text, flags=re.DOTALL|re.IGNORECASE)
+                if concerns_pattern:
+                    analysis_text = f"I have concerns about: {concerns_pattern.group(1).strip()}"
+            
+            # If we found any match, create the segment
+            if expert_match or expert_section_match or concerns_pattern:
                 voice_key = expert.lower().replace(" ", "_")
                 segments.append({
                     "voice": voice_key,
-                    "text": f"As the {expert}, here's my analysis: {expert_match.group(1)}"
+                    "text": f"As the {expert}, here's my analysis: {analysis_text}"
                 })
                 
+        # Try to extract recommendations if they exist separately
+        recommendations_section = re.search(r"## Recommendations\s*(.*?)(?:\n##|\Z)", text, re.DOTALL)
+        if recommendations_section:
+            segments.append({
+                "voice": "standards_expert",  # Use standards expert for general recommendations
+                "text": f"Here are our recommendations: {recommendations_section.group(1).strip()}"
+            })
+        
         # Conclusion
         if "APPROVED" in text:
             segments.append({
                 "voice": "narrator",
                 "text": "The enhancement proposal has been approved. This represents a significant step forward in adapting Islamic finance standards for modern technological developments."
+            })
+        elif "REJECTED" in text:
+            segments.append({
+                "voice": "narrator",
+                "text": "The enhancement proposal has been rejected. The committee has determined that further work is needed before these changes can be implemented."
+            })
+        elif "NEEDS REVISION" in text:
+            segments.append({
+                "voice": "narrator",
+                "text": "The enhancement proposal needs revision. The committee has provided feedback for improvements that should be addressed in a future proposal."
+            })
+        else:
+            segments.append({
+                "voice": "narrator",
+                "text": "Thank you for listening to this AAOIFI Standards Enhancement Podcast. This concludes our discussion on the proposed changes."
             })
             
         return segments
@@ -139,5 +209,6 @@ class PodcastGenerator:
         except Exception as e:
             print(f"Error combining audio segments: {str(e)}")
 
-generator = PodcastGenerator(api_key="sk_ebc9b70b7d7ee7cee2a0e21ea9c0694cbbd1b81d170f1680")
-generator.create_podcast("enhancement_results/enhancement_FAS10_20250516_192918.md")
+# Remove the automatic execution at module import
+generator = PodcastGenerator()
+# generator.create_podcast("enhancement_results/enhancement_FAS10_20250516_192918.md")

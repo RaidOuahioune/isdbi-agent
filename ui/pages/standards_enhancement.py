@@ -13,6 +13,7 @@ import asyncio
 import logging
 import dataclasses  # For converting dataclass to dict if needed
 from typing import Optional
+import tempfile
 
 # Configure logging
 logging.basicConfig(
@@ -27,15 +28,31 @@ if parent_dir not in sys.path:
 # Project imports
 try:
     # Assuming enhancement.py might contain ENHANCEMENT_TEST_CASES
-    from enhancement import ENHANCEMENT_TEST_CASES
-except ImportError:
+    from enhancement import (
+        ENHANCEMENT_TEST_CASES, 
+        generate_enhanced_pdf, 
+        check_pdf_api_availability,
+        PDF_CONFIG
+    )
+except ImportError as e:
     logging.warning(
-        "enhancement.py not found or ENHANCEMENT_TEST_CASES not defined. Test cases will be unavailable."
+        f"Error importing from enhancement.py: {e}"
     )
     ENHANCEMENT_TEST_CASES = []
+    # Define fallback functions if imports fail
+    def generate_enhanced_pdf(*args, **kwargs):
+        logging.error("generate_enhanced_pdf function not available")
+        return None
+        
+    def check_pdf_api_availability(*args, **kwargs):
+        logging.error("check_pdf_api_availability function not available")
+        return False
+        
+    PDF_CONFIG = {"enabled": False}
 
 from components.orchestration.enhancement_orchestrator import EnhancementOrchestrator
 import json
+from podcast_generator import generator
 
 # Local imports
 from ui.components.enhancement_results import (
@@ -174,6 +191,46 @@ def get_custom_enhancement_css():
     """
 
 
+def generate_and_download_podcast(markdown_content, enhancement_data=None):
+    """Generate a podcast from markdown content and return the file path"""
+    try:
+        # Create a temporary file to store the markdown
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as temp_md:
+            temp_md.write(markdown_content)
+            temp_md_path = temp_md.name
+        
+        # Generate a unique output filename
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Get standard ID from enhancement data if available
+        standard_id = "Unknown"
+        if enhancement_data and 'standard_id' in enhancement_data:
+            standard_id = enhancement_data['standard_id']
+            
+        output_filename = f"enhancement_podcast_FAS{standard_id}_{timestamp}.mp3"
+        
+        # Create podcast generator and generate podcast
+        api_key = os.getenv("ELEVEN_LABS_API_KEY", "sk_ebc9b70b7d7ee7cee2a0e21ea9c0694cbbd1b81d170f1680")
+        
+        # Create output directory if it doesn't exist
+        Path("podcast_output").mkdir(exist_ok=True)
+        
+        # Generate the podcast
+        generator.create_podcast(temp_md_path, output_filename)
+        
+        # Get the full path to the generated podcast
+        podcast_path = f"podcast_output/{output_filename}"
+        
+        # Clean up the temporary markdown file
+        os.unlink(temp_md_path)
+        
+        return podcast_path
+    
+    except Exception as e:
+        logging.error(f"Error generating podcast: {str(e)}", exc_info=True)
+        return None
+
+
 # --- Async Helper ---
 async def run_enhancement_process_async(
     orchestrator,
@@ -295,6 +352,60 @@ def render_standards_enhancement_page():
             value=st.session_state.selected_experts.get("risk", False),
             help="Reviews risk assessment and mitigation.",
         )
+        
+        # PDF Generation Configuration
+        st.subheader("PDF Generation")
+        
+        # Initialize PDF config in session state if not present
+        if "pdf_config" not in st.session_state:
+            st.session_state.pdf_config = PDF_CONFIG.copy()
+        
+        # Enable/disable PDF generation
+        pdf_enabled = st.checkbox(
+            "Enable PDF Generation",
+            value=st.session_state.pdf_config.get("enabled", True),
+            help="Generate enhanced PDFs with proposed changes"
+        )
+        
+        # Update the config
+        st.session_state.pdf_config["enabled"] = pdf_enabled
+        PDF_CONFIG["enabled"] = pdf_enabled
+        
+        # Show additional options if enabled
+        if pdf_enabled:
+            # Auto-disable on failure
+            auto_disable = st.checkbox(
+                "Auto-disable on failure",
+                value=st.session_state.pdf_config.get("auto_disable_on_failure", True),
+                help="Automatically disable PDF generation if the API is unreachable"
+            )
+            st.session_state.pdf_config["auto_disable_on_failure"] = auto_disable
+            PDF_CONFIG["auto_disable_on_failure"] = auto_disable
+            
+            # Max retries slider
+            max_retries = st.slider(
+                "Max API retries",
+                min_value=1,
+                max_value=5,
+                value=st.session_state.pdf_config.get("max_retries", 3),
+                help="Maximum number of retry attempts for API calls"
+            )
+            st.session_state.pdf_config["max_retries"] = max_retries
+            PDF_CONFIG["max_retries"] = max_retries
+            
+            # API status indicator
+            st.caption("API Status:")
+            if check_pdf_api_availability():
+                st.success("PDF API is available", icon="✅")
+            else:
+                st.error("PDF API is unavailable", icon="❌")
+        
+        # Save the PDF config
+        try:
+            from enhancement import save_pdf_config
+            save_pdf_config()
+        except ImportError:
+            pass
 
         # Main Action Button
         run_button_disabled = not (
@@ -471,6 +582,9 @@ def render_standards_enhancement_page():
                 tab_names.append("Cross-Standard Impact")
             if enhancement_results_data.get("discussion_history"):
                 tab_names.append("Expert Discussion Log")
+            
+            # Add PDF Export tab
+            tab_names.append("PDF Export")
 
             tabs = st.tabs(tab_names)
 
@@ -500,6 +614,51 @@ def render_standards_enhancement_page():
                     "Final Agreement Score (Placeholder)",
                     f"{enhancement_results_data.get('final_agreement_score', 0.0):.2f}",
                 )
+                
+                # Add PDF generation button in the Overview tab
+                if PDF_CONFIG.get("enabled", True):
+                    st.markdown("---")
+                    st.markdown("### Generate Enhanced PDF")
+                    st.markdown("Generate a professional PDF document with the proposed changes to the standard.")
+                    
+                    pdf_col1, pdf_col2 = st.columns([1, 2])
+                    if pdf_col1.button("📄 Generate Enhanced PDF", key="pdf_btn_overview", use_container_width=True):
+                        # Create a placeholder for status messages
+                        pdf_status_placeholder = pdf_col2.empty()
+                        pdf_status_placeholder.info("Generating PDF...")
+                        
+                        # Check API availability
+                        if not check_pdf_api_availability():
+                            pdf_status_placeholder.error("PDF API is not available. Please try again later.")
+                        else:
+                            # Generate the PDF
+                            pdf_path = generate_enhanced_pdf(
+                                enhancement_results_data, 
+                                enhancement_results_data.get('standard_id', 'NA')
+                            )
+                            
+                            if pdf_path and os.path.exists(pdf_path):
+                                # Read the PDF file for download
+                                with open(pdf_path, "rb") as f:
+                                    pdf_data = f.read()
+                                
+                                # Show success message
+                                pdf_status_placeholder.success("PDF generated successfully!")
+                                
+                                # Display download button
+                                st.download_button(
+                                    label="⬇️ Download Enhanced PDF",
+                                    data=pdf_data,
+                                    file_name=os.path.basename(pdf_path),
+                                    mime="application/pdf",
+                                )
+                                
+                                # Show PDF preview if possible
+                                st.markdown(f"**PDF saved to:** `{pdf_path}`")
+                            else:
+                                pdf_status_placeholder.error("Failed to generate PDF. Please check logs for details.")
+                else:
+                    st.info("PDF generation is disabled. You can enable it in the sidebar configuration.")
 
             with tabs[1]:  # Reviewer Analysis
                 st.markdown("**Reviewer's Analysis Summary:**")
@@ -594,6 +753,127 @@ def render_standards_enhancement_page():
                     st.markdown("**Full Expert Discussion Log:**")
                     st.json(enhancement_results_data.get("discussion_history", []))
 
+            # PDF Export tab
+            with tabs[tab_names.index("PDF Export")]:
+                st.header("Enhanced PDF Export")
+                
+                # Check if PDF generation is enabled
+                if not PDF_CONFIG.get("enabled", True):
+                    st.warning("PDF generation is currently disabled. Enable it in the sidebar configuration.")
+                else:
+                    # Check API availability
+                    api_available = check_pdf_api_availability()
+                    if api_available:
+                        st.success("✅ PDF Generation API is available")
+                    else:
+                        st.error("❌ PDF Generation API is not available. Please try again later.")
+                    
+                    # Display standard information
+                    st.subheader("Standard Information")
+                    standard_id = enhancement_results_data.get('standard_id', 'N/A')
+                    
+                    # Get standard name from mapping if available
+                    try:
+                        from enhancement import STANDARD_ID_TO_NAME
+                        standard_name = STANDARD_ID_TO_NAME.get(standard_id, "Unknown")
+                    except ImportError:
+                        standard_name = "Unknown"
+                    
+                    col1, col2 = st.columns(2)
+                    col1.metric("Standard ID", f"FAS {standard_id}")
+                    col2.metric("Standard Name", standard_name)
+                    
+                    # Display extracted clauses
+                    st.subheader("Extracted Clauses")
+                    st.markdown("The following clauses will be included in the PDF:")
+                    
+                    # Extract clauses using the agent
+                    from components.agents import clause_extractor_agent
+                    extracted_clauses = clause_extractor_agent.extract_clauses(enhancement_results_data)
+                    
+                    if extracted_clauses:
+                        # Display clauses in an expander
+                        with st.expander("View Extracted Clauses", expanded=True):
+                            for i, clause in enumerate(extracted_clauses, 1):
+                                st.markdown(f"**Clause {i}: ID {clause['clause_id']}**")
+                                st.text_area(
+                                    f"Proposed Text for Clause {clause['clause_id']}",
+                                    value=clause['proposed_text'],
+                                    height=100,
+                                    key=f"clause_{i}",
+                                    disabled=True
+                                )
+                    else:
+                        st.warning("No clauses could be extracted from the enhancement proposal.")
+                    
+                    # PDF generation button
+                    st.subheader("Generate PDF")
+                    
+                    # Disable button if API is not available
+                    generate_btn_disabled = not api_available
+                    
+                    if st.button("📄 Generate Enhanced PDF Document", 
+                                 disabled=generate_btn_disabled,
+                                 type="primary",
+                                 use_container_width=True):
+                        
+                        # Create status container
+                        status_container = st.empty()
+                        status_container.info("Generating enhanced PDF...")
+                        
+                        # Generate the PDF
+                        pdf_path = generate_enhanced_pdf(
+                            enhancement_results_data, 
+                            standard_id
+                        )
+                        
+                        if pdf_path and os.path.exists(pdf_path):
+                            # Read the PDF file for download
+                            with open(pdf_path, "rb") as f:
+                                pdf_data = f.read()
+                            
+                            # Show success message
+                            status_container.success("✅ PDF generated successfully!")
+                            
+                            # Display file information
+                            file_size_kb = round(len(pdf_data) / 1024, 2)
+                            st.metric("PDF File Size", f"{file_size_kb} KB")
+                            st.markdown(f"**File path:** `{pdf_path}`")
+                            
+                            # Display download button
+                            st.download_button(
+                                label="⬇️ Download Enhanced PDF",
+                                data=pdf_data,
+                                file_name=os.path.basename(pdf_path),
+                                mime="application/pdf",
+                                use_container_width=True
+                            )
+                            
+                            # Display PDF preview if possible
+                            st.subheader("PDF Preview")
+                            st.markdown("PDF preview is not available in Streamlit. Please download the file to view it.")
+                            
+                        else:
+                            status_container.error("❌ Failed to generate PDF. Please check logs for details.")
+                    
+                    # Display additional information about the PDF generation process
+                    with st.expander("About PDF Generation"):
+                        st.markdown("""
+                        ### How It Works
+                        
+                        1. The system extracts clauses from the enhancement proposal using an LLM-powered agent
+                        2. The extracted clauses are sent to a specialized PDF generation API
+                        3. The API generates a professional PDF document with the proposed changes
+                        4. The PDF is saved to the `enhancement_results` directory
+                        
+                        ### Troubleshooting
+                        
+                        If PDF generation fails:
+                        - Check if the API is available (indicator above)
+                        - Ensure the standard ID is one of the supported standards
+                        - Try again later if the API is temporarily unavailable
+                        """)
+
             # Export section
             st.sidebar.subheader("⬇️ Export Results")
             markdown_content = create_export_markdown(enhancement_results_data)
@@ -604,6 +884,95 @@ def render_standards_enhancement_page():
                 mime="text/markdown",
                 use_container_width=True,
             )
+            
+            # Add PDF generation button
+            pdf_col1, pdf_col2 = st.sidebar.columns(2)
+            if pdf_col1.button("📄 Generate PDF", use_container_width=True):
+                # Create a placeholder for the download button
+                pdf_download_placeholder = pdf_col2.empty()
+                
+                # Show generation progress
+                with st.sidebar.status("Generating enhanced PDF...") as status:
+                    status.update(label="Checking API availability...", state="running")
+                    
+                    # Check if the API is available
+                    if not check_pdf_api_availability():
+                        status.update(label="PDF API is not available", state="error")
+                        st.sidebar.error("PDF generation API is not available. Please try again later.")
+                    else:
+                        status.update(label="Extracting clauses...", state="running")
+                        time.sleep(0.5)  # Small delay for UI update
+                        
+                        status.update(label="Generating enhanced PDF with API...", state="running")
+                        # Generate the PDF
+                        pdf_path = generate_enhanced_pdf(enhancement_results_data, enhancement_results_data.get('standard_id', 'NA'))
+                        
+                        if pdf_path and os.path.exists(pdf_path):
+                            # Read the PDF file for download
+                            with open(pdf_path, "rb") as f:
+                                pdf_data = f.read()
+                            
+                            status.update(label="PDF ready for download!", state="complete")
+                            
+                            # Provide download button for the PDF
+                            pdf_download_placeholder.download_button(
+                                label="⬇️ Download",
+                                data=pdf_data,
+                                file_name=os.path.basename(pdf_path),
+                                mime="application/pdf",
+                                use_container_width=True,
+                            )
+                            
+                            # Add a success message with file size info
+                            file_size_kb = round(len(pdf_data) / 1024, 2)
+                            st.sidebar.success(f"Enhanced PDF generated successfully! ({file_size_kb} KB)")
+                            
+                            # Add a link to open the PDF
+                            pdf_rel_path = os.path.relpath(pdf_path, os.getcwd())
+                            st.sidebar.markdown(f"[Open PDF]({pdf_rel_path})")
+                        else:
+                            status.update(label="Failed to generate PDF", state="error")
+                            st.sidebar.error("Failed to generate enhanced PDF. Please check logs for details.")
+            
+            # Add podcast generation button
+            podcast_col1, podcast_col2 = st.sidebar.columns(2)
+            if podcast_col1.button("🎙️ Generate Podcast", use_container_width=True):
+                # Create a placeholder for the download button
+                podcast_download_placeholder = podcast_col2.empty()
+                
+                # Show generation progress
+                with st.sidebar.status("Generating podcast...") as status:
+                    status.update(label="Preparing markdown content...", state="running")
+                    time.sleep(0.5)  # Small delay for UI update
+                    
+                    status.update(label="Generating audio segments with ElevenLabs API...", state="running")
+                    podcast_path = generate_and_download_podcast(markdown_content, enhancement_data=enhancement_results_data)
+                    
+                    if podcast_path and os.path.exists(podcast_path):
+                        # Read the podcast file for download
+                        with open(podcast_path, "rb") as f:
+                            podcast_data = f.read()
+                        
+                        status.update(label="Podcast ready for download!", state="complete")
+                        
+                        # Provide download button for the podcast
+                        podcast_download_placeholder.download_button(
+                            label="⬇️ Download",
+                            data=podcast_data,
+                            file_name=os.path.basename(podcast_path),
+                            mime="audio/mpeg",
+                            use_container_width=True,
+                        )
+                        
+                        # Add a success message with file size info
+                        file_size_mb = round(len(podcast_data) / (1024 * 1024), 2)
+                        st.sidebar.success(f"Podcast generated successfully! ({file_size_mb} MB)")
+                        
+                        # Add a player to preview the podcast
+                        st.sidebar.audio(podcast_data, format="audio/mp3")
+                    else:
+                        status.update(label="Failed to generate podcast", state="error")
+                        st.sidebar.error("Failed to generate podcast. Please check logs for details.")
 
 
     # --- View Past Enhancements Section ---
