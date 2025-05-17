@@ -15,7 +15,8 @@ from retreiver import retriever
 
 # Try importing evaluation components
 try:
-    from components.evaluation import ISDBIEvaluator
+    # Import the new debate-based evaluation system
+    from components.evaluation.evaluation_manager import evaluation_manager
 
     EVALUATION_AVAILABLE = True
 except ImportError:
@@ -37,10 +38,10 @@ def run_use_case_tests(verbose=False, evaluate=False):
     print("=" * 80)
 
     # Initialize evaluation components if requested
-    evaluator = None
+    evaluator = evaluation_manager
     evaluation_results = []
     if evaluate and EVALUATION_AVAILABLE:
-        evaluator = ISDBIEvaluator()
+        # evaluator = ISDBIEvaluator()
         print("Evaluation mode enabled. Results will be scored by expert agents.")
     elif evaluate and not EVALUATION_AVAILABLE:
         print(
@@ -75,24 +76,45 @@ def run_use_case_tests(verbose=False, evaluate=False):
                     print(f"Scenario: {scenario}")
                     print(f"Response: {response}")
 
-                    # Run evaluation
-                    eval_result = evaluator.evaluate(
-                        prompt=scenario,
-                        response=response,
-                        retrieve_context=True,
-                        output_format="markdown",
-                    )
+                    # # Run evaluation
+                    # eval_result = evaluator.evaluate(
+                    #     prompt=scenario,
+                    #     response=response,
+                    #     retrieve_context=True,
+                    #     output_format="markdown",
+                    # )
 
-                    # Print evaluation results
-                    print(
-                        f"Overall Score: {eval_result.get('overall_score', 'N/A')}/10"
-                    )
-                    print(f"Strongest Area: {eval_result.get('strongest_area', 'N/A')}")
-                    print(f"Weakest Area: {eval_result.get('weakest_area', 'N/A')}")
+                    # # Print evaluation results
+                    # print(
+                    #     f"Overall Score: {eval_result.get('overall_score', 'N/A')}/10"
+                    # )
+                    # print(f"Strongest Area: {eval_result.get('strongest_area', 'N/A')}")
+                    # print(f"Weakest Area: {eval_result.get('weakest_area', 'N/A')}")
 
                     # Store results for later analysis
-                    evaluation_results.append(
-                        {"name": test_case["name"], "evaluation": eval_result}
+                    # evaluation_results.append(
+                    #     {"name": test_case["name"], "evaluation": eval_result}
+                    # )
+
+                    eval_result = evaluation_manager.evaluate_response(
+                        prompt=scenario,
+                        response=response,
+                        fetch_additional_context=True,
+                        debate_domains=[
+                            "shariah",
+                            "finance",
+                            "legal",
+                        ],  # Use all domains for comprehensive evaluation
+                    )
+
+                    traditional_score = eval_result.get("aggregated_scores", {}).get(
+                        "overall_score", "N/A"
+                    )
+                    discrete_score = eval_result.get("aggregated_scores", {}).get(
+                        "overall_discrete_score", "N/A"
+                    )
+                    print(
+                        f"Evaluation completed successfully with scores: Traditional={traditional_score}/10, Discrete={discrete_score}/4"
                     )
                 except Exception as e:
                     print(f"Error during evaluation: {e}")
@@ -116,9 +138,11 @@ def run_use_case_tests(verbose=False, evaluate=False):
         except Exception as e:
             print(f"Error processing use case: {e}")
             if i < len(test_cases):
-                cont = input("\nContinue to next test case? (y/n): ")
+                # cont = input("\nContinue to next test case? (y/n): ")
+                cont = "y"
                 if cont.lower() not in ["y", "yes"]:
                     break
+            print("-------------------------------------------")
 
     # Save evaluation results if we have any
     if evaluate and evaluation_results:
@@ -133,4 +157,4 @@ def run_use_case_tests(verbose=False, evaluate=False):
 
 if __name__ == "__main__":
     # You can run the file directly to test use cases
-    run_use_case_tests()
+    run_use_case_tests(evaluate=True)

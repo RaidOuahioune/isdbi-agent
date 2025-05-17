@@ -58,7 +58,7 @@ class ISDBIEvaluator:
             prompt=prompt,
             response=response,
             reference_answer=reference_answer,
-            context=context
+            context=context,
         )
 
         # Generate report in the requested format
@@ -69,7 +69,9 @@ class ISDBIEvaluator:
 
         elif output_format == "markdown":
             report = self.report_generator.generate_markdown_report(evaluation_result)
-            self.report_generator.save_markdown_report(evaluation_result)
+            self.report_generator.save_markdown_report(
+                evaluation_result, report_dir="reports", file_path="markdown_report.md"
+            )
 
         else:  # Default to text
             report = self.report_generator.generate_text_report(evaluation_result)
