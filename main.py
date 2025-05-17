@@ -21,6 +21,7 @@ from utils.sample_tests import run_sample_tests
 from utils.transaction_tests import run_category2_tests
 from utils.verify_compliance import verify_document_compliance
 from utils.compliance_tests import run_compliance_tests
+from utils.enhancement_tests import run_category3_tests
 
 # Load environment variables
 load_dotenv()
@@ -32,6 +33,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--samples", action="store_true", help="Run sample test queries"
     )
+    # Category 2 arguments
     parser.add_argument(
         "--category2",
         action="store_true",
@@ -47,6 +49,28 @@ if __name__ == "__main__":
         action="store_true",
         help="Run Category 2 tests with evaluation of results",
     )
+    # Category 3 arguments
+    parser.add_argument(
+        "--category3",
+        action="store_true",
+        help="Run Category 3 standards enhancement tests",
+    )
+    parser.add_argument(
+        "--category3-verbose",
+        action="store_true",
+        help="Run Category 3 enhancement tests with detailed logs",
+    )
+    parser.add_argument(
+        "--category3-evaluate",
+        action="store_true",
+        help="Run Category 3 tests with evaluation of results",
+    )
+    parser.add_argument(
+        "--category3-discrete",
+        action="store_true",
+        help="Run Category 3 tests with discrete scoring system test",
+    )
+    # Evaluation arguments
     parser.add_argument(
         "--evaluate",
         action="store_true",
@@ -57,19 +81,18 @@ if __name__ == "__main__":
         action="store_true",
         help="Run standalone evaluation tests with detailed output",
     )
-
+    # Verification arguments
     parser.add_argument(
         "--verify",
         type=str,
         help="Verify compliance of a document (provide file path)",
     )
-
     parser.add_argument(
         "--verify-verbose",
         action="store_true",
         help="Show detailed output during verification",
     )
-
+    # Compliance arguments
     parser.add_argument(
         "--compliance-tests",
         action="store_true",
@@ -80,7 +103,6 @@ if __name__ == "__main__":
         action="store_true",
         help="Run compliance tests with detailed output"
     )
-    
     parser.add_argument(
         "--compliance-output",
         choices=["json", "csv"],
@@ -103,6 +125,14 @@ if __name__ == "__main__":
         run_category2_tests(evaluate=True)
     elif args.category2:
         run_category2_tests()
+    elif args.category3_verbose:
+        run_category3_tests(verbose=True)
+    elif args.category3_evaluate:
+        run_category3_tests(evaluate=True)
+    elif args.category3_discrete:
+        run_category3_tests(test_discrete_scoring=True)
+    elif args.category3:
+        run_category3_tests()
     elif args.evaluate_verbose:
         run_category2_tests(evaluate=True, verbose=True)
     # elif args.evaluate:

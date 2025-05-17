@@ -1,15 +1,15 @@
 """
-Transaction testing module for the Islamic Finance standards system.
+Standards enhancement testing module for the Islamic Finance standards system.
 """
 
-from agents import transaction_analyzer, transaction_rationale, knowledge_integration
-from components.test.reverse_transactions import test_cases
+from enhancement import run_standards_enhancement, ENHANCEMENT_TEST_CASES
+from components.orchestration.enhancement_orchestrator import EnhancementOrchestrator
 import logging
-from components.evaluation.report_generator import EvaluationReportGenerator
 import os
 import json
 import argparse
 import time
+from typing import Dict, Any, List, Optional, Callable
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -17,19 +17,18 @@ logger = logging.getLogger(__name__)
 
 # Import evaluation components (only if available)
 try:
-    # Import the new debate-based evaluation system
+    # Import the debate-based evaluation system
     from components.evaluation.evaluation_manager import evaluation_manager
 
     EVALUATION_AVAILABLE = True
 except ImportError:
     EVALUATION_AVAILABLE = False
     print("Evaluation components not available. Skipping evaluation functionality.")
-import json
 
 
-def run_category2_tests(verbose=False, evaluate=False, test_discrete_scoring=False):
+def run_category3_tests(verbose=False, evaluate=False, test_discrete_scoring=False):
     """
-    Run tests specifically for Category 2 (Reverse Transactions Analysis)
+    Run tests specifically for Category 3 (Standards Enhancement)
 
     Args:
         verbose: If True, show more detailed output
@@ -38,7 +37,7 @@ def run_category2_tests(verbose=False, evaluate=False, test_discrete_scoring=Fal
     """
     print_header()
 
-    logger.info("Starting Category 2 tests with the following settings:")
+    logger.info("Starting Category 3 tests with the following settings:")
     logger.info(f"- Verbose output: {'Enabled' if verbose else 'Disabled'}")
     logger.info(f"- Evaluation: {'Enabled' if evaluate else 'Disabled'}")
     logger.info(
@@ -56,36 +55,31 @@ def run_category2_tests(verbose=False, evaluate=False, test_discrete_scoring=Fal
         test_discrete_scoring_system()
         return
 
-    for i, test_case in enumerate(test_cases, 1):
+    for i, test_case in enumerate(ENHANCEMENT_TEST_CASES, 1):
         print(f"\n\n----- TEST CASE {i}: {test_case['name']} -----\n")
 
-        # The transaction is now directly a string description
-        transaction = test_case["transaction"]
+        standard_id = test_case["standard_id"]
+        trigger_scenario = test_case["trigger_scenario"]
 
-        # Display the transaction description
-        print(transaction)
+        # Display the test information
+        print(f"Standard ID: FAS {standard_id}")
+        print(f"Trigger Scenario: {trigger_scenario}")
 
-        # Analyze and process the transaction
+        # Process the enhancement
         try:
-            analysis_result, correct_standard = analyze_transaction(
-                transaction, verbose
-            )
-
-            # Process standards and generate rationale
-            process_standards_and_rationale(
-                transaction,
-                analysis_result,
-                correct_standard,
+            enhancement_result = process_enhancement(
+                standard_id, 
+                trigger_scenario, 
                 test_case,
                 evaluation_results,
                 evaluate,
-                verbose,
+                verbose
             )
         except Exception as e:
-            print(f"Error analyzing transaction: {e}")
+            print(f"Error processing enhancement: {e}")
 
         # Ask user to continue
-        if i < len(test_cases):
+        if i < len(ENHANCEMENT_TEST_CASES):
             # cont = input("\nContinue to next test case? (y/n): ")
             cont = "y"
             if cont.lower() not in ["y", "yes"]:
@@ -100,7 +94,7 @@ def run_category2_tests(verbose=False, evaluate=False, test_discrete_scoring=Fal
 def print_header():
     """Print the test category header."""
     print("\n" + "=" * 80)
-    print("CATEGORY 2: REVERSE TRANSACTIONS ANALYSIS TESTS")
+    print("CATEGORY 3: STANDARDS ENHANCEMENT TESTS")
     print("=" * 80)
 
 
@@ -129,153 +123,145 @@ def initialize_evaluation(evaluation_results):
         )
 
 
-def analyze_transaction(transaction, verbose):
-    """
-    Analyze a transaction and extract the correct standard.
-
-    Args:
-        transaction: The transaction description
-        verbose: Whether to show verbose output
-
-    Returns:
-        tuple: (analysis_result, correct_standard)
-    """
-    print("\n----- ANALYSIS RESULTS -----")
-
-    # Perform transaction analysis
-    analysis_result = transaction_analyzer.analyze_transaction(transaction)
-    print("\nTransaction Analysis:")
-    print(analysis_result["analysis"])
-
-    # Extract the correct standard using the clear indicator phrase
-    correct_standard = extract_correct_standard(analysis_result["analysis"])
-
-    # Display verbose information if requested
-    if verbose and "retrieval_stats" in analysis_result:
-        display_retrieval_stats(analysis_result["retrieval_stats"])
-
-    return analysis_result, correct_standard
-
-
-def extract_correct_standard(analysis_text):
-    """
-    Extract the correct standard from analysis text.
-
-    Args:
-        analysis_text: The analysis text to parse
-
-    Returns:
-        str or None: The extracted standard if found
-    """
-    correct_standard = None
-    if "THE CORRECT STANDARD IS:" in analysis_text:
-        # Extract the standard mentioned after the indicator phrase
-        start_idx = analysis_text.find("THE CORRECT STANDARD IS:") + len(
-            "THE CORRECT STANDARD IS:"
-        )
-        end_idx = analysis_text.find("\n", start_idx)
-        if end_idx == -1:  # If no newline after the phrase
-            end_idx = len(analysis_text)
-        correct_standard = analysis_text[start_idx:end_idx].strip()
-        print(f"\nClearly Identified Standard: {correct_standard}")
-
-    return correct_standard
-
-
-def display_retrieval_stats(stats):
-    """Display retrieval statistics for verbose mode."""
-    print("\n--- RAG Retrieval Stats ---")
-    print(f"Retrieved {stats['chunk_count']} chunks")
-    print("\nSample chunks:")
-    for j, chunk_summary in enumerate(stats["chunks_summary"]):
-        print(f"\nChunk {j + 1}: {chunk_summary}")
-
-
-def process_standards_and_rationale(
-    transaction,
-    analysis_result,
-    correct_standard,
-    test_case,
-    evaluation_results,
-    evaluate,
-    verbose,
+def process_enhancement(
+    standard_id, 
+    trigger_scenario, 
+    test_case, 
+    evaluation_results, 
+    evaluate, 
+    verbose
 ):
     """
-    Process standards and generate rationale for the transaction.
+    Process a standards enhancement test case.
 
     Args:
-        transaction: The transaction description
-        analysis_result: Result from transaction analysis
-        correct_standard: The correct standard if explicitly identified
+        standard_id: The standard ID to enhance
+        trigger_scenario: The trigger scenario to use
         test_case: The current test case
         evaluation_results: List to store evaluation results
         evaluate: Whether to run evaluation
         verbose: Whether to show verbose output
     """
-    # Use identified standards from the analysis, but prioritize the clearly marked one
-    standards = analysis_result["identified_standards"]
-    if not standards:
-        print("\nNo standards identified for this transaction.")
-        return
+    print("\n----- ENHANCEMENT RESULTS -----")
 
-    print(f"\nAll Identified Standards: {', '.join(standards)}")
+    # Define a progress callback to display status
+    def progress_callback(phase, detail):
+        if verbose:
+            print(f"Progress [{phase}]: {detail}")
 
-    # Prioritize the clearly marked standard if available
-    top_standard = correct_standard if correct_standard else standards[0]
-
-    # Get rationale for the top standard
-    rationale = transaction_rationale.explain_standard_application(
-        transaction, top_standard
+    # Perform enhancement
+    enhancement_result = run_standards_enhancement(
+        standard_id, 
+        trigger_scenario, 
+        progress_callback=progress_callback if verbose else None,
+        include_cross_standard_analysis=True,
+        generate_pdf=False  # Don't generate PDFs during testing
     )
-    print(f"\n{top_standard} Application Rationale:")
-    print(rationale["rationale"])
+    
+    # Display enhancement results
+    display_enhancement_results(enhancement_result, verbose)
 
     # Run evaluation if requested and available
     if evaluate and EVALUATION_AVAILABLE:
         run_debate_evaluation(
-            transaction,
-            analysis_result,
-            top_standard,
-            rationale,
+            standard_id,
+            trigger_scenario,
+            enhancement_result,
             test_case,
             evaluation_results,
             verbose,
         )
+    
+    return enhancement_result
+
+
+def display_enhancement_results(result, verbose):
+    """
+    Display the enhancement results.
+
+    Args:
+        result: The enhancement result to display
+        verbose: Whether to show verbose output
+    """
+    if "error" in result:
+        print(f"\nError during enhancement: {result['error']}")
+        return
+
+    # Display the final proposal
+    print("\nEnhancement Proposal:")
+    if "final_proposal" in result:
+        print(result["final_proposal"])
+    elif "current_proposal_structured_text" in result:
+        print(result["current_proposal_structured_text"])
+    else:
+        print("No proposal found in results.")
+
+    # Display the validator's assessment
+    if "validation_summary" in result:
+        print("\nValidation Assessment:")
+        print(result["validation_summary"])
+
+    # Display cross-standard impact analysis if available
+    if "cross_standard_analysis" in result:
+        print("\nCross-Standard Impact Analysis:")
+        print(result["cross_standard_analysis"])
+
+    # If verbose, show additional details like expert contributions
+    if verbose:
+        if "discussion_history" in result:
+            print("\n--- Expert Discussion Details ---")
+            for i, entry in enumerate(result["discussion_history"]):
+                expert = entry.get("agent_type", "Unknown")
+                contribution = entry.get("contribution", "")
+                print(f"\nExpert {i+1} ({expert}):")
+                print(contribution[:300] + "..." if len(contribution) > 300 else contribution)
+        
+        if "consensus_metrics_history" in result:
+            print("\n--- Consensus Metrics ---")
+            for i, metrics in enumerate(result["consensus_metrics_history"]):
+                print(f"Round {i+1}:")
+                print(f"- Agreement Level: {metrics.get('agreement_level', 'N/A')}")
+                print(f"- Confidence: {metrics.get('confidence', 'N/A')}")
 
 
 def run_debate_evaluation(
-    transaction,
-    analysis_result,
-    top_standard,
-    rationale,
+    standard_id,
+    trigger_scenario,
+    enhancement_result,
     test_case,
     evaluation_results,
     verbose,
 ):
     """
-    Run debate-based evaluation on a transaction response.
+    Run debate-based evaluation on an enhancement response.
 
     Args:
-        transaction: The transaction description
-        analysis_result: Result from transaction analysis
-        top_standard: The top standard to evaluate
-        rationale: Rationale for the standard application
+        standard_id: The standard ID
+        trigger_scenario: The trigger scenario
+        enhancement_result: Result from enhancement process
         test_case: The current test case
         evaluation_results: List to store evaluation results
         verbose: Whether to show verbose output
     """
     print("\n----- DEBATE-BASED EVALUATION RESULTS -----")
     logger.info(f"Starting debate-based evaluation for test case: {test_case['name']}")
-    logger.info(f"Top standard identified: {top_standard}")
+    logger.info(f"Standard being enhanced: FAS {standard_id}")
 
     try:
-        # Process through knowledge integration for a comprehensive response
-        # logger.info("Integrating knowledge from analysis and rationales...")
-        # standard_rationales = {top_standard: rationale["rationale"]}
-        # integrated_result = knowledge_integration.integrate_knowledge(
-        #     analysis_result, standard_rationales
-        # )
-        # full_response = integrated_result["integrated_analysis"]
+        # Prepare the prompt and response for evaluation
+        prompt = f"Standard ID: FAS {standard_id}\nTrigger Scenario: {trigger_scenario}"
+        
+        response = ""
+        if "final_proposal" in enhancement_result:
+            response += f"Enhancement Proposal:\n{enhancement_result['final_proposal']}\n\n"
+        elif "current_proposal_structured_text" in enhancement_result:
+            response += f"Enhancement Proposal:\n{enhancement_result['current_proposal_structured_text']}\n\n"
+        
+        if "validation_summary" in enhancement_result:
+            response += f"Validation Assessment:\n{enhancement_result['validation_summary']}\n\n"
+            
+        if "cross_standard_analysis" in enhancement_result:
+            response += f"Cross-Standard Analysis:\n{enhancement_result['cross_standard_analysis']}"
 
         logger.info("Starting multi-domain debate evaluation...")
         logger.info("Using domains: shariah, finance, legal")
@@ -283,23 +269,18 @@ def run_debate_evaluation(
 
         # Run multi-domain debate-based evaluation with enhanced discrete scoring
         eval_result = evaluation_manager.evaluate_response(
-            prompt=transaction,
-            response=f"""
-            Analysis Result: {analysis_result}
-            
-            Rationale for the analysis: {rationale}
-            """,
+            prompt=prompt,
+            response=response,
             fetch_additional_context=True,
-            # No need for use_debate_system parameter as debate system is always used now
-            generate_report=True,  # Generate a report with both scoring systems
+            generate_report=True,
             report_format="markdown",
             save_report=True,
-            output_dir="reports",
+            output_dir="reports/enhancement",
             debate_domains=[
                 "shariah",
                 "finance",
                 "legal",
-            ],  # Use all domains for comprehensive evaluation
+            ],
         )
 
         # Log successful evaluation
@@ -313,23 +294,23 @@ def run_debate_evaluation(
             f"Evaluation completed successfully with scores: Traditional={traditional_score}/10, Discrete={discrete_score}/4"
         )
 
-        # report_md = EvaluationReportGenerator.generate_markdown_report(eval_result)        # Save additional JSON file with test case details
+        # Save additional JSON file with test case details
         try:
             # Create reports directory if it doesn't exist
-            test_case_dir = os.path.join("reports", "test_cases")
+            test_case_dir = os.path.join("reports", "enhancement", "test_cases")
             os.makedirs(test_case_dir, exist_ok=True)
 
             # Create a filename based on the test case
             test_case_file = os.path.join(
                 test_case_dir,
-                f"{test_case['name'].replace(' ', '_').lower()}_results.json",
+                f"FAS_{standard_id}_{test_case['name'].replace(' ', '_').lower()}_results.json",
             )
 
             # Add test case metadata to the results
             case_results = {
                 "test_case": test_case["name"],
-                "transaction": transaction,
-                "identified_standard": top_standard,
+                "standard_id": standard_id,
+                "trigger_scenario": trigger_scenario,
                 "evaluation_results": eval_result,
             }
 
@@ -353,6 +334,7 @@ def run_debate_evaluation(
 
     except Exception as e:
         print(f"Error during debate-based evaluation: {e}")
+        logger.error(f"Error during debate-based evaluation: {e}")
 
 
 def display_evaluation_results(eval_result, verbose):
@@ -463,6 +445,7 @@ def store_evaluation_results(eval_result, test_case, evaluation_results):
     evaluation_results.append(
         {
             "name": test_case["name"],
+            "standard_id": test_case["standard_id"],
             "evaluation": eval_result,
             "debate_enabled": eval_result.get("debate_enabled", False),
             "domains": [d for d in eval_result.get("debate_results", {}).keys()],
@@ -479,7 +462,12 @@ def save_debate_results(eval_result, test_case):
         test_case: The current test case
     """
     try:
-        debate_file = f"debate_results_{test_case['name'].replace(' ', '_')}.json"
+        # Create directory if it doesn't exist
+        os.makedirs("reports/enhancement", exist_ok=True)
+        
+        # Create filename based on test case
+        debate_file = f"reports/enhancement/debate_results_FAS_{test_case['standard_id']}_{test_case['name'].replace(' ', '_')}.json"
+        
         with open(debate_file, "w") as f:
             json.dump(eval_result.get("debate_results", {}), f, indent=2, default=str)
         print(f"\nDetailed debate results saved to {debate_file}")
@@ -508,6 +496,7 @@ def print_evaluation_summary(evaluation_results):
 
     for result in evaluation_results:
         name = result["name"]
+        standard_id = result.get("standard_id", "Unknown")
         traditional_score = result["evaluation"].get("overall_score", "N/A")
         # Also display discrete score if available
         discrete_score = (
@@ -523,7 +512,7 @@ def print_evaluation_summary(evaluation_results):
         if isinstance(discrete_score, (int, float)):
             discrete_scores.append(discrete_score)
 
-        print(f"\n{name}:")
+        print(f"\nFAS {standard_id} - {name}:")
         print(f"  Overall Score: {traditional_score}/10")
         if discrete_score != "N/A":
             print(f"  Discrete Score: {discrete_score}/4")
@@ -547,68 +536,6 @@ def print_evaluation_summary(evaluation_results):
         logger.info(f"Average discrete score: {avg_disc:.2f}/4")
 
 
-if __name__ == "__main__":
-    """
-    Main entry point for running transaction tests.
-    Command line arguments:
-    --verbose: Show more detailed output
-    --evaluate: Run evaluation on results
-    --test-discrete: Run a specific test for the discrete scoring system
-    """
-    import argparse
-    import time
-
-    # Configure argument parser
-    parser = argparse.ArgumentParser(
-        description="Run transaction analysis tests with enhanced evaluation."
-    )
-    parser.add_argument("--verbose", action="store_true", help="Show detailed output")
-    parser.add_argument(
-        "--evaluate", action="store_true", help="Run evaluation on results"
-    )
-    parser.add_argument(
-        "--test-discrete",
-        action="store_true",
-        help="Run a test of the discrete scoring system",
-    )
-
-    # Parse arguments
-    args = parser.parse_args()
-
-    # Set up logging to file
-    log_dir = "logs"
-    os.makedirs(log_dir, exist_ok=True)
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    file_handler = logging.FileHandler(f"{log_dir}/transaction_tests_{timestamp}.log")
-    file_handler.setLevel(logging.INFO)
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-
-    # Log startup info
-    logger.info("=== Transaction Tests Started ===")
-    logger.info(
-        f"Arguments: verbose={args.verbose}, evaluate={args.evaluate}, test_discrete={args.test_discrete}"
-    )
-
-    # Run the tests
-    start_time = time.time()
-    run_category2_tests(
-        verbose=args.verbose,
-        evaluate=args.evaluate,
-        test_discrete_scoring=args.test_discrete,
-    )
-    end_time = time.time()
-
-    # Log completion
-    duration = end_time - start_time
-    logger.info(f"=== Transaction Tests Completed in {duration:.2f} seconds ===")
-    print(f"\nTests completed in {duration:.2f} seconds")
-    print(f"Log file: {log_dir}/transaction_tests_{timestamp}.log")
-
-
 def test_discrete_scoring_system():
     """
     Test the enhanced evaluation system with discrete scoring.
@@ -620,31 +547,98 @@ def test_discrete_scoring_system():
 
     logger.info("Running standalone test for discrete 1-4 scoring system...")
 
-    # Sample prompt and response related to Islamic finance
+    # Sample prompt and response related to Islamic finance standards enhancement
     prompt = """
-    A client wants to buy a car through an Islamic bank. 
-    What financing options can the bank provide that are Shariah-compliant?
+    Standard ID: FAS 10 (Istisna'a)
+    Trigger Scenario: A financial institution wants to structure an Istisna'a contract for the development 
+    of a large-scale AI software platform. The current wording of FAS 10 on 'well-defined 
+    subject matter' and 'determination of cost' is causing uncertainty for intangible assets 
+    like software development.
     """
 
     response = """
-    The Islamic bank can offer several Shariah-compliant financing options for purchasing a car:
-
-    1. Murabaha (Cost-Plus Financing): The bank purchases the car and then sells it to the client at a marked-up price.
-       The client knows the original cost and the bank's profit margin upfront, and makes payments in installments.
-
-    2. Ijarah Muntahia Bittamleek (Lease-to-Own): The bank purchases the car and leases it to the client for a fixed
-       period with agreed-upon rental payments. At the end of the lease term, ownership transfers to the client.
-
-    3. Diminishing Musharakah: The bank and client jointly own the car. The client gradually buys the bank's share
-       over time while paying rent for the bank's portion until the client fully owns the car.
-
-    All these options avoid interest (riba), ensure that risk is shared appropriately, and are asset-backed,
-    making them Shariah-compliant alternatives to conventional car loans.
+    Enhancement Proposal:
+    
+    PROPOSED ENHANCEMENT TO FAS 10 (ISTISNA'A)
+    
+    Section 3: Definition and Nature of Istisna'a
+    
+    Add new sub-section 3.4: "Application to Digital and Intangible Assets"
+    
+    3.4.1 The Istisna'a contract may be applied to the development and creation of digital and intangible 
+    assets, including but not limited to software development, digital platforms, artificial intelligence 
+    systems, and other technological solutions, provided they meet the fundamental requirements of Istisna'a.
+    
+    3.4.2 For digital and intangible assets, "well-defined subject matter" shall include:
+    a) Comprehensive functional specifications and technical requirements documentation
+    b) Clear deliverables and acceptance criteria
+    c) Defined development methodology and project phases
+    d) Specific performance metrics and quality standards
+    
+    3.4.3 For determination of cost in digital asset development:
+    a) Development costs shall be estimated based on standard industry practices
+    b) Labor hours and expertise levels shall be clearly specified
+    c) Licensing of pre-existing components shall be explicitly documented
+    d) Ongoing maintenance and support services shall be distinguished from the Istisna'a contract
+    
+    Section 5: Measurement
+    
+    Add to existing paragraph 5.1:
+    
+    5.1.x For digital and intangible assets, percentage-of-completion shall be determined through:
+    a) Achievement of predefined development milestones
+    b) Completion of specific modules or components
+    c) Successful passage of agreed-upon testing protocols
+    d) Formal client acceptance of interim deliverables
+    
+    Section 7: Disclosure
+    
+    Add new paragraph 7.3:
+    
+    7.3 For Istisna'a contracts related to digital and intangible assets, the financial institution shall disclose:
+    a) The nature and specifications of the digital asset being developed
+    b) The methodology used to determine percentage-of-completion
+    c) Key risk factors specific to digital asset development
+    d) Ownership and intellectual property rights arrangements
+    e) Post-delivery support and maintenance agreements (if applicable)
+    
+    Validation Assessment:
+    
+    The proposed enhancement to FAS 10 addresses the application of Istisna'a contracts to digital and intangible 
+    assets with a high degree of specificity and clarity. It maintains adherence to Shariah principles while 
+    providing practical guidance for modern applications. The amendments properly address the key concerns of 
+    "well-defined subject matter" and "determination of cost" for digital assets by providing clear parameters 
+    and requirements. The enhancements are integrated seamlessly into the existing standard structure and use 
+    consistent terminology. The proposals also appropriately address measurement issues specific to digital assets 
+    and include comprehensive disclosure requirements to ensure transparency. Overall, this enhancement successfully 
+    bridges the gap between traditional Istisna'a principles and modern digital asset development needs.
+    
+    Cross-Standard Analysis:
+    
+    This enhancement to FAS 10 has moderate implications for other AAOIFI standards:
+    
+    1. FAS 1 (General Presentation and Disclosure): Minimal impact; the new disclosure requirements align with 
+       existing principles but add digital asset specifics.
+    
+    2. FAS 25 (Investment in Sukuk): Medium impact; if Istisna'a-based Sukuk are issued for digital asset projects, 
+       new guidance may be needed for valuation of these assets.
+    
+    3. FAS 30 (Impairment and Credit Losses): Significant impact; new considerations needed for assessing impairment 
+       of in-progress digital assets under Istisna'a, as their value assessment differs from tangible assets.
+    
+    4. FAS 31 (Investment Agency): Low impact; could affect situations where Investment Agency is used alongside 
+       Istisna'a for digital asset development.
+    
+    5. FAS 35 (Risk Reserves): Medium impact; may require development of specific risk reserve calculations for 
+       digital asset Istisna'a projects due to their unique risk profiles.
+    
+    Recommended follow-up: Develop implementation notes for FAS 30 specifically addressing impairment assessment 
+    methodologies for in-progress digital assets under Istisna'a contracts.
     """
 
     logger.info("Creating test directories for reports...")
     # Create reports directory if it doesn't exist
-    os.makedirs("reports/test_discrete", exist_ok=True)
+    os.makedirs("reports/enhancement/test_discrete", exist_ok=True)
 
     print("\nRunning evaluation with discrete scoring system...")
     # Test the evaluation system with both scoring methods
@@ -656,7 +650,7 @@ def test_discrete_scoring_system():
             generate_report=True,
             report_format="all",  # Generate reports in all formats
             save_report=True,
-            output_dir="reports/test_discrete",
+            output_dir="reports/enhancement/test_discrete",
             debate_domains=["shariah", "finance", "legal"],  # Test all domains
         )
 
@@ -698,3 +692,61 @@ def test_discrete_scoring_system():
         print(f"\nError during discrete scoring test: {e}")
         logger.error(f"Error testing discrete scoring system: {e}")
         return False
+
+
+if __name__ == "__main__":
+    """
+    Main entry point for running enhancement tests.
+    Command line arguments:
+    --verbose: Show more detailed output
+    --evaluate: Run evaluation on results
+    --test-discrete: Run a specific test for the discrete scoring system
+    """
+    parser = argparse.ArgumentParser(
+        description="Run standards enhancement tests with enhanced evaluation."
+    )
+    parser.add_argument("--verbose", action="store_true", help="Show detailed output")
+    parser.add_argument(
+        "--evaluate", action="store_true", help="Run evaluation on results"
+    )
+    parser.add_argument(
+        "--test-discrete",
+        action="store_true",
+        help="Run a test of the discrete scoring system",
+    )
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Set up logging to file
+    log_dir = "logs"
+    os.makedirs(log_dir, exist_ok=True)
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    file_handler = logging.FileHandler(f"{log_dir}/enhancement_tests_{timestamp}.log")
+    file_handler.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    # Log startup info
+    logger.info("=== Enhancement Tests Started ===")
+    logger.info(
+        f"Arguments: verbose={args.verbose}, evaluate={args.evaluate}, test_discrete={args.test_discrete}"
+    )
+
+    # Run the tests
+    start_time = time.time()
+    run_category3_tests(
+        verbose=args.verbose,
+        evaluate=args.evaluate,
+        test_discrete_scoring=args.test_discrete,
+    )
+    end_time = time.time()
+
+    # Log completion
+    duration = end_time - start_time
+    logger.info(f"=== Enhancement Tests Completed in {duration:.2f} seconds ===")
+    print(f"\nTests completed in {duration:.2f} seconds")
+    print(f"Log file: {log_dir}/enhancement_tests_{timestamp}.log") 

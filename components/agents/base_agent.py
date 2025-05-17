@@ -8,7 +8,6 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 import logging
 import sys
 
-# Set up logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -23,6 +22,7 @@ llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash-preview-04-17",
     api_key=os.environ["GEMINI_API_KEY"],
 )
+
 
 class Agent:
     """Base Agent class that all specialized agents will inherit from."""

@@ -205,17 +205,21 @@ Scores: {evaluation.get("scores", {})}
                 path.mkdir(parents=True, exist_ok=True)
                 logger.info(f"Created directory: {directory_path}")
         except Exception as e:
-            logger.error(f"Error creating directory {directory_path}: {e}")
+            logger.error(
+                f"Error creating directory {directory_path}: {e}"
+            ) @ staticmethod
 
-    @staticmethod
     def save_text_report(
-        evaluation_result: Dict[str, Any], file_path: Optional[str] = None
+        evaluation_result: Dict[str, Any],
+        report_dir: Optional[str] = None,
+        file_path: Optional[str] = None,
     ) -> str:
         """
         Generate and save a text report to a file.
 
         Args:
             evaluation_result: The full evaluation result
+            report_dir: Optional directory to save the report in
             file_path: Optional file path, if None will generate a timestamp-based path
 
         Returns:
@@ -223,7 +227,9 @@ Scores: {evaluation.get("scores", {})}
         """
         # Generate default file path if not provided
         if file_path is None:
-            reports_dir = Path("reports/text")
+            reports_dir = (
+                Path(report_dir) / "text" if report_dir else Path("reports/text")
+            )
             EvaluationReportGenerator.ensure_directory_exists(reports_dir)
 
             # Get evaluation ID or use timestamp
@@ -244,17 +250,19 @@ Scores: {evaluation.get("scores", {})}
             return str(file_path)
         except Exception as e:
             logger.error(f"Error saving text report to {file_path}: {e}")
-            return ""
+            return "" @ staticmethod
 
-    @staticmethod
     def save_json_report(
-        evaluation_result: Dict[str, Any], file_path: Optional[str] = None
+        evaluation_result: Dict[str, Any],
+        report_dir: Optional[str] = None,
+        file_path: Optional[str] = None,
     ) -> str:
         """
         Generate and save a JSON report to a file.
 
         Args:
             evaluation_result: The full evaluation result
+            report_dir: Optional directory to save the report in
             file_path: Optional file path, if None will generate a timestamp-based path
 
         Returns:
@@ -262,7 +270,9 @@ Scores: {evaluation.get("scores", {})}
         """
         # Generate default file path if not provided
         if file_path is None:
-            reports_dir = Path("reports/json")
+            reports_dir = (
+                Path(report_dir) / "json" if report_dir else Path("reports/json")
+            )
             EvaluationReportGenerator.ensure_directory_exists(reports_dir)
 
             # Get evaluation ID or use timestamp
@@ -280,17 +290,19 @@ Scores: {evaluation.get("scores", {})}
             return str(file_path)
         except Exception as e:
             logger.error(f"Error saving JSON report to {file_path}: {e}")
-            return ""
+            return "" @ staticmethod
 
-    @staticmethod
     def save_markdown_report(
-        evaluation_result: Dict[str, Any], file_path: Optional[str] = None
+        evaluation_result: Dict[str, Any],
+        report_dir: Optional[str] = None,
+        file_path: Optional[str] = None,
     ) -> str:
         """
         Generate and save a Markdown report to a file.
 
         Args:
             evaluation_result: The full evaluation result
+            report_dir: Optional directory to save the report in
             file_path: Optional file path, if None will generate a timestamp-based path
 
         Returns:
@@ -298,7 +310,11 @@ Scores: {evaluation.get("scores", {})}
         """
         # Generate default file path if not provided
         if file_path is None:
-            reports_dir = Path("reports/markdown")
+            reports_dir = (
+                Path(report_dir) / "markdown"
+                if report_dir
+                else Path("reports/markdown")
+            )
             EvaluationReportGenerator.ensure_directory_exists(reports_dir)
 
             # Get evaluation ID or use timestamp
@@ -321,18 +337,20 @@ Scores: {evaluation.get("scores", {})}
             return str(file_path)
         except Exception as e:
             logger.error(f"Error saving markdown report to {file_path}: {e}")
-            return ""
+            return "" @ staticmethod
 
-    @staticmethod
     def save_all_formats(
-        evaluation_result: Dict[str, Any], base_dir: Optional[str] = None
+        evaluation_result: Dict[str, Any],
+        report_dir: Optional[str] = None,
+        filename_base: Optional[str] = None,
     ) -> Dict[str, str]:
         """
         Save the evaluation report in all available formats.
 
         Args:
             evaluation_result: The full evaluation result
-            base_dir: Optional base directory for reports
+            report_dir: Optional directory to save the reports in
+            filename_base: Optional base name for the report files
 
         Returns:
             Dictionary mapping format to saved file path
@@ -342,19 +360,22 @@ Scores: {evaluation.get("scores", {})}
             "evaluation_id", datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         )
 
+        # Use filename_base if provided, otherwise use eval_id
+        file_base = filename_base or f"evaluation_{eval_id}"
+
         # Set up base directory
-        if base_dir is None:
+        if report_dir is None:
             base_dir = Path("reports")
         else:
-            base_dir = Path(base_dir)
+            base_dir = Path(report_dir)
 
         # Ensure base directory exists
-        EvaluationReportGenerator.ensure_directory_exists(base_dir)
-
-        # Create paths for each format
-        text_path = base_dir / "text" / f"evaluation_{eval_id}.txt"
-        json_path = base_dir / "json" / f"evaluation_{eval_id}.json"
-        md_path = base_dir / "markdown" / f"evaluation_{eval_id}.md"
+        EvaluationReportGenerator.ensure_directory_exists(
+            base_dir
+        )  # Create paths for each format
+        text_path = base_dir / "text" / f"{file_base}.txt"
+        json_path = base_dir / "json" / f"{file_base}.json"
+        md_path = base_dir / "markdown" / f"{file_base}.md"
 
         # Ensure subdirectories exist
         EvaluationReportGenerator.ensure_directory_exists(base_dir / "text")
@@ -364,13 +385,13 @@ Scores: {evaluation.get("scores", {})}
         # Save in each format
         saved_paths = {
             "text": EvaluationReportGenerator.save_text_report(
-                evaluation_result, text_path
+                evaluation_result, str(base_dir), text_path
             ),
             "json": EvaluationReportGenerator.save_json_report(
-                evaluation_result, json_path
+                evaluation_result, str(base_dir), json_path
             ),
             "markdown": EvaluationReportGenerator.save_markdown_report(
-                evaluation_result, md_path
+                evaluation_result, str(base_dir), md_path
             ),
         }
 

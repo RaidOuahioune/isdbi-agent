@@ -5,6 +5,7 @@ from components.agents.prompts import USE_CASE_PROCESSOR_SYSTEM_PROMPT
 from components.agents.use_case_verifier import use_case_verifier
 from retreiver import retriever
 
+
 class UseCaseProcessorAgent(Agent):
     """Agent responsible for processing financial use cases and providing accounting guidance."""
 
@@ -45,18 +46,18 @@ Additional Context:
         # Get initial processing result
         initial_response = self.llm.invoke(messages)
         initial_guidance = initial_response.content
-        
+
         # Pass the initial output to the verifier for validation and enhancement
         verified_result = use_case_verifier.verify_use_case(
-            scenario=scenario,
-            llm_output=initial_guidance
+            scenario=scenario, llm_output=initial_guidance
         )
-        
+
         # Return the combined result
         return {
-            "scenario": scenario, 
-            "accounting_guidance": verified_result["verified_guidance"]
+            "scenario": scenario,
+            "accounting_guidance": verified_result["verified_guidance"],
         }
+
 
 # Initialize the agent
 use_case_processor = UseCaseProcessorAgent()
