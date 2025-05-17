@@ -8,7 +8,7 @@ from ..services.product_design_service import ProductDesignService
 router = APIRouter(prefix="/product-design", tags=["Financial Product Design"])
 
 
-@router.post("", response_model=ProductDesignResponse)
+@router.post("", )
 async def design_financial_product(request: ProductDesignRequest) -> Dict[str, Any]:
     """
     Design a Shariah-compliant financial product based on specified requirements.
@@ -25,6 +25,9 @@ async def design_financial_product(request: ProductDesignRequest) -> Dict[str, A
         request_data = {k: v for k, v in request_data.items() if v is not None}
         
         result = ProductDesignService.design_financial_product(request_data)
+        print(result.keys(),)
+        print([type(value) for value in result.values()])
+
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
