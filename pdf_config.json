@@ -1,0 +1,6 @@
+{
+  "enabled": true,
+  "auto_disable_on_failure": true,
+  "max_retries": 3,
+  "timeout": 60
+}

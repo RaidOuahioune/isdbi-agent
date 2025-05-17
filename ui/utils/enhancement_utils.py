@@ -27,8 +27,8 @@ def save_enhancement(results):
         "timestamp": timestamp,
         "standard_id": results['standard_id'],
         "trigger_scenario": results['trigger_scenario'],
-        "decision": "APPROVED" if "APPROVED" in results['validation'] else 
-                    "REJECTED" if "REJECTED" in results['validation'] else "NEEDS REVISION"
+        "decision": "APPROVED" if "APPROVED" in results['validation_summary'] else 
+                    "REJECTED" if "REJECTED" in results['validation_summary'] else "NEEDS REVISION"
     }
     
     # Save the full results
@@ -72,21 +72,28 @@ def create_export_markdown(results):
 {results['trigger_scenario']}
 
 ## Review Findings
-{results['review']}
+{results['reviewer_analysis_summary']}
+{results['reviewer_enhancement_areas']}
 
 ## Proposed Enhancements
-{results['proposal']}
+{results['initial_proposal_structured']}
+{results['final_proposal_structured']}
+
+## concerns and recommendations from experts
+{results['accumulated_expert_concerns']}
+{results['accumulated_expert_recommendations']}
+
 
 ## Validation Results
-{results['validation']}"""
+{results['validation_summary']}"""
 
     # Add cross-standard analysis if available
-    if "cross_standard_analysis" in results:
+    if "cross_standard_analysis_summary" in results:
         markdown_content += f"""
 
 ## Cross-Standard Impact Analysis
-{results['cross_standard_analysis']}"""
-        
+{results['cross_standard_analysis_summary']}"""
+
     return markdown_content
 
 def create_export_html(results):

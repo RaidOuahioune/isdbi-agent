@@ -265,7 +265,7 @@ class ExpertEvaluatorAgent(Agent):
             logger.info(f"[TOOL RESULT] Found {len(docs)} relevant documents")
             print("\n===== SEARCH RESULTS =====")
             print(f"Query: {query}")
-            print(f"Number of documents found: {len(docs)}")
+            print(f"Number of documents found: {len(docs)}ShariahExpertAgent")
 
             # Print snippets of each document
             for i, doc in enumerate(docs):

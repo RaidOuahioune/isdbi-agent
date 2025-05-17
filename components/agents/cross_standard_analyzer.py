@@ -56,7 +56,7 @@ class CrossStandardAnalyzerAgent(Agent):
         """
         # Extract key information from enhancement results
         standard_id = enhancement_results.get("standard_id", "")
-        proposal = enhancement_results.get("proposal", "")
+        proposal = enhancement_results.get("proposed_changes_summary", "")
         
         # Return a graceful failure if proposal is missing
         if not proposal:

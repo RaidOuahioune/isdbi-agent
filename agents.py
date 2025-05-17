@@ -9,6 +9,7 @@ from components.agents.use_case_verifier import use_case_verifier
 from components.agents.reviewer_agent import reviewer_agent
 from components.agents.proposer_agent import proposer_agent
 from components.agents.validator_agent import validator_agent
+from components.agents.committee_validator_agent import committee_validator_agent
 from components.agents.transaction_analyzer import transaction_analyzer
 from components.agents.transaction_rationale import transaction_rationale
 from components.agents.knowledge_integration import knowledge_integration
@@ -42,6 +43,7 @@ __all__ = [
     "reviewer_agent",
     "proposer_agent",
     "validator_agent",
+    "committee_validator_agent",
     "cross_standard_analyzer",
     "transaction_analyzer",
     "transaction_rationale",

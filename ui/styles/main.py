@@ -166,4 +166,65 @@ def load_css():
         background-color: #f3f4f6;
     }
 </style>
-""" 
+"""
+
+def get_enhancement_css():
+    """Get CSS styles for enhancement results display."""
+    return """
+    <style>
+        /* Enhancement Area Styling */
+        .enhancement-area {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Proposal Section Styling */
+        .proposal-section {
+            background-color: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+        }
+        
+        /* Validation Section Styling */
+        .validation-section {
+            background-color: #fff7ed;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+        }
+        
+        /* Enhancement Title Styling */
+        .enhancement-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        /* Analysis Section Styling */
+        .analysis-section {
+            background-color: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+        }
+        
+        /* Code Block Styling */
+        pre {
+            background-color: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+    </style>
+    """

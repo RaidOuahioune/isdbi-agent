@@ -1,0 +1,152 @@
+[
+  {
+    "test_case": "usecase_1.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_10.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_11.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_12.txt",
+    "overall_score": 6.01,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_13.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_14.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_15.txt",
+    "overall_score": 3.69,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_16.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_17.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_18.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_19.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_2.txt",
+    "overall_score": 5.94,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_20.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_21.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_22.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_23.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_24.txt",
+    "overall_score": 6.02,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_25.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_26.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_27.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_28.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_29.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_3.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_30.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_4.txt",
+    "overall_score": 5.58,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_5.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_6.txt",
+    "overall_score": 5.7,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_7.txt",
+    "overall_score": 5.58,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_8.txt",
+    "overall_score": 6.37,
+    "expert_scores": {}
+  },
+  {
+    "test_case": "usecase_9.txt",
+    "overall_score": 5.58,
+    "expert_scores": {}
+  }
+]
