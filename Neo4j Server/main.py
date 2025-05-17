@@ -1,29 +1,50 @@
+import json
 import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 from llama_index.llms.gemini import Gemini
 from Neo4jUploader import Neo4jUploader
 from ask_compliance_question import ask_compliance_question
 from query_enhancer import enhance_query
+from legalExpert import ask_compliance_question_law, query_law_clauses
+from standardExpert import query_standard_clauses
+from shari3a import search_all_sources_by_text
+from generatePdf import generate_updated_standard_pdf
+from orchestrator import route_to_specialized_agent
+import os
+from Neo4jUploader import Neo4jUploader
+
 import uvicorn
 import time
+
+
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Define request and response models
+
+class Enhancement(BaseModel):
+    clause_id: str  # e.g. "2/3/1"
+    proposed_text: str  # New text to replace the clause
 class QuestionRequest(BaseModel):
     question: str
     top_k: Optional[int] = 6
     temperature: Optional[float] = 0.1
     disable_enhancement: Optional[bool] = False
+    source: Optional[str] = "law"  # NEW: add this line
 
 class EnhanceResponse(BaseModel):
     original_question: str
     enhanced_question: str
+
+
+class EnhanceStandardRequest(BaseModel):
+    standard_name: str  # <-- changed this line
+    enhancements: List[Enhancement]
+
 
 class AnswerResponse(BaseModel):
     answer: str
@@ -146,6 +167,201 @@ def ask_question(
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing question: {str(e)}")
+
+
+# Fetch law clauses only (no LLM involved)
+@app.post("/api/fetch-clauses")
+def fetch_clauses(request: QuestionRequest):
+    if not request.question or len(request.question.strip()) < 3:
+        raise HTTPException(status_code=400, detail="Question must be at least 3 characters long")
+    try:
+        clauses = query_law_clauses(request.question, top_k=request.top_k)
+        return {"clauses": clauses}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error querying clauses: {str(e)}")
+
+
+# Run legal expert agent (Gemini + clauses)
+@app.post("/api/legal-expert", response_model=AnswerResponse)
+def legal_expert(
+    request: QuestionRequest,
+    llm=Depends(get_llm)
+):
+    start_time = time.time()
+
+    if not request.question or len(request.question.strip()) < 3:
+        raise HTTPException(status_code=400, detail="Question must be at least 3 characters long")
+
+    try:
+        answer = ask_compliance_question_law(request.question, llm, top_k=request.top_k)
+        return {
+            "answer": answer,
+            "processing_time": time.time() - start_time,
+            "enhanced_query": None  # You can add enhancement later if needed
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Legal expert failed: {str(e)}")
+
+
+# === Standards Search Endpoint ===
+@app.post("/api/fetch-standards")
+def fetch_standard_clauses(request: QuestionRequest):
+    if not request.question or len(request.question.strip()) < 3:
+        raise HTTPException(status_code=400, detail="Question must be at least 3 characters long")
+    try:
+        results = query_standard_clauses(request.question, top_k=request.top_k)
+        return {"clauses": results}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error querying standards: {str(e)}")
+
+
+@app.post("/api/fetch")
+def fetch_clauses_or_standards(request: QuestionRequest):
+    NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
+    NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
+    NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "your_password")
+
+    uploader = Neo4jUploader(uri=NEO4J_URI, user=NEO4J_USER, password=NEO4J_PASSWORD)
+    if not request.question or len(request.question.strip()) < 3:
+        raise HTTPException(status_code=400, detail="Question must be at least 3 characters long")
+
+    source = request.source.lower()
+
+    try:
+        if source == "legal":
+            clauses = query_law_clauses(request.question, top_k=request.top_k)
+        elif source == "finance":
+            clauses = query_standard_clauses(request.question, top_k=request.top_k)
+        elif source == "shariah":
+            clauses = uploader.search_all_sources_by_text(request.question, top_k=request.top_k)
+            normalized_response = normalize_clauses({
+                "source": source,
+                "clauses": clauses
+            })
+            return normalized_response
+        else:   
+            raise HTTPException(status_code=400, detail="Invalid source. Use 'law', 'standard', or 'shari3a'.")
+
+
+        return {
+            "source": source,
+            "clauses": clauses
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error querying {source} clauses: {str(e)}")
+
+
+def normalize_clauses(raw_response):
+    normalized = {"source": raw_response["source"], "clauses": []}
+
+    for clause in raw_response["clauses"]:
+        source_type = clause.get("source_type", "Unknown")
+        score = clause.get("similarity_score", 0.0)
+
+        if source_type == "QuranVerse":
+            verse_number = clause.get("verse_number", "unknown")
+            clause_id = f"Quran_{verse_number}"
+            text = clause.get("text_english", clause.get("text_content", ""))
+        elif source_type == "Hadith":
+            # Add logic to extract proper Hadith ID if you have it
+            clause_id = clause.get("hadith_id", "Hadith_Unknown")
+            text = clause.get("text_content", "")
+        else:
+            # Default document chunk format
+            metadata = clause.get("extra_metadata", "{}")
+            file_name = "unknown"
+            page_number = clause.get("page_number", "0")
+            try:
+                metadata_dict = json.loads(metadata)
+                file_name = metadata_dict.get("file_name", "").replace(".pdf", "")
+            except Exception:
+                pass
+            clause_id = f"doc_{file_name}_{page_number}"
+            text = clause.get("text_content", "")
+
+        normalized["clauses"].append({
+            "id": clause_id,
+            "text": text.strip(),
+            "score": round(score, 2),
+            "source_type": source_type
+        })
+
+    return normalized
+
+from fastapi.responses import FileResponse
+
+STANDARD_FILES = {
+    "musharaka": "Musharaka.PDF",
+    "istisna": "FINANC_1_Istisna’a and Parallel Istisna’a (10).PDF",
+    "murabahah": "SS8 - Murabahah - revised standard.pdf",
+    "ijarah": "SS9 - Ijarah and Ijarah Muntahia Bittamleek - revised standard.pdf",
+    "salam": "SS10 - Salam and Parallel Salam - revised standard.pdf",
+}
+
+@app.post("/api/generate-enhanced-pdf")
+def generate_enhanced_pdf(request: EnhanceStandardRequest):
+    try:
+        # Use the standard file from your local path
+        standard_filename = STANDARD_FILES.get(request.standard_name.lower())
+        print(standard_filename)
+
+        original_pdf_path = os.path.join("/home/boba/Desktop/isdbi/data/standards/", standard_filename)
+        if not os.path.exists(original_pdf_path):
+            raise HTTPException(status_code=404, detail="Original standard PDF not found")
+
+        # Set the output path
+        output_dir = "output/standards"
+        os.makedirs(output_dir, exist_ok=True)
+        output_pdf_path = os.path.join(output_dir, f"enhanced_{standard_filename}".replace(".pdf", ""))
+
+        # Call the enhancement function
+        generate_updated_standard_pdf(
+            original_pdf_path=original_pdf_path,
+            enhancements=[e.dict() for e in request.enhancements],
+            output_path=output_pdf_path
+        )
+
+        # Return file
+        return FileResponse(f"{output_pdf_path}.pdf", filename=f"Enhanced_{standard_filename}", media_type="application/pdf")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate enhanced PDF: {str(e)}")
+
+
+
+class AgentRoutingRequest(BaseModel):
+    query: str
+
+class AgentRoutingResponse(BaseModel):
+    selected_agent: str
+
+
+@app.post("/api/route-agent", response_model=AgentRoutingResponse)
+def route_agent_handler(
+    request: AgentRoutingRequest,
+    llm=Depends(get_llm)
+):
+    """
+    Routes the input query to the appropriate AI agent:
+    - challenge_1
+    - challenge_2
+    - compliance_checker
+    - advisor
+    - none
+    """
+
+    if not request.query or len(request.query.strip()) < 3:
+        raise HTTPException(status_code=400, detail="Query must be at least 3 characters long")
+
+    try:
+        selected_agent = route_to_specialized_agent(request.query, llm)
+        return AgentRoutingResponse(selected_agent=selected_agent)
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Routing agent failed: {str(e)}")
+
+
 
 # Add a background task to close connections properly if needed
 def cleanup():

@@ -546,7 +546,7 @@ class Neo4jUploader:
         # Sort all results by similarity score (descending)
         results.sort(key=lambda x: x.get("similarity_score", 0), reverse=True)
 
-        return results[:top_k]
+        return results
         
     def upload_tafseer_with_quran(self, tafseer_json_data):
         """
